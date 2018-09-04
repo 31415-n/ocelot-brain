@@ -4,7 +4,6 @@ import com.google.common.base.Charsets
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt._
 import net.minecraft.util.EnumFacing
-import net.minecraftforge.common.util.Constants.NBT
 
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
@@ -212,14 +211,14 @@ object ExtendedNBT {
   }
 
   class ExtendedNBTTagCompound(val nbt: NBTTagCompound) {
-    def setNewCompoundTag(name: String, f: (NBTTagCompound) => Any) = {
+    def setNewCompoundTag(name: String, f: NBTTagCompound => Any): NBTTagCompound = {
       val t = new NBTTagCompound()
       f(t)
       nbt.setTag(name, t)
       nbt
     }
 
-    def setNewTagList(name: String, values: Iterable[NBTBase]) = {
+    def setNewTagList(name: String, values: Iterable[NBTBase]): NBTTagCompound = {
       val t = new NBTTagList()
       t.append(values)
       nbt.setTag(name, t)
@@ -228,7 +227,7 @@ object ExtendedNBT {
 
     def setNewTagList(name: String, values: NBTBase*): NBTTagCompound = setNewTagList(name, values)
 
-    def getDirection(name: String) = {
+    def getDirection(name: String): Option[EnumFacing] = {
       nbt.getByte(name) match {
         case id if id < 0 || id > EnumFacing.values.length => None
         case id => Option(EnumFacing.getFront(id))
@@ -242,13 +241,13 @@ object ExtendedNBT {
       }
     }
 
-    def getBooleanArray(name: String) = nbt.getByteArray(name).map(_ == 1)
+    def getBooleanArray(name: String): Array[Boolean] = nbt.getByteArray(name).map(_ == 1)
 
-    def setBooleanArray(name: String, value: Array[Boolean]) = nbt.setTag(name, toNbt(value))
+    def setBooleanArray(name: String, value: Array[Boolean]): Unit = nbt.setTag(name, toNbt(value))
   }
 
   class ExtendedNBTTagList(val nbt: NBTTagList) {
-    def appendNewCompoundTag(f: (NBTTagCompound) => Unit) {
+    def appendNewCompoundTag(f: NBTTagCompound => Unit) {
       val t = new NBTTagCompound()
       f(t)
       nbt.appendTag(t)
@@ -278,7 +277,6 @@ object ExtendedNBT {
       buffer
     }
 
-    def toArray[Tag: ClassTag] = map((t: Tag) => t).toArray
+    def toArray[Tag: ClassTag]: Array[Tag] = map((t: Tag) => t).toArray
   }
-
 }

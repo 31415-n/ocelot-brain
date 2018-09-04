@@ -1,48 +1,36 @@
 package li.cil.oc.server.network
 
+import java.lang
+
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api
+import li.cil.oc.api.detail.Builder
 import li.cil.oc.api.network
 import li.cil.oc.api.network._
 import li.cil.oc.api.network.{Node => ImmutableNode}
-import li.cil.oc.common.capabilities.Capabilities
 import li.cil.oc.common.tileentity
 import li.cil.oc.server.network.{Node => MutableNode}
-import li.cil.oc.util.Color
 import li.cil.oc.util.SideTracker
-import net.minecraft.item.EnumDyeColor
 import net.minecraft.nbt._
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.IBlockAccess
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 // Looking at this again after some time, the similarity to const in C++ is somewhat uncanny.
-private class Network private(private val data: mutable.Map[String, Network.Vertex] = mutable.Map.empty) extends Distributor {
+private class Network private(private val data: mutable.Map[String, Network.Vertex] = mutable.Map.empty) {
   def this(node: MutableNode) = {
     this()
     addNew(node)
     node.onConnect(node)
   }
 
-  var globalBuffer = 0.0
-
-  var globalBufferSize = 0.0
-
-  private val connectors = mutable.ArrayBuffer.empty[Connector]
-
   private lazy val wrapper = new Network.Wrapper(this)
 
   data.values.foreach(node => {
-    node.data match {
-      case connector: Connector => addConnector(connector)
-      case _ =>
-    }
     node.data.network = wrapper
   })
 
@@ -66,7 +54,7 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
 
   // ----------------------------------------------------------------------- //
 
-  def connect(nodeA: MutableNode, nodeB: MutableNode) = {
+  def connect(nodeA: MutableNode, nodeB: MutableNode): Boolean = {
     if (nodeA == null) throw new NullPointerException("nodeA")
     if (nodeB == null) throw new NullPointerException("nodeB")
 
@@ -103,7 +91,7 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
     else add(oldNodeB, nodeA)
   }
 
-  def disconnect(nodeA: MutableNode, nodeB: MutableNode) = {
+  def disconnect(nodeA: MutableNode, nodeB: MutableNode): Boolean = {
     if (nodeA == nodeB) throw new IllegalArgumentException(
       "Cannot disconnect a node from itself.")
 
@@ -128,13 +116,9 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
     }
   }
 
-  def remove(node: MutableNode) = {
+  def remove(node: MutableNode): Boolean = {
     data.remove(node.address) match {
       case Some(entry) =>
-        node match {
-          case connector: Connector => removeConnector(connector)
-          case _ =>
-        }
         node.network = null
         val subGraphs = entry.remove()
         val targets = Iterable(node) ++ (entry.data.reachability match {
@@ -151,7 +135,7 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
 
   // ----------------------------------------------------------------------- //
 
-  def node(address: String) = {
+  def node(address: String): MutableNode = {
     data.get(address) match {
       case Some(node) => node.data
       case _ => null
@@ -183,7 +167,7 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
 
   // ----------------------------------------------------------------------- //
 
-  def sendToAddress(source: ImmutableNode, target: String, name: String, args: AnyRef*) = {
+  def sendToAddress(source: ImmutableNode, target: String, name: String, args: AnyRef*): Unit = {
     if (source.network != wrapper)
       throw new IllegalArgumentException("Source node must be in this network.")
     data.get(target) match {
@@ -193,19 +177,19 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
     }
   }
 
-  def sendToNeighbors(source: ImmutableNode, name: String, args: AnyRef*) = {
+  def sendToNeighbors(source: ImmutableNode, name: String, args: AnyRef*): Unit = {
     if (source.network != wrapper)
       throw new IllegalArgumentException("Source node must be in this network.")
     send(source, neighbors(source).filter(_.reachability != Visibility.None), name, args: _*)
   }
 
-  def sendToReachable(source: ImmutableNode, name: String, args: AnyRef*) = {
+  def sendToReachable(source: ImmutableNode, name: String, args: AnyRef*): Unit = {
     if (source.network != wrapper)
       throw new IllegalArgumentException("Source node must be in this network.")
     send(source, reachableNodes(source), name, args: _*)
   }
 
-  def sendToVisible(source: ImmutableNode, name: String, args: AnyRef*) = {
+  def sendToVisible(source: ImmutableNode, name: String, args: AnyRef*): Unit = {
     if (source.network != wrapper)
       throw new IllegalArgumentException("Source node must be in this network.")
     send(source, reachableNodes(source) collect {
@@ -224,10 +208,6 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
     if (node.address == null || data.contains(node.address))
       node.address = java.util.UUID.randomUUID().toString
     data += node.address -> newNode
-    node match {
-      case connector: Connector => addConnector(connector)
-      case _ =>
-    }
     node.network = wrapper
     newNode
   }
@@ -310,18 +290,10 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
         oldVisibleNodes.foreach(node => connects += ((node, newNodes)))
 
         data ++= otherNetworkAfterReaddress.data
-        connectors ++= otherNetworkAfterReaddress.connectors
-        globalBuffer += otherNetworkAfterReaddress.globalBuffer
-        globalBufferSize += otherNetworkAfterReaddress.globalBufferSize
         otherNetworkAfterReaddress.data.values.foreach(node => {
-          node.data match {
-            case connector: Connector => connector.distributor = Some(wrapper)
-            case _ =>
-          }
           node.data.network = wrapper
         })
         otherNetworkAfterReaddress.data.clear()
-        otherNetworkAfterReaddress.connectors.clear()
 
         Network.Edge(oldNode, node(addedNode))
       }
@@ -333,20 +305,13 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
     true
   }
 
-  private def handleSplit(subGraphs: Seq[mutable.Map[String, Network.Vertex]]) =
+  private def handleSplit(subGraphs: Seq[mutable.Map[String, Network.Vertex]]): Unit =
     if (subGraphs.size > 1) {
       val nodes = subGraphs.map(_.values.map(_.data))
       val visibleNodes = nodes.map(_.filter(_.reachability == Visibility.Network))
 
       data.clear()
-      connectors.clear()
-      globalBuffer = 0
-      globalBufferSize = 0
       data ++= subGraphs.head
-      for (node <- data.values) node.data match {
-        case connector: Connector => addConnector(connector)
-        case _ =>
-      }
       subGraphs.tail.foreach(new Network(_))
 
       for (indexA <- subGraphs.indices) {
@@ -365,117 +330,9 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
     val message = new Network.Message(source, name, Array(args: _*))
     targets.foreach(_.host.onMessage(message))
   }
-
-  // ----------------------------------------------------------------------- //
-
-  def addConnector(connector: Connector) {
-    if (connector.localBufferSize > 0) {
-      assert(!connectors.contains(connector))
-      connectors += connector
-      globalBuffer += connector.localBuffer
-      globalBufferSize += connector.localBufferSize
-    }
-    connector.distributor = Some(wrapper)
-  }
-
-  def removeConnector(connector: Connector) {
-    if (connector.localBufferSize > 0) {
-      assert(connectors.contains(connector))
-      connectors -= connector
-      globalBuffer -= connector.localBuffer
-      globalBufferSize -= connector.localBufferSize
-    }
-  }
-
-  def changeBuffer(delta: Double): Double = {
-    if (delta == 0) 0
-    else if (Settings.get.ignorePower) {
-      if (delta < 0) 0
-      else /* if (delta > 0) */ delta
-    }
-    else this.synchronized {
-      val oldBuffer = globalBuffer
-      globalBuffer = math.min(math.max(globalBuffer + delta, 0), globalBufferSize)
-      if (globalBuffer == oldBuffer) {
-        return delta
-      }
-      if (delta < 0) {
-        var remaining = -delta
-        for (connector <- connectors if remaining > 0) {
-          if (connector.localBuffer > 0) {
-            if (connector.localBuffer < remaining) {
-              remaining -= connector.localBuffer
-              connector.localBuffer = 0
-            }
-            else {
-              connector.localBuffer -= remaining
-              remaining = 0
-            }
-          }
-        }
-        -remaining
-      }
-      else /* if (delta > 0) */ {
-        var remaining = delta
-        for (connector <- connectors if remaining > 0) {
-          if (connector.localBuffer < connector.localBufferSize) {
-            val space = connector.localBufferSize - connector.localBuffer
-            if (space < remaining) {
-              remaining -= space
-              connector.localBuffer = connector.localBufferSize
-            }
-            else {
-              connector.localBuffer += remaining
-              remaining = 0
-            }
-          }
-        }
-        remaining
-      }
-    }
-  }
 }
 
 object Network extends api.detail.NetworkAPI {
-  override def joinOrCreateNetwork(world: IBlockAccess, pos: BlockPos): Unit = {
-    val tileEntity = world.getTileEntity(pos)
-    if (tileEntity != null && !tileEntity.isInvalid && tileEntity.getWorld != null && !tileEntity.getWorld.isRemote) {
-      for (side <- EnumFacing.values) {
-        val npos = tileEntity.getPos.offset(side)
-        if (tileEntity.getWorld.isBlockLoaded(npos)) {
-          val localNode = getNetworkNode(tileEntity, side)
-          val neighborTileEntity = tileEntity.getWorld.getTileEntity(npos)
-          val neighborNode = getNetworkNode(neighborTileEntity, side.getOpposite)
-          localNode match {
-            case Some(node: MutableNode) =>
-              neighborNode match {
-                case Some(neighbor: MutableNode) if neighbor != node && neighbor.network != null =>
-                  val canConnectColor = canConnectBasedOnColor(tileEntity, neighborTileEntity)
-                  val canConnectIM = canConnectFromSideIM(tileEntity, side) && canConnectFromSideIM(neighborTileEntity, side.getOpposite)
-                  if (canConnectColor && canConnectIM) neighbor.connect(node)
-                  else node.disconnect(neighbor)
-                case _ =>
-              }
-              if (node.network == null) {
-                joinNewNetwork(node)
-              }
-            case _ =>
-          }
-        }
-      }
-    }
-  }
-
-  override def joinOrCreateNetwork(tileEntity: TileEntity): Unit = {
-    if (tileEntity != null) {
-      val world = tileEntity.getWorld
-      val pos = tileEntity.getPos
-      if (world != null && pos != null) {
-        joinOrCreateNetwork(world, pos)
-      }
-    }
-  }
-
   def joinNewNetwork(node: ImmutableNode): Unit = node match {
     case mutableNode: MutableNode if mutableNode.network == null =>
       new Network(mutableNode)
@@ -484,34 +341,15 @@ object Network extends api.detail.NetworkAPI {
 
   def getNetworkNode(tileEntity: TileEntity, side: EnumFacing): Option[ImmutableNode] = {
     if (tileEntity != null) {
-      if (tileEntity.hasCapability(Capabilities.SidedEnvironmentCapability, side)) {
-        val host = tileEntity.getCapability(Capabilities.SidedEnvironmentCapability, side)
-        if (host != null) return Option(host.sidedNode(side))
-      }
-
-      if (tileEntity.hasCapability(Capabilities.EnvironmentCapability, side)) {
-        val host = tileEntity.getCapability(Capabilities.EnvironmentCapability, side)
-        if (host != null) return Option(host.node)
+      tileEntity match {
+        case environment: SidedEnvironment =>
+          Option(environment.sidedNode(side))
+        case environment: Environment =>
+          Option(environment.node())
+        case _ =>
       }
     }
-
     None
-  }
-
-  private def getConnectionColor(tileEntity: TileEntity): Int = {
-    if (tileEntity != null) {
-      if (tileEntity.hasCapability(Capabilities.ColoredCapability, null)) {
-        val colored = tileEntity.getCapability(Capabilities.ColoredCapability, null)
-        if (colored != null && colored.controlsConnectivity) return colored.getColor
-      }
-    }
-
-    Color.rgbValues(EnumDyeColor.SILVER)
-  }
-
-  private def canConnectBasedOnColor(te1: TileEntity, te2: TileEntity) = {
-    val (c1, c2) = (getConnectionColor(te1), getConnectionColor(te2))
-    c1 == c2 || c1 == Color.rgbValues(EnumDyeColor.SILVER) || c2 == Color.rgbValues(EnumDyeColor.SILVER)
   }
 
   private def canConnectFromSideIM(tileEntity: TileEntity, side: EnumFacing) =
@@ -550,7 +388,7 @@ object Network extends api.detail.NetworkAPI {
 
   def newNode(host: Environment, reachability: Visibility) = new NodeBuilder(host, reachability)
 
-  override def newPacket(source: String, destination: String, port: Int, data: Array[AnyRef]) = {
+  override def newPacket(source: String, destination: String, port: Int, data: Array[AnyRef]): Packet = {
     val packet = new Packet(source, destination, port, data)
     // We do the size check here instead of in the constructor of the packet
     // itself to avoid errors when loading packets.
@@ -560,7 +398,7 @@ object Network extends api.detail.NetworkAPI {
     packet
   }
 
-  override def newPacket(nbt: NBTTagCompound) = {
+  override def newPacket(nbt: NBTTagCompound): Packet = {
     val source = nbt.getString("source")
     val destination =
       if (nbt.hasKey("dest")) null
@@ -582,57 +420,25 @@ object Network extends api.detail.NetworkAPI {
     new Packet(source, destination, port, data, ttl)
   }
 
-  var isServer = SideTracker.isServer _
+  var isServer: () => Boolean = SideTracker.isServer
 
   class NodeBuilder(val _host: Environment, val _reachability: Visibility) extends api.detail.Builder.NodeBuilder {
     def withComponent(name: String, visibility: Visibility) = new Network.ComponentBuilder(_host, _reachability, name, visibility)
 
-    def withComponent(name: String) = withComponent(name, _reachability)
+    def withComponent(name: String): Builder.ComponentBuilder = withComponent(name, _reachability)
 
-    def withConnector(bufferSize: Double) = new Network.ConnectorBuilder(_host, _reachability, bufferSize)
-
-    def withConnector() = withConnector(0)
-
-    def create() = if (isServer()) new MutableNode with NodeVarargPart {
-      val host = _host
-      val reachability = _reachability
+    def create(): MutableNode with NodeVarargPart = if (isServer()) new MutableNode with NodeVarargPart {
+      val host: Environment = _host
+      val reachability: Visibility = _reachability
     }
     else null
   }
 
   class ComponentBuilder(val _host: Environment, val _reachability: Visibility, val _name: String, val _visibility: Visibility) extends api.detail.Builder.ComponentBuilder {
-    def withConnector(bufferSize: Double) = new Network.ComponentConnectorBuilder(_host, _reachability, _name, _visibility, bufferSize)
-
-    def withConnector() = withConnector(0)
-
-    def create() = if (isServer()) new Component with NodeVarargPart {
-      val host = _host
-      val reachability = _reachability
-      val name = _name
-      setVisibility(_visibility)
-    }
-    else null
-  }
-
-  class ConnectorBuilder(val _host: Environment, val _reachability: Visibility, val _bufferSize: Double) extends api.detail.Builder.ConnectorBuilder {
-    def withComponent(name: String, visibility: Visibility) = new Network.ComponentConnectorBuilder(_host, _reachability, name, visibility, _bufferSize)
-
-    def withComponent(name: String) = withComponent(name, _reachability)
-
-    def create() = if (isServer()) new Connector with NodeVarargPart {
-      val host = _host
-      val reachability = _reachability
-      localBufferSize = _bufferSize
-    }
-    else null
-  }
-
-  class ComponentConnectorBuilder(val _host: Environment, val _reachability: Visibility, val _name: String, val _visibility: Visibility, val _bufferSize: Double) extends api.detail.Builder.ComponentConnectorBuilder {
-    def create() = if (isServer()) new ComponentConnector with NodeVarargPart {
-      val host = _host
-      val reachability = _reachability
-      val name = _name
-      localBufferSize = _bufferSize
+    def create(): Component with NodeVarargPart = if (isServer()) new Component with NodeVarargPart {
+      val host: Environment = _host
+      val reachability: Visibility = _reachability
+      val name: String = _name
       setVisibility(_visibility)
     }
     else null
@@ -641,9 +447,9 @@ object Network extends api.detail.NetworkAPI {
   // ----------------------------------------------------------------------- //
 
   private class Vertex(val data: MutableNode) {
-    val edges = ArrayBuffer.empty[Edge]
+    val edges: ArrayBuffer[Edge] = ArrayBuffer.empty[Edge]
 
-    def remove() = {
+    def remove(): Seq[mutable.Map[String, Vertex]] = {
       edges.foreach(edge => edge.other(this).edges -= edge)
       searchGraphs(edges.map(_.other(this)))
     }
@@ -655,11 +461,11 @@ object Network extends api.detail.NetworkAPI {
     left.edges += this
     right.edges += this
 
-    def other(side: Vertex) = if (side == left) right else left
+    def other(side: Vertex): Vertex = if (side == left) right else left
 
-    def isBetween(a: Vertex, b: Vertex) = (a == left && b == right) || (b == left && a == right)
+    def isBetween(a: Vertex, b: Vertex): Boolean = (a == left && b == right) || (b == left && a == right)
 
-    def remove() = {
+    def remove(): Seq[mutable.Map[String, Vertex]] = {
       left.edges -= this
       right.edges -= this
       searchGraphs(List(left, right))
@@ -689,13 +495,13 @@ object Network extends api.detail.NetworkAPI {
   private class Message(val source: ImmutableNode, val name: String, val data: Array[AnyRef]) extends api.network.Message {
     var isCanceled = false
 
-    def cancel() = isCanceled = true
+    def cancel(): Unit = isCanceled = true
   }
 
   // ----------------------------------------------------------------------- //
 
   class Packet(var source: String, var destination: String, var port: Int, var data: Array[AnyRef], var ttl: Int = 5) extends api.network.Packet {
-    val size = Option(data).fold(0)(values => {
+    val size: Int = Option(data).fold(0)(values => {
       if (values.length > Settings.get.maxNetworkPacketParts) {
         throw new IllegalArgumentException("packet has too many parts")
       }
@@ -741,48 +547,33 @@ object Network extends api.detail.NetworkAPI {
 
   // ----------------------------------------------------------------------- //
 
-  private[network] class Wrapper(val network: Network) extends api.network.Network with Distributor {
-    def connect(nodeA: ImmutableNode, nodeB: ImmutableNode) =
+  private[network] class Wrapper(val network: Network) extends api.network.Network {
+    def connect(nodeA: ImmutableNode, nodeB: ImmutableNode): Boolean =
       network.connect(nodeA.asInstanceOf[MutableNode], nodeB.asInstanceOf[MutableNode])
 
-    def disconnect(nodeA: ImmutableNode, nodeB: ImmutableNode) =
+    def disconnect(nodeA: ImmutableNode, nodeB: ImmutableNode): Boolean =
       network.disconnect(nodeA.asInstanceOf[MutableNode], nodeB.asInstanceOf[MutableNode])
 
-    def remove(node: ImmutableNode) = network.remove(node.asInstanceOf[MutableNode])
+    def remove(node: ImmutableNode): Boolean = network.remove(node.asInstanceOf[MutableNode])
 
-    def node(address: String) = network.node(address)
+    def node(address: String): MutableNode = network.node(address)
 
-    def nodes = network.nodes.asJava
+    def nodes: lang.Iterable[ImmutableNode] = network.nodes.asJava
 
-    def nodes(reference: ImmutableNode) = network.reachableNodes(reference).asJava
+    def nodes(reference: ImmutableNode): lang.Iterable[ImmutableNode] = network.reachableNodes(reference).asJava
 
-    def neighbors(node: ImmutableNode) = network.neighbors(node).asJava
+    def neighbors(node: ImmutableNode): lang.Iterable[ImmutableNode] = network.neighbors(node).asJava
 
-    def sendToAddress(source: ImmutableNode, target: String, name: String, data: AnyRef*) =
+    def sendToAddress(source: ImmutableNode, target: String, name: String, data: AnyRef*): Unit =
       network.sendToAddress(source, target, name, data: _*)
 
-    def sendToNeighbors(source: ImmutableNode, name: String, data: AnyRef*) =
+    def sendToNeighbors(source: ImmutableNode, name: String, data: AnyRef*): Unit =
       network.sendToNeighbors(source, name, data: _*)
 
-    def sendToReachable(source: ImmutableNode, name: String, data: AnyRef*) =
+    def sendToReachable(source: ImmutableNode, name: String, data: AnyRef*): Unit =
       network.sendToReachable(source, name, data: _*)
 
-    def sendToVisible(source: ImmutableNode, name: String, data: AnyRef*) =
+    def sendToVisible(source: ImmutableNode, name: String, data: AnyRef*): Unit =
       network.sendToVisible(source, name, data: _*)
-
-    def globalBuffer = network.globalBuffer
-
-    def globalBuffer_=(value: Double) = network.globalBuffer = value
-
-    def globalBufferSize = network.globalBufferSize
-
-    def globalBufferSize_=(value: Double) = network.globalBufferSize = value
-
-    def addConnector(connector: Connector) = network.addConnector(connector)
-
-    def removeConnector(connector: Connector) = network.removeConnector(connector)
-
-    def changeBuffer(delta: Double) = network.changeBuffer(delta)
   }
-
 }

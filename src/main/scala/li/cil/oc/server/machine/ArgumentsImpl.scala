@@ -8,17 +8,16 @@ import li.cil.oc.util.ItemUtils
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.ResourceLocation
 
 import scala.collection.convert.WrapAsJava._
 import scala.collection.mutable
 
 class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
-  def iterator() = args.iterator
+  def iterator(): util.Iterator[AnyRef] = args.iterator
 
-  def count() = args.length
+  def count(): Int = args.length
 
-  def checkAny(index: Int) = {
+  def checkAny(index: Int): AnyRef = {
     checkIndex(index, "value")
     args(index) match {
       case Unit | None => null
@@ -26,12 +25,12 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     }
   }
 
-  def optAny(index: Int, default: AnyRef) = {
+  def optAny(index: Int, default: AnyRef): AnyRef = {
     if (!isDefined(index)) default
     else checkAny(index)
   }
 
-  def checkBoolean(index: Int) = {
+  def checkBoolean(index: Int): Boolean = {
     checkIndex(index, "boolean")
     args(index) match {
       case value: java.lang.Boolean => value
@@ -39,12 +38,12 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     }
   }
 
-  def optBoolean(index: Int, default: Boolean) = {
+  def optBoolean(index: Int, default: Boolean): Boolean = {
     if (!isDefined(index)) default
     else checkBoolean(index)
   }
 
-  def checkDouble(index: Int) = {
+  def checkDouble(index: Int): Double = {
     checkIndex(index, "number")
     args(index) match {
       case value: java.lang.Number => value.doubleValue
@@ -52,12 +51,12 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     }
   }
 
-  def optDouble(index: Int, default: Double) = {
+  def optDouble(index: Int, default: Double): Double = {
     if (!isDefined(index)) default
     else checkDouble(index)
   }
 
-  def checkInteger(index: Int) = {
+  def checkInteger(index: Int): Int = {
     checkIndex(index, "number")
     args(index) match {
       case value: java.lang.Number => value.intValue
@@ -65,12 +64,12 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     }
   }
 
-  def optInteger(index: Int, default: Int) = {
+  def optInteger(index: Int, default: Int): Int = {
     if (!isDefined(index)) default
     else checkInteger(index)
   }
 
-  def checkString(index: Int) = {
+  def checkString(index: Int): String = {
     checkIndex(index, "string")
     args(index) match {
       case value: java.lang.String => value
@@ -79,12 +78,12 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     }
   }
 
-  def optString(index: Int, default: String) = {
+  def optString(index: Int, default: String): String = {
     if (!isDefined(index)) default
     else checkString(index)
   }
 
-  def checkByteArray(index: Int) = {
+  def checkByteArray(index: Int): Array[Byte] = {
     checkIndex(index, "string")
     args(index) match {
       case value: java.lang.String => value.getBytes(Charsets.UTF_8)
@@ -93,12 +92,12 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     }
   }
 
-  def optByteArray(index: Int, default: Array[Byte]) = {
+  def optByteArray(index: Int, default: Array[Byte]): Array[Byte] = {
     if (!isDefined(index)) default
     else checkByteArray(index)
   }
 
-  def checkTable(index: Int) = {
+  def checkTable(index: Int): util.Map[_, _] = {
     checkIndex(index, "table")
     args(index) match {
       case value: java.util.Map[_, _] => value
@@ -108,12 +107,12 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     }
   }
 
-  def optTable(index: Int, default: util.Map[_, _]) = {
+  def optTable(index: Int, default: util.Map[_, _]): util.Map[_, _] = {
     if (!isDefined(index)) default
     else checkTable(index)
   }
 
-  def checkItemStack(index: Int) = {
+  def checkItemStack(index: Int): ItemStack = {
     val map = checkTable(index)
     map.get("name") match {
       case name: String =>
@@ -131,74 +130,74 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     }
   }
 
-  def optItemStack(index: Int, default: ItemStack) = {
+  def optItemStack(index: Int, default: ItemStack): ItemStack = {
     if (!isDefined(index)) default
     else checkItemStack(index)
   }
 
-  def isBoolean(index: Int) =
+  def isBoolean(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case value: java.lang.Boolean => true
+      case _: java.lang.Boolean => true
       case _ => false
     })
 
-  def isDouble(index: Int) =
+  def isDouble(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case value: java.lang.Float => true
-      case value: java.lang.Double => true
+      case _: java.lang.Float => true
+      case _: java.lang.Double => true
       case _ => false
     })
 
-  def isInteger(index: Int) =
+  def isInteger(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case value: java.lang.Byte => true
-      case value: java.lang.Short => true
-      case value: java.lang.Integer => true
-      case value: java.lang.Long => true
-      case value: java.lang.Double => true
+      case _: java.lang.Byte => true
+      case _: java.lang.Short => true
+      case _: java.lang.Integer => true
+      case _: java.lang.Long => true
+      case _: java.lang.Double => true
       case _ => false
     })
 
-  def isString(index: Int) =
+  def isString(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case value: java.lang.String => true
-      case value: Array[Byte] => true
+      case _: java.lang.String => true
+      case _: Array[Byte] => true
       case _ => false
     })
 
-  def isByteArray(index: Int) =
+  def isByteArray(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case value: java.lang.String => true
-      case value: Array[Byte] => true
+      case _: java.lang.String => true
+      case _: Array[Byte] => true
       case _ => false
     })
 
-  def isTable(index: Int) =
+  def isTable(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case value: java.util.Map[_, _] => true
-      case value: Map[_, _] => true
-      case value: mutable.Map[_, _] => true
+      case _: java.util.Map[_, _] => true
+      case _: Map[_, _] => true
+      case _: mutable.Map[_, _] => true
       case _ => false
     })
 
-  def isItemStack(index: Int) =
+  def isItemStack(index: Int): Boolean =
     isTable(index) && {
       val map = checkTable(index)
       map.get("name") match {
-        case value: String => true
-        case value: Array[Byte] => true
+        case _: String => true
+        case _: Array[Byte] => true
         case _ => false
       }
     }
 
-  def toArray = args.map {
+  def toArray: Array[AnyRef] = args.map {
     case value: Array[Byte] => new String(value, Charsets.UTF_8)
     case value => value
   }.toArray
 
   private def isDefined(index: Int) = index >= 0 && index < args.length && args(index) != null
 
-  private def checkIndex(index: Int, name: String) =
+  private def checkIndex(index: Int, name: String): Unit =
     if (index < 0) throw new IndexOutOfBoundsException()
     else if (args.length <= index) throw new IllegalArgumentException(
       s"bad arguments #${index + 1} ($name expected, got no value)")
@@ -213,15 +212,15 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
     case _: java.lang.Number => "double"
     case _: java.lang.String => "string"
     case _: Array[Byte] => "string"
-    case value: java.util.Map[_, _] => "table"
-    case value: Map[_, _] => "table"
-    case value: mutable.Map[_, _] => "table"
+    case _: java.util.Map[_, _] => "table"
+    case _: Map[_, _] => "table"
+    case _: mutable.Map[_, _] => "table"
     case _ => value.getClass.getSimpleName
   }
 
   private def makeStack(name: String, damage: Int, tag: Option[NBTTagCompound]) = {
-    Item.REGISTRY.getObject(new ResourceLocation(name)) match {
-      case item: Item =>
+    Item.REGISTRY.get(name) match {
+      case Some(item) =>
         val stack = new ItemStack(item, 1, damage)
         tag.foreach(stack.setTagCompound)
         stack

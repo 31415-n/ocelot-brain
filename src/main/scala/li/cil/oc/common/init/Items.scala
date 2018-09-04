@@ -11,7 +11,6 @@ import li.cil.oc.api.fs.FileSystem
 import li.cil.oc.common
 import li.cil.oc.common.Loot
 import li.cil.oc.common.Tier
-import li.cil.oc.common.block.SimpleBlock
 import li.cil.oc.common.item
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.data.DroneData
@@ -21,18 +20,12 @@ import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.item.data.TabletData
 import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.common.item.traits.SimpleItem
-import li.cil.oc.common.recipe.Recipes
 import li.cil.oc.server.machine.luac.LuaStateFactory
-import net.minecraft.block.Block
-import net.minecraft.creativetab.CreativeTabs
-import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.Item
-import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.NonNullList
 import net.minecraft.util.ResourceLocation
-import net.minecraftforge.registries.{GameData}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -54,49 +47,12 @@ object Items extends ItemAPI {
     case _ => null
   }
 
-  def registerBlock(instance: Block, id: String): Block = {
-    if (!descriptors.contains(id)) {
-      instance match {
-        case simple: SimpleBlock =>
-          instance.setUnlocalizedName("oc." + id)
-          instance.setRegistryName(id)
-          GameData.register_impl(instance)
-          OpenComputers.proxy.registerModel(instance, id)
-
-          val item : Item = new common.block.Item(instance)
-          item.setUnlocalizedName("oc." + id)
-          item.setRegistryName(id)
-          GameData.register_impl(item)
-          OpenComputers.proxy.registerModel(item, id)
-        case _ =>
-      }
-      descriptors += id -> new ItemInfo {
-        override def name: String = id
-
-        override def block = instance
-
-        override def item = null
-
-        override def createItemStack(size: Int): ItemStack = instance match {
-          case simple: SimpleBlock => simple.createItemStack(size)
-          case _ => new ItemStack(instance, size)
-        }
-      }
-      names += instance -> id
-    }
-    instance
-  }
-
   def registerItem[T <: Delegate](delegate: T, id: String): T = {
     if (!descriptors.contains(id)) {
       OpenComputers.proxy.registerModel(delegate, id)
       descriptors += id -> new ItemInfo {
         override def name: String = id
-
-        override def block = null
-
         override def item: Delegator = delegate.parent
-
         override def createItemStack(size: Int): ItemStack = delegate.createItemStack(size)
       }
       names += delegate -> id
@@ -109,7 +65,6 @@ object Items extends ItemAPI {
       instance match {
         case simple: SimpleItem =>
           simple.setUnlocalizedName("oc." + id)
-          GameData.register_impl(simple.setRegistryName(new ResourceLocation(Settings.resourceDomain, id)))
           OpenComputers.proxy.registerModel(instance, id)
         case _ =>
       }

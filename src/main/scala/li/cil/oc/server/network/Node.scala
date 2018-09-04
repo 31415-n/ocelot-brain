@@ -16,17 +16,17 @@ trait Node extends ImmutableNode {
 
   def reachability: Visibility
 
-  final var address: String = null
+  final var address: String = _
 
-  final var network: api.network.Network = null
+  final var network: api.network.Network = _
 
-  def canBeReachedFrom(other: ImmutableNode) = reachability match {
+  def canBeReachedFrom(other: ImmutableNode): Boolean = reachability match {
     case Visibility.None => false
     case Visibility.Neighbors => isNeighborOf(other)
     case Visibility.Network => isInSameNetwork(other)
   }
 
-  def isNeighborOf(other: ImmutableNode) =
+  def isNeighborOf(other: ImmutableNode): Boolean =
     isInSameNetwork(other) && network.neighbors(this).exists(_ == other)
 
   def reachableNodes: java.lang.Iterable[ImmutableNode] =
@@ -37,12 +37,12 @@ trait Node extends ImmutableNode {
     if (network == null) Iterable.empty[ImmutableNode].toSeq
     else network.neighbors(this)
 
-  def connect(node: ImmutableNode) = network.connect(this, node)
+  def connect(node: ImmutableNode): Unit = network.connect(this, node)
 
-  def disconnect(node: ImmutableNode) =
+  def disconnect(node: ImmutableNode): Unit =
     if (network != null && isInSameNetwork(node)) network.disconnect(this, node)
 
-  def remove() = if (network != null) network.remove(this)
+  def remove(): Unit = if (network != null) network.remove(this)
 
   private def isInSameNetwork(other: ImmutableNode) = network != null && other != null && network == other.network
 
@@ -66,7 +66,7 @@ trait Node extends ImmutableNode {
 
   // ----------------------------------------------------------------------- //
 
-  def load(nbt: NBTTagCompound) = {
+  def load(nbt: NBTTagCompound): Unit = {
     if (nbt.hasKey("address")) {
       val newAddress = nbt.getString("address")
       if (!Strings.isNullOrEmpty(newAddress) && newAddress != address) network match {
@@ -76,7 +76,7 @@ trait Node extends ImmutableNode {
     }
   }
 
-  def save(nbt: NBTTagCompound) = {
+  def save(nbt: NBTTagCompound): Unit = {
     if (address != null) {
       nbt.setString("address", address)
     }
@@ -89,15 +89,15 @@ trait Node extends ImmutableNode {
 // implementations of the different node variants (see Network class) because
 // for some reason it fails compiling on Linux otherwise (no clue why).
 trait NodeVarargPart extends ImmutableNode {
-  def sendToAddress(target: String, name: String, data: AnyRef*) =
+  def sendToAddress(target: String, name: String, data: AnyRef*): Unit =
     if (network != null) network.sendToAddress(this, target, name, data: _*)
 
-  def sendToNeighbors(name: String, data: AnyRef*) =
+  def sendToNeighbors(name: String, data: AnyRef*): Unit =
     if (network != null) network.sendToNeighbors(this, name, data: _*)
 
-  def sendToReachable(name: String, data: AnyRef*) =
+  def sendToReachable(name: String, data: AnyRef*): Unit =
     if (network != null) network.sendToReachable(this, name, data: _*)
 
-  def sendToVisible(name: String, data: AnyRef*) =
+  def sendToVisible(name: String, data: AnyRef*): Unit =
     if (network != null) network.sendToVisible(this, name, data: _*)
 }

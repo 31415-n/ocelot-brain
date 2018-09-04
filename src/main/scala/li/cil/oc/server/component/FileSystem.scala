@@ -18,24 +18,20 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network._
-import li.cil.oc.api.prefab
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.common.SaveHandler
 import li.cil.oc.server.{PacketSender => ServerPacketSender}
 import li.cil.oc.util.ExtendedNBT._
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagIntArray
-import net.minecraft.nbt.NBTTagList
-import net.minecraftforge.common.util.Constants.NBT
+import net.minecraft.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}
 
 import scala.collection.convert.WrapAsJava._
 import scala.collection.mutable
 
-class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option[EnvironmentHost], val sound: Option[String], val speed: Int) extends AbstractManagedEnvironment with DeviceInfo {
-  override val node = Network.newNode(this, Visibility.Network).
+class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option[EnvironmentHost],
+                 val sound: Option[String], val speed: Int) extends AbstractManagedEnvironment with DeviceInfo {
+  override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("filesystem", Visibility.Neighbors).
-    withConnector().
     create()
 
   private val owners = mutable.Map.empty[String, mutable.Set[Int]]
@@ -53,7 +49,8 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     DeviceAttribute.Product -> "MPFS.21.6",
     DeviceAttribute.Capacity -> (fileSystem.spaceTotal * 1.024).toInt.toString,
     DeviceAttribute.Size -> fileSystem.spaceTotal.toString,
-    DeviceAttribute.Clock -> (((2000 / readCosts(speed)).toInt / 100).toString + "/" + ((2000 / seekCosts(speed)).toInt / 100).toString + "/" + ((2000 / writeCosts(speed)).toInt / 100).toString)
+    DeviceAttribute.Clock -> (((2000 / readCosts(speed)).toInt / 100).toString + "/" +
+      ((2000 / seekCosts(speed)).toInt / 100).toString + "/" + ((2000 / writeCosts(speed)).toInt / 100).toString)
   )
 
   override def getDeviceInfo: util.Map[String, String] = deviceInfo
@@ -190,9 +187,6 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
               Array.copy(buffer, 0, bytes, 0, read)
               bytes
             }
-          if (!node.tryChangeBuffer(-Settings.get.hddReadCost * bytes.length)) {
-            throw new IOException("not enough energy")
-          }
           diskActivity()
           result(bytes)
         }
@@ -228,9 +222,6 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     context.consumeCallBudget(writeCosts(speed))
     val handle = checkHandle(args, 0)
     val value = args.checkByteArray(1)
-    if (!node.tryChangeBuffer(-Settings.get.hddWriteCost * value.length)) {
-      throw new IOException("not enough energy")
-    }
     checkOwner(context.node.address, handle)
     Option(fileSystem.getHandle(handle)) match {
       case Some(file) =>
@@ -243,7 +234,7 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
 
   // ----------------------------------------------------------------------- //
 
-  def checkHandle(args: Arguments, index: Int) = {
+  def checkHandle(args: Arguments, index: Int): Int = {
     if (args.isInteger(index)) {
       args.checkInteger(index)
     } else if (args.isTable(index)) {
@@ -270,7 +261,7 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
 
   // ----------------------------------------------------------------------- //
 
-  override def onMessage(message: Message) = fileSystem.synchronized {
+  override def onMessage(message: Message): Unit = fileSystem.synchronized {
     super.onMessage(message)
     if (message.name == "computer.stopped" || message.name == "computer.started") {
       owners.get(message.source.address) match {
@@ -285,7 +276,7 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     }
   }
 
-  override def onDisconnect(node: Node) = fileSystem.synchronized {
+  override def onDisconnect(node: Node): Unit = fileSystem.synchronized {
     super.onDisconnect(node)
     if (node == this.node) {
       fileSystem.close()
@@ -319,7 +310,7 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     fileSystem.load(nbt.getCompoundTag("fs"))
   }
 
-  override def save(nbt: NBTTagCompound) = fileSystem.synchronized {
+  override def save(nbt: NBTTagCompound): Unit = fileSystem.synchronized {
     super.save(nbt)
 
     if (label != null) {
@@ -356,7 +347,7 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     throw new IllegalArgumentException("unsupported mode")
   }
 
-  private def checkOwner(owner: String, handle: Int) =
+  private def checkOwner(owner: String, handle: Int): Unit =
     if (!owners.contains(owner) || !owners(owner).contains(handle))
       throw new IOException("bad file descriptor")
 

@@ -15,5 +15,5 @@ object ProgramLocations {
     }
   }
 
-  def getMappings(architecture: String) = architectureLocations.getOrElse(architecture, Iterable.empty) ++ globalLocations
+  def getMappings(architecture: String): Iterable[(String, String)] = architectureLocations.getOrElse(architecture, Iterable.empty) ++ globalLocations
 }

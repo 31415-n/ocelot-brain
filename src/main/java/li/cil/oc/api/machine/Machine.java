@@ -74,22 +74,6 @@ public interface Machine extends ManagedEnvironment, Context {
     int maxComponents();
 
     /**
-     * Gets the amount of energy this machine consumes per tick when it is
-     * running.
-     *
-     * @return the energy consumed per tick by the machine.
-     */
-    double getCostPerTick();
-
-    /**
-     * Sets the amount of energy this machine consumes per tick when it is
-     * running.
-     *
-     * @param value the energy consumed per tick by the machine.
-     */
-    void setCostPerTick(double value);
-
-    /**
      * The address of the file system that holds the machine's temporary files
      * (tmpfs). This may return <tt>null</tt> if either the creation of the file
      * system failed, or if the size of the tmpfs has been set to zero in the

@@ -6,4 +6,3 @@ libraryDependencies ++= Seq(
   "com.typesafe" % "config" % "1.3.3",
   "org.apache.commons" % "commons-lang3" % "3.8"
 )
-

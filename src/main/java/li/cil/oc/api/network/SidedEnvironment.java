@@ -1,19 +1,14 @@
 package li.cil.oc.api.network;
 
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
- * This interface is like {@link net.minecraft.inventory.ISidedInventory} is to
- * {@link net.minecraft.inventory.IInventory}, it allows an environment to
+ * This interface is like net.minecraft.inventory.ISidedInventory is to
+ * net.minecraft.inventory.IInventory, it allows an environment to
  * specify different node access for its different sides.
  * <p/>
  * This interface is intended to be used on tile entities that are environments.
- * It is used to determine which neighbors a tile entity can connect to when
- * calling {@link li.cil.oc.api.Network#joinOrCreateNetwork(TileEntity)}. It is
- * used by the keyboard to only interface with the side on which it is attached,
+ * It is used by the keyboard to only interface with the side on which it is attached,
  * as well as the switch to offer a different node for each side.
  */
 public interface SidedEnvironment {
@@ -50,6 +45,5 @@ public interface SidedEnvironment {
      * @param side the side to check for.
      * @return whether the environment provides a node for the specified side.
      */
-    @SideOnly(Side.CLIENT)
     boolean canConnect(EnumFacing side);
 }

@@ -21,29 +21,24 @@ import li.cil.oc.api.machine.LimitReachedException
 import li.cil.oc.api.machine.MachineHost
 import li.cil.oc.api.machine.Value
 import li.cil.oc.api.network.Component
-import li.cil.oc.api.network.ComponentConnector
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.Slot
 import li.cil.oc.common.tileentity
 import li.cil.oc.server.PacketSender
+import li.cil.oc.server.component.FileSystem
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.fs.FileSystem
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.ResultWrapper.result
 import li.cil.oc.util.ThreadPoolFactory
-import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt._
-import net.minecraft.server.integrated.IntegratedServer
-import net.minecraftforge.common.util.Constants.NBT
-import net.minecraftforge.fml.common.FMLCommonHandler
 
 import scala.Array.canBuildFrom
 import scala.collection.convert.WrapAsJava._
@@ -51,12 +46,11 @@ import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
 
 class Machine(val host: MachineHost) extends AbstractManagedEnvironment with machine.Machine with Runnable with DeviceInfo {
-  override val node: ComponentConnector = Network.newNode(this, Visibility.Network).
+  override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("computer", Visibility.Neighbors).
-    withConnector(Settings.get.bufferComputer).
     create()
 
-  val tmp = if (Settings.get.tmpSize > 0) {
+  val tmp: Option[FileSystem] = if (Settings.get.tmpSize > 0) {
     Option(FileSystem.asManagedEnvironment(FileSystem.
       fromMemory(Settings.get.tmpSize * 1024), "tmpfs", null, null, 5))
   } else None
@@ -101,8 +95,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
   private var usersChanged = false // Send updated users list to clients?
 
   private var message: Option[String] = None // For error messages.
-
-  private var cost = Settings.get.computerCost * Settings.get.tickFrequency
 
   // ----------------------------------------------------------------------- //
 
@@ -160,10 +152,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
 
   def lastError: String = message.orNull
 
-  override def setCostPerTick(value: Double): Unit = cost = value * Settings.get.tickFrequency
-
-  override def getCostPerTick: Double = cost / Settings.get.tickFrequency
-
   override def users: Array[String] = _users.synchronized(_users.toArray)
 
   override def upTime(): Double = {
@@ -189,12 +177,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
   // ----------------------------------------------------------------------- //
 
   override def canInteract(player: String): Boolean = !Settings.get.canComputersBeOwned ||
-    _users.synchronized(_users.isEmpty || _users.contains(player)) ||
-    FMLCommonHandler.instance.getMinecraftServerInstance.isSinglePlayer || {
-    val config = FMLCommonHandler.instance.getMinecraftServerInstance.getPlayerList
-    val entity = config.getPlayerByUsername(player)
-    entity != null && config.canSendCommands(entity.getGameProfile)
-  }
+    _users.synchronized(_users.isEmpty || _users.contains(player))
 
   override def isRunning: Boolean = state.synchronized(state.top != Machine.State.Stopped && state.top != Machine.State.Stopping)
 
@@ -205,12 +188,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
       onHostChanged()
       processAddedComponents()
       verifyComponents()
-      if (!Settings.get.ignorePower && node.globalBuffer < cost) {
-        // No beep! We have no energy after all :P
-        crash("gui.Error.NoEnergy")
-        false
-      }
-      else if (architecture == null || maxComponents == 0) {
+      if (architecture == null || maxComponents == 0) {
         beep("-")
         crash("gui.Error.NoCPU")
         false
@@ -389,8 +367,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
       throw new Exception("user exists")
     if (name.length > Settings.get.maxUsernameLength)
       throw new Exception("username too long")
-    if (!FMLCommonHandler.instance.getMinecraftServerInstance.getOnlinePlayerNames.contains(name))
-      throw new Exception("player must be online")
 
     _users.synchronized {
       _users += name
@@ -494,24 +470,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
 
     // Reset direct call budget.
     callBudget = maxCallBudget
-
-    // Make sure we have enough power.
-    if (host.world.getTotalWorldTime % Settings.get.tickFrequency == 0) {
-      state.synchronized(state.top match {
-        case Machine.State.Paused |
-             Machine.State.Restarting |
-             Machine.State.Stopping |
-             Machine.State.Stopped => // No power consumption.
-        case Machine.State.Sleeping if remainIdle > 0 && signals.isEmpty =>
-          if (!node.tryChangeBuffer(-cost * Settings.get.sleepCostFactor)) {
-            crash("gui.Error.NoEnergy")
-          }
-        case _ =>
-          if (!node.tryChangeBuffer(-cost)) {
-            crash("gui.Error.NoEnergy")
-          }
-      })
-    }
 
     // Avoid spamming user list across the network.
     if (host.world.getTotalWorldTime % 20 == 0 && usersChanged) {
@@ -903,7 +861,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
       true
     }
 
-  private def close() =
+  private def close(): Unit =
     if (state.synchronized(state.isEmpty || state.top != Machine.State.Stopped)) {
       // Give up the state lock, then get the more generic lock on this instance first
       // before locking on state again. Always must be in that order to avoid deadlocks.
@@ -941,10 +899,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     result
   }
 
-  private def isGamePaused =  FMLCommonHandler.instance.getMinecraftServerInstance != null && !FMLCommonHandler.instance.getMinecraftServerInstance.isDedicatedServer && (FMLCommonHandler.instance.getMinecraftServerInstance match {
-    case integrated: IntegratedServer => Minecraft.getMinecraft.isGamePaused
-    case _ => false
-  })
+  private def isGamePaused = host.world.isPaused
 
   // This is a really high level lock that we only use for saving and loading.
   override def run(): Unit = Machine.this.synchronized {
@@ -982,7 +937,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
                     switchTo(Machine.State.Yielded)
                   }
                 }
-              case result: ExecutionResult.SynchronizedCall =>
+              case _: ExecutionResult.SynchronizedCall =>
                 switchTo(Machine.State.SynchronizedCall)
               case result: ExecutionResult.Shutdown =>
                 if (result.reboot) {
@@ -1002,7 +957,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
               case result: ExecutionResult.Sleep =>
                 remainIdle = result.ticks
                 state.push(Machine.State.Sleeping)
-              case result: ExecutionResult.SynchronizedCall =>
+              case _: ExecutionResult.SynchronizedCall =>
                 state.push(Machine.State.SynchronizedCall)
               case result: ExecutionResult.Shutdown =>
                 if (result.reboot) {
@@ -1065,34 +1020,34 @@ object Machine extends MachineAPI {
   /** Possible states of the computer, and in particular its executor. */
   private[machine] object State extends Enumeration {
     /** The computer is not running right now and there is no Lua state. */
-    val Stopped = Value("Stopped")
+    val Stopped: State.Value = Value("Stopped")
 
     /** Booting up, doing the first run to initialize the kernel and libs. */
-    val Starting = Value("Starting")
+    val Starting: State.Value = Value("Starting")
 
     /** Computer is currently rebooting. */
-    val Restarting = Value("Restarting")
+    val Restarting: State.Value = Value("Restarting")
 
     /** The computer is currently shutting down. */
-    val Stopping = Value("Stopping")
+    val Stopping: State.Value = Value("Stopping")
 
     /** The computer is paused and waiting for the game to resume. */
-    val Paused = Value("Paused")
+    val Paused: State.Value = Value("Paused")
 
     /** The computer executor is waiting for a synchronized call to be made. */
-    val SynchronizedCall = Value("SynchronizedCall")
+    val SynchronizedCall: State.Value = Value("SynchronizedCall")
 
     /** The computer should resume with the result of a synchronized call. */
-    val SynchronizedReturn = Value("SynchronizedReturn")
+    val SynchronizedReturn: State.Value = Value("SynchronizedReturn")
 
     /** The computer will resume as soon as possible. */
-    val Yielded = Value("Yielded")
+    val Yielded: State.Value = Value("Yielded")
 
     /** The computer is yielding for a longer amount of time. */
-    val Sleeping = Value("Sleeping")
+    val Sleeping: State.Value = Value("Sleeping")
 
     /** The computer is up and running, executing Lua code. */
-    val Running = Value("Running")
+    val Running: State.Value = Value("Running")
   }
 
   /** Signals are messages sent to the Lua state from Java asynchronously. */
