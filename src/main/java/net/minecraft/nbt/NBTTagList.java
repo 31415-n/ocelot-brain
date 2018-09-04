@@ -90,7 +90,7 @@ public class NBTTagList extends NBTBase {
         }
     }
 
-    public NBTTagCompound get(int i) {
+    public NBTTagCompound getCompoundTagAt(int i) {
         if (i >= 0 && i < this.list.size()) {
             NBTBase nbtbase = this.list.get(i);
 

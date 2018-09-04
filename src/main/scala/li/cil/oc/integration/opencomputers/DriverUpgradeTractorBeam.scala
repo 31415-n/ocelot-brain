@@ -15,21 +15,20 @@ import li.cil.oc.server.component.UpgradeTractorBeam
 import net.minecraft.item.ItemStack
 
 object DriverUpgradeTractorBeam extends Item with HostAware {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.TractorBeamUpgrade))
 
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
-    else host match {
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): UpgradeTractorBeam.Common =
+    host match {
       case drone: Drone => new UpgradeTractorBeam.Drone(drone)
       case robot: Robot => new component.UpgradeTractorBeam.Player(host, robot.player)
       case tablet: TabletWrapper => new component.UpgradeTractorBeam.Player(host, () => tablet.player)
       case _ => null
     }
 
-  override def slot(stack: ItemStack) = Slot.Upgrade
+  override def slot(stack: ItemStack): String = Slot.Upgrade
 
-  override def tier(stack: ItemStack) = Tier.Three
+  override def tier(stack: ItemStack): Int = Tier.Three
 
   object Provider extends EnvironmentProvider {
     override def getEnvironment(stack: ItemStack): Class[_] =
@@ -37,5 +36,4 @@ object DriverUpgradeTractorBeam extends Item with HostAware {
         classOf[component.UpgradeTractorBeam.Common]
       else null
   }
-
 }

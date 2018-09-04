@@ -12,28 +12,28 @@ import li.cil.oc.common.item.Delegator
 import net.minecraft.item.ItemStack
 
 object DriverComponentBus extends Item with Processor {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.ComponentBusTier1),
     api.Items.get(Constants.ItemName.ComponentBusTier2),
     api.Items.get(Constants.ItemName.ComponentBusTier3),
     api.Items.get(Constants.ItemName.ComponentBusCreative))
 
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost) = null
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): Null = null
 
-  override def slot(stack: ItemStack) = Slot.ComponentBus
+  override def slot(stack: ItemStack): String = Slot.ComponentBus
 
   // Clamp item tier because the creative bus needs to fit into tier 3 slots.
-  override def tier(stack: ItemStack) =
+  override def tier(stack: ItemStack): Int =
     Delegator.subItem(stack) match {
       case Some(bus: item.ComponentBus) => bus.tier min Tier.Three
       case _ => Tier.One
     }
 
-  override def supportedComponents(stack: ItemStack) =
+  override def supportedComponents(stack: ItemStack): Int =
     Delegator.subItem(stack) match {
       case Some(bus: item.ComponentBus) => Settings.get.cpuComponentSupport(bus.tier)
       case _ => Tier.One
     }
 
-  override def architecture(stack: ItemStack) = null
+  override def architecture(stack: ItemStack): Null = null
 }

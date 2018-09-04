@@ -11,16 +11,15 @@ import li.cil.oc.server.component
 import net.minecraft.item.ItemStack
 
 object DriverMotionSensor extends Item with HostAware {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.BlockName.MotionSensor))
 
   override def createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
-    else new component.MotionSensor(host)
+    new component.MotionSensor(host)
 
-  override def slot(stack: ItemStack) = Slot.Upgrade
+  override def slot(stack: ItemStack): String = Slot.Upgrade
 
-  override def tier(stack: ItemStack) = Tier.Two
+  override def tier(stack: ItemStack): Int = Tier.Two
 
   object Provider extends EnvironmentProvider {
     override def getEnvironment(stack: ItemStack): Class[_] =

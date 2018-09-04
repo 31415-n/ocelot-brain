@@ -12,12 +12,7 @@ import li.cil.oc.api.machine.MachineHost
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.SidedComponent
 import li.cil.oc.api.network.SidedEnvironment
-import li.cil.oc.client.renderer.PetRenderer
 import li.cil.oc.common.asm.ClassTransformer
-import li.cil.oc.common.capabilities.CapabilityColored
-import li.cil.oc.common.capabilities.CapabilityEnvironment
-import li.cil.oc.common.capabilities.CapabilitySidedComponent
-import li.cil.oc.common.capabilities.CapabilitySidedEnvironment
 import li.cil.oc.common.component.TerminalServer
 import li.cil.oc.common.item.data.MicrocontrollerData
 import li.cil.oc.common.item.data.RobotData
@@ -218,15 +213,6 @@ object EventHandler {
           ServerPacketSender.sendPetVisibility(None, Some(player))
           ServerPacketSender.sendLootDisks(player)
         })
-        // Do update check in local games and for OPs.
-        val server = FMLCommonHandler.instance.getMinecraftServerInstance
-        if (!server.isDedicatedServer || server.getPlayerList.canSendCommands(player.getGameProfile)) {
-          Future {
-            UpdateCheck.info onSuccess {
-              case Some(release) => player.sendMessage(Localization.Chat.InfoNewVersion(release.tag_name))
-            }
-          }
-        }
       case _ =>
     }
   }

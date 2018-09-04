@@ -11,15 +11,15 @@ import li.cil.oc.common.item.Delegator
 import net.minecraft.item.ItemStack
 
 object DriverUpgradeHover extends Item with HostAware {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.HoverUpgradeTier1),
     api.Items.get(Constants.ItemName.HoverUpgradeTier2))
 
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost) = null
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): Null = null
 
-  override def slot(stack: ItemStack) = Slot.Upgrade
+  override def slot(stack: ItemStack): String = Slot.Upgrade
 
-  override def tier(stack: ItemStack) =
+  override def tier(stack: ItemStack): Int =
     Delegator.subItem(stack) match {
       case Some(upgrade: item.UpgradeHover) => upgrade.tier
       case _ => Tier.One

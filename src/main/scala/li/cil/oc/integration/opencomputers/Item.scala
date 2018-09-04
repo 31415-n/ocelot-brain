@@ -2,7 +2,6 @@ package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Settings
 import li.cil.oc.api
-import li.cil.oc.api.driver
 import li.cil.oc.api.driver.DriverItem
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.internal
@@ -19,7 +18,7 @@ trait Item extends DriverItem {
           blacklistedHost.exists(_.isAssignableFrom(host))
     }
 
-  override def tier(stack: ItemStack) = Tier.One
+  override def tier(stack: ItemStack): Int = Tier.One
 
   override def dataTag(stack: ItemStack): NBTTagCompound = Item.dataTag(stack)
 

@@ -9,10 +9,10 @@ import li.cil.oc.server.component
 import net.minecraft.item.ItemStack
 
 object DriverKeyboard extends Item with HostAware {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.BlockName.Keyboard))
 
   override def createEnvironment(stack: ItemStack, host: EnvironmentHost) = new component.Keyboard(host)
 
-  override def slot(stack: ItemStack) = Slot.Upgrade
+  override def slot(stack: ItemStack): String = Slot.Upgrade
 }

@@ -1,15 +1,11 @@
 package li.cil.oc.common.inventory
 
-import li.cil.oc.Localization
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.util.text.ITextComponent
 
 trait SimpleInventory extends IInventory {
   override def hasCustomName = false
-
-  override def getDisplayName: ITextComponent = Localization.localizeLater(getName)
 
   override def getInventoryStackLimit = 64
 
@@ -39,7 +35,7 @@ trait SimpleInventory extends IInventory {
     else ItemStack.EMPTY
   }
 
-  override def removeStackFromSlot(slot: Int) = {
+  override def removeStackFromSlot(slot: Int): ItemStack = {
     if (slot >= 0 && slot < getSizeInventory) {
       val stack = getStackInSlot(slot)
       setInventorySlotContents(slot, ItemStack.EMPTY)

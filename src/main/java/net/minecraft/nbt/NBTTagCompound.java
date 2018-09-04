@@ -203,7 +203,7 @@ public class NBTTagCompound extends NBTBase {
         return this.getByte(s) != 0;
     }
 
-    public void remove(String s) {
+    public void removeTag(String s) {
         this.map.remove(s);
     }
 
@@ -237,6 +237,10 @@ public class NBTTagCompound extends NBTBase {
         }
 
         return nbttagcompound;
+    }
+
+    public NBTTagCompound copy() {
+        return (NBTTagCompound) clone();
     }
 
     public boolean equals(Object object) {

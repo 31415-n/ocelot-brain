@@ -8,23 +8,23 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.server.component
+import li.cil.oc.server.component.UpgradeLeash
 import net.minecraft.entity.Entity
 import net.minecraft.item.ItemStack
 
 object DriverUpgradeLeash extends Item with HostAware {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.LeashUpgrade))
 
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
-    else host match {
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): UpgradeLeash =
+    host match {
       case entity: Entity => new component.UpgradeLeash(entity)
       case _ => null
     }
 
-  override def slot(stack: ItemStack) = Slot.Upgrade
+  override def slot(stack: ItemStack): String = Slot.Upgrade
 
-  override def tier(stack: ItemStack) = Tier.One
+  override def tier(stack: ItemStack): Int = Tier.One
 
   object Provider extends EnvironmentProvider {
     override def getEnvironment(stack: ItemStack): Class[_] =
@@ -32,5 +32,4 @@ object DriverUpgradeLeash extends Item with HostAware {
         classOf[component.UpgradeLeash]
       else null
   }
-
 }

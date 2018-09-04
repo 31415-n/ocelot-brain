@@ -11,20 +11,20 @@ import li.cil.oc.common.item.Delegator
 import net.minecraft.item.ItemStack
 
 object DriverContainerCard extends Item with Container {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.CardContainerTier1),
     api.Items.get(Constants.ItemName.CardContainerTier2),
     api.Items.get(Constants.ItemName.CardContainerTier3))
 
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost) = null
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): Null = null
 
-  override def slot(stack: ItemStack) = Slot.Container
+  override def slot(stack: ItemStack): String = Slot.Container
 
-  override def providedSlot(stack: ItemStack) = Slot.Card
+  override def providedSlot(stack: ItemStack): String = Slot.Card
 
-  override def providedTier(stack: ItemStack) = tier(stack)
+  override def providedTier(stack: ItemStack): Int = tier(stack)
 
-  override def tier(stack: ItemStack) =
+  override def tier(stack: ItemStack): Int =
     Delegator.subItem(stack) match {
       case Some(container: item.UpgradeContainerCard) => container.tier
       case _ => Tier.One

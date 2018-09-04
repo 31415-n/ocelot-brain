@@ -6,13 +6,12 @@ import li.cil.oc.api.network.{EnvironmentHost, ManagedEnvironment}
 import li.cil.oc.common.{Slot, Tier}
 import li.cil.oc.server.component
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.{Constants, Settings, api}
+import li.cil.oc.{Constants, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
-import net.minecraftforge.common.DimensionManager
 
 /**
-  * @author Vexatos
+  * @author Vexatos (modified by Totoro)
   */
 object DriverUpgradeMF extends Item with HostAware {
   override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
@@ -23,23 +22,10 @@ object DriverUpgradeMF extends Item with HostAware {
 
   override def slot(stack: ItemStack): String = Slot.Upgrade
 
-  override def tier(stack: ItemStack) = Tier.Three
+  override def tier(stack: ItemStack): Int = Tier.Three
 
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment = {
-    if (host.world != null && !host.world.isRemote) {
-      if (stack.hasTagCompound) {
-        stack.getTagCompound.getIntArray(Settings.namespace + "coord") match {
-          case Array(x, y, z, dim, side) =>
-            Option(DimensionManager.getWorld(dim)) match {
-              case Some(world) => return new component.UpgradeMF(host, BlockPosition(x, y, z, world), EnumFacing.getFront(side))
-              case _ => // Invalid dimension ID
-            }
-          case _ => // Invalid tag
-        }
-      }
-    }
-    null
-  }
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment =
+    new component.UpgradeMF(host, BlockPosition(0, 0, 0, host.world()), EnumFacing.NORTH)
 
   object Provider extends EnvironmentProvider {
     override def getEnvironment(stack: ItemStack): Class[_] =
@@ -47,5 +33,4 @@ object DriverUpgradeMF extends Item with HostAware {
         classOf[component.UpgradeMF]
       else null
   }
-
 }

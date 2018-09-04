@@ -1,9 +1,12 @@
 package li.cil.oc.integration.opencomputers
 
+import java.util
+
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api
+import li.cil.oc.api.machine.Architecture
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item
@@ -19,16 +22,16 @@ import scala.collection.convert.WrapAsScala._
 object DriverCPU extends DriverCPU
 
 abstract class DriverCPU extends Item with api.driver.item.MutableProcessor with api.driver.item.CallBudget {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.CPUTier1),
     api.Items.get(Constants.ItemName.CPUTier2),
     api.Items.get(Constants.ItemName.CPUTier3))
 
   override def createEnvironment(stack: ItemStack, host: api.network.EnvironmentHost): api.network.ManagedEnvironment = new component.CPU(tier(stack))
 
-  override def slot(stack: ItemStack) = Slot.CPU
+  override def slot(stack: ItemStack): String = Slot.CPU
 
-  override def tier(stack: ItemStack) = cpuTier(stack)
+  override def tier(stack: ItemStack): Int = cpuTier(stack)
 
   def cpuTier(stack: ItemStack): Int =
     Delegator.subItem(stack) match {
@@ -38,7 +41,7 @@ abstract class DriverCPU extends Item with api.driver.item.MutableProcessor with
 
   override def supportedComponents(stack: ItemStack) = Settings.get.cpuComponentSupport(cpuTier(stack))
 
-  override def allArchitectures = api.Machine.architectures.toList
+  override def allArchitectures: util.List[Class[_ <: Architecture]] = api.Machine.architectures.toList
 
   override def architecture(stack: ItemStack): Class[_ <: api.machine.Architecture] = {
     if (stack.hasTagCompound) {

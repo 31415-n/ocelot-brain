@@ -2,30 +2,14 @@ package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
 import li.cil.oc.api
-import li.cil.oc.api.detail.ItemInfo
-import li.cil.oc.api.driver.item.Chargeable
 import li.cil.oc.api.internal
-import li.cil.oc.api.internal.Wrench
-import li.cil.oc.api.manual.PathProvider
-import li.cil.oc.api.prefab.ItemStackTabIconRenderer
-import li.cil.oc.api.prefab.ResourceContentProvider
-import li.cil.oc.api.prefab.TextureTabIconRenderer
-import li.cil.oc.client.Textures
-import li.cil.oc.client.renderer.markdown.segment.render.BlockImageProvider
-import li.cil.oc.client.renderer.markdown.segment.render.ItemImageProvider
-import li.cil.oc.client.renderer.markdown.segment.render.OreDictImageProvider
-import li.cil.oc.client.renderer.markdown.segment.render.TextureImageProvider
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.Loot
 import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.asm.SimpleComponentTickHandler
-import li.cil.oc.common.block.SimpleBlock
 import li.cil.oc.common.event._
 import li.cil.oc.common.item.Analyzer
-import li.cil.oc.common.item.Delegator
-import li.cil.oc.common.item.RedstoneCard
 import li.cil.oc.common.item.Tablet
 import li.cil.oc.common.nanomachines.provider.DisintegrationProvider
 import li.cil.oc.common.nanomachines.provider.HungryProvider
@@ -35,22 +19,12 @@ import li.cil.oc.common.nanomachines.provider.PotionProvider
 import li.cil.oc.common.template._
 import li.cil.oc.integration.ModProxy
 import li.cil.oc.integration.Mods
-import li.cil.oc.integration.util.BundledRedstone
 import li.cil.oc.integration.util.ItemBlacklist
-import li.cil.oc.server.machine.luac.LuaStateFactory
-import li.cil.oc.server.machine.luac.NativeLua53Architecture
 import li.cil.oc.server.network.Waypoints
 import li.cil.oc.server.network.WirelessNetwork
-import li.cil.oc.util.Color
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.util.math.BlockPos
-import net.minecraft.world.World
-import net.minecraftforge.common.ForgeChunkManager
-import net.minecraftforge.common.MinecraftForge
 
 object ModOpenComputers extends ModProxy {
-  override def getMod = Mods.OpenComputers
+  override def getMod: Mods.SimpleMod = Mods.OpenComputers
 
   override def initialize() {
     ItemBlacklist.apply()
@@ -91,8 +65,6 @@ object ModOpenComputers extends ModProxy {
     api.IMC.registerProgramDiskLabel("opl-flash", "openloader", "Lua 5.2", "Lua 5.3", "LuaJ")
     api.IMC.registerProgramDiskLabel("oppm", "oppm", "Lua 5.2", "Lua 5.3", "LuaJ")
 
-    ForgeChunkManager.setForcedChunkLoadingCallback(OpenComputers, ChunkloaderUpgradeHandler)
-
     MinecraftForge.EVENT_BUS.register(EventHandler)
     MinecraftForge.EVENT_BUS.register(NanomachinesHandler.Common)
     MinecraftForge.EVENT_BUS.register(SimpleComponentTickHandler.Instance)
@@ -101,7 +73,6 @@ object ModOpenComputers extends ModProxy {
     MinecraftForge.EVENT_BUS.register(Analyzer)
     MinecraftForge.EVENT_BUS.register(AngelUpgradeHandler)
     MinecraftForge.EVENT_BUS.register(BlockChangeHandler)
-    MinecraftForge.EVENT_BUS.register(ChunkloaderUpgradeHandler)
     MinecraftForge.EVENT_BUS.register(EventHandler)
     MinecraftForge.EVENT_BUS.register(ExperienceUpgradeHandler)
     MinecraftForge.EVENT_BUS.register(FileSystemAccessHandler)
@@ -130,7 +101,6 @@ object ModOpenComputers extends ModProxy {
     api.Driver.add(DriverGraphicsCard)
     api.Driver.add(DriverInternetCard)
     api.Driver.add(DriverLinkedCard)
-    api.Driver.add(DriverLootDisk)
     api.Driver.add(DriverMemory)
     api.Driver.add(DriverNetworkCard)
     api.Driver.add(DriverKeyboard)
@@ -301,68 +271,11 @@ object ModOpenComputers extends ModProxy {
       Constants.ItemName.LeashUpgrade,
       Constants.ItemName.TradingUpgrade)
 
-    // Note: kinda nasty, but we have to check for availability for extended
-    // redstone mods after integration init, so we have to set tier two
-    // redstone card availability here, after all other mods were inited.
-    if (BundledRedstone.isAvailable) {
-      OpenComputers.log.info("Found extended redstone mods, enabling tier two redstone card.")
-      Delegator.subItem(api.Items.get(Constants.ItemName.RedstoneCardTier2).createItemStack(1)) match {
-        case Some(redstone: RedstoneCard) => redstone.showInItemList = true
-        case _ =>
-      }
-    }
-
-    api.Manual.addProvider(DefinitionPathProvider)
-    api.Manual.addProvider(new ResourceContentProvider(Settings.resourceDomain, "doc/"))
-    api.Manual.addProvider("", TextureImageProvider)
-    api.Manual.addProvider("item", ItemImageProvider)
-    api.Manual.addProvider("block", BlockImageProvider)
-    api.Manual.addProvider("oredict", OreDictImageProvider)
-
-    api.Manual.addTab(new TextureTabIconRenderer(Textures.GUI.ManualHome), "oc:gui.Manual.Home", "%LANGUAGE%/index.md")
-    api.Manual.addTab(new ItemStackTabIconRenderer(api.Items.get("case1").createItemStack(1)), "oc:gui.Manual.Blocks", "%LANGUAGE%/block/index.md")
-    api.Manual.addTab(new ItemStackTabIconRenderer(api.Items.get("cpu1").createItemStack(1)), "oc:gui.Manual.Items", "%LANGUAGE%/item/index.md")
-
     api.Nanomachines.addProvider(DisintegrationProvider)
     api.Nanomachines.addProvider(HungryProvider)
     api.Nanomachines.addProvider(ParticleProvider)
     api.Nanomachines.addProvider(PotionProvider)
     api.Nanomachines.addProvider(MagnetProvider)
-  }
-
-  def useWrench(player: EntityPlayer, pos: BlockPos, changeDurability: Boolean): Boolean = {
-    player.getHeldItemMainhand.getItem match {
-      case wrench: Wrench => wrench.useWrenchOnBlock(player, player.getEntityWorld, pos, !changeDurability)
-      case _ => false
-    }
-  }
-
-  def isWrench(stack: ItemStack): Boolean = stack.getItem.isInstanceOf[Wrench]
-
-  def canCharge(stack: ItemStack): Boolean = stack.getItem match {
-    case chargeable: Chargeable => chargeable.canCharge(stack)
-    case _ => false
-  }
-
-  def charge(stack: ItemStack, amount: Double, simulate: Boolean): Double = {
-    stack.getItem match {
-      case chargeable: Chargeable => chargeable.charge(stack, amount, simulate)
-      case _ => amount
-    }
-  }
-
-  def inkCartridgeInkProvider(stack: ItemStack): Int = {
-    if (api.Items.get(stack) == api.Items.get(Constants.ItemName.InkCartridge))
-      Settings.get.printInkValue
-    else
-      0
-  }
-
-  def dyeInkProvider(stack: ItemStack): Int = {
-    if (Color.isDye(stack))
-      Settings.get.printInkValue / 10
-    else
-      0
   }
 
   private def blacklistHost(host: Class[_], itemNames: String*) {
@@ -372,28 +285,4 @@ object ModOpenComputers extends ModProxy {
       case t: Throwable => OpenComputers.log.warn(s"Error blacklisting '$itemName' for '${host.getSimpleName}.", t)
     }
   }
-
-  object DefinitionPathProvider extends PathProvider {
-    private final val Blacklist = Set(
-      Constants.ItemName.Debugger,
-      Constants.ItemName.DiamondChip,
-      Constants.BlockName.Endstone
-    )
-
-    override def pathFor(stack: ItemStack): String = Option(api.Items.get(stack)) match {
-      case Some(definition) => checkBlacklisted(definition)
-      case _ => null
-    }
-
-    override def pathFor(world: World, pos: BlockPos): String = world.getBlockState(pos).getBlock match {
-      case block: SimpleBlock => checkBlacklisted(api.Items.get(new ItemStack(block)))
-      case _ => null
-    }
-
-    private def checkBlacklisted(info: ItemInfo): String =
-      if (info == null || Blacklist.contains(info.name)) null
-      else if (info.block != null) "%LANGUAGE%/block/" + info.name + ".md"
-      else "%LANGUAGE%/item/" + info.name + ".md"
-  }
-
 }

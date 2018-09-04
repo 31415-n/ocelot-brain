@@ -9,24 +9,24 @@ import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.server.component
+import li.cil.oc.server.component.WirelessNetworkCard
 import net.minecraft.item.ItemStack
 
 object DriverWirelessNetworkCard extends Item {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.WirelessNetworkCardTier1),
     api.Items.get(Constants.ItemName.WirelessNetworkCardTier2))
     
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
-    else tier(stack) match {
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): WirelessNetworkCard.Tier1 =
+    tier(stack) match {
       case Tier.One => new component.WirelessNetworkCard.Tier1(host)
       case Tier.Two => new component.WirelessNetworkCard.Tier2(host)
       case _ => null
     }
 
-  override def slot(stack: ItemStack) = Slot.Card
+  override def slot(stack: ItemStack): String = Slot.Card
 
-  override def tier(stack: ItemStack) =
+  override def tier(stack: ItemStack): Int =
     Delegator.subItem(stack) match {
       case Some(card: common.item.WirelessNetworkCard) => card.tier
       case _ => Tier.One
@@ -41,5 +41,4 @@ object DriverWirelessNetworkCard extends Item {
       }
       else null
   }
-
 }

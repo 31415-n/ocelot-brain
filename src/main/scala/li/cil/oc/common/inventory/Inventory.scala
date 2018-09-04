@@ -4,8 +4,7 @@ import li.cil.oc.Settings
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.StackOption
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.common.util.Constants.NBT
+import net.minecraft.nbt.{NBT, NBTTagCompound}
 
 trait Inventory extends SimpleInventory {
   def items: Array[ItemStack]
@@ -51,7 +50,7 @@ trait Inventory extends SimpleInventory {
 
   protected def inventoryName: String = getClass.getSimpleName.toLowerCase
 
-  override def isEmpty: Boolean = items.forall(_.isEmpty)
+  def isEmpty: Boolean = items.forall(_.isEmpty)
 
   // ----------------------------------------------------------------------- //
 

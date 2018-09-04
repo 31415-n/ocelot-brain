@@ -10,16 +10,15 @@ import li.cil.oc.server.component
 import net.minecraft.item.ItemStack
 
 object DriverLinkedCard extends Item {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.LinkedCard))
 
   override def createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
-    else new component.LinkedCard()
+    new component.LinkedCard()
 
-  override def slot(stack: ItemStack) = Slot.Card
+  override def slot(stack: ItemStack): String = Slot.Card
 
-  override def tier(stack: ItemStack) = Tier.Three
+  override def tier(stack: ItemStack): Int = Tier.Three
 
   object Provider extends EnvironmentProvider {
     override def getEnvironment(stack: ItemStack): Class[_] =
@@ -27,5 +26,4 @@ object DriverLinkedCard extends Item {
         classOf[component.LinkedCard]
       else null
   }
-
 }

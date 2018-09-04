@@ -75,7 +75,7 @@ public final class Items {
     public static ItemStack registerFloppy(String name, EnumDyeColor color, Callable<li.cil.oc.api.fs.FileSystem> factory, boolean doRecipeCycling) {
         if (API.items != null)
             return API.items.registerFloppy(name, color, factory, doRecipeCycling);
-        return ItemStack.EMPTY;
+        return ItemStack.EMPTY();
     }
 
     /**
@@ -97,7 +97,7 @@ public final class Items {
     public static ItemStack registerEEPROM(String name, byte[] code, byte[] data, boolean readonly) {
         if (API.items != null)
             return API.items.registerEEPROM(name, code, data, readonly);
-        return ItemStack.EMPTY;
+        return ItemStack.EMPTY();
     }
 
     // ----------------------------------------------------------------------- //

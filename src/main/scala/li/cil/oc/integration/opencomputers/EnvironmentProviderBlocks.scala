@@ -6,11 +6,8 @@ import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.network.Environment
 import li.cil.oc.common
 import li.cil.oc.common.tileentity
-import li.cil.oc.integration.util.BundledRedstone
 import li.cil.oc.server.component
 import li.cil.oc.server.machine.Machine
-import net.minecraft.block.Block
-import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemStack
 
 /**

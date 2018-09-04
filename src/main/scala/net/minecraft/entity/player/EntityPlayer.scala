@@ -1,5 +1,7 @@
 package net.minecraft.entity.player
 
-class EntityPlayer {
+import net.minecraft.entity.Entity
+
+class EntityPlayer extends Entity {
   val getName = "noname"
 }

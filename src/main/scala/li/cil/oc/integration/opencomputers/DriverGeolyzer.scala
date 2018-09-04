@@ -7,17 +7,17 @@ import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.server.component
+import li.cil.oc.server.component.Geolyzer
 import net.minecraft.item.ItemStack
 
 object DriverGeolyzer extends Item with HostAware {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.BlockName.Geolyzer))
 
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
-    else new component.Geolyzer(host)
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): Geolyzer =
+    new component.Geolyzer(host)
 
-  override def slot(stack: ItemStack) = Slot.Upgrade
+  override def slot(stack: ItemStack): String = Slot.Upgrade
 
   object Provider extends EnvironmentProvider {
     override def getEnvironment(stack: ItemStack): Class[_] =
@@ -25,5 +25,4 @@ object DriverGeolyzer extends Item with HostAware {
         classOf[component.Geolyzer]
       else null
   }
-
 }

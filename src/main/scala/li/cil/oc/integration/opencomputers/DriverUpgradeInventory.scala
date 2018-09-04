@@ -9,12 +9,12 @@ import li.cil.oc.common.Slot
 import net.minecraft.item.ItemStack
 
 object DriverUpgradeInventory extends Item with Inventory with HostAware {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.InventoryUpgrade))
 
-  override def createEnvironment(stack: ItemStack, host: EnvironmentHost) = null
+  override def createEnvironment(stack: ItemStack, host: EnvironmentHost): Null = null
 
-  override def slot(stack: ItemStack) = Slot.Upgrade
+  override def slot(stack: ItemStack): String = Slot.Upgrade
 
   override def inventoryCapacity(stack: ItemStack) = 16
 }

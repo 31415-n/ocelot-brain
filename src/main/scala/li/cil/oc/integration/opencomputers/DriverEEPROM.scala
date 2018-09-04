@@ -10,16 +10,15 @@ import li.cil.oc.server.component
 import net.minecraft.item.ItemStack
 
 object DriverEEPROM extends Item {
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.EEPROM))
 
   override def createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
-    else new component.EEPROM()
+    new component.EEPROM()
 
-  override def slot(stack: ItemStack) = Slot.EEPROM
+  override def slot(stack: ItemStack): String = Slot.EEPROM
 
-  override def tier(stack: ItemStack) = Tier.One
+  override def tier(stack: ItemStack): Int = Tier.One
 
   object Provider extends EnvironmentProvider {
     override def getEnvironment(stack: ItemStack): Class[_] =
@@ -27,5 +26,4 @@ object DriverEEPROM extends Item {
         classOf[component.EEPROM]
       else null
   }
-
 }

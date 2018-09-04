@@ -1,7 +1,6 @@
 package li.cil.oc.integration.util
 
 import li.cil.oc.common.item.traits.Delegate
-import net.minecraft.block.Block
 import net.minecraft.item.ItemStack
 
 import scala.collection.mutable
@@ -12,8 +11,6 @@ object ItemBlacklist {
 
   // List of consumers for item stacks (blacklisting for NEI and JEI).
   val consumers = mutable.Set.empty[ItemStack => Unit]
-
-  def hide(block: Block): Unit = hiddenItems += (() => new ItemStack(block))
 
   def hide(item: Delegate): Unit = hiddenItems += (() => item.createItemStack())
 

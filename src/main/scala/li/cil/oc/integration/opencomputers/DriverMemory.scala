@@ -11,14 +11,14 @@ import li.cil.oc.server.component
 import net.minecraft.item.ItemStack
 
 object DriverMemory extends Item with api.driver.item.Memory with api.driver.item.CallBudget {
-  override def amount(stack: ItemStack) = Delegator.subItem(stack) match {
+  override def amount(stack: ItemStack): Double = Delegator.subItem(stack) match {
     case Some(memory: item.Memory) =>
       val sizes = Settings.get.ramSizes
       Settings.get.ramSizes(memory.tier max 0 min (sizes.length - 1))
     case _ => 0.0
   }
 
-  override def worksWith(stack: ItemStack) = isOneOf(stack,
+  override def worksWith(stack: ItemStack): Boolean = isOneOf(stack,
     api.Items.get(Constants.ItemName.RAMTier1),
     api.Items.get(Constants.ItemName.RAMTier2),
     api.Items.get(Constants.ItemName.RAMTier3),
@@ -28,9 +28,9 @@ object DriverMemory extends Item with api.driver.item.Memory with api.driver.ite
 
   override def createEnvironment(stack: ItemStack, host: api.network.EnvironmentHost) = new component.Memory(tier(stack))
 
-  override def slot(stack: ItemStack) = Slot.Memory
+  override def slot(stack: ItemStack): String = Slot.Memory
 
-  override def tier(stack: ItemStack) =
+  override def tier(stack: ItemStack): Int =
     Delegator.subItem(stack) match {
       case Some(memory: item.Memory) => memory.tier / 2
       case _ => Tier.One

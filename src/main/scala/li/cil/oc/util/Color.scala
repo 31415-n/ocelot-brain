@@ -1,10 +1,6 @@
 package li.cil.oc.util
 
 import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.ItemStack
-import net.minecraftforge.oredict.OreDictionary
-
-import scala.collection.convert.WrapAsScala._
 
 object Color {
   val rgbValues = Map(
@@ -63,12 +59,4 @@ object Color {
     "dyeWhite" -> EnumDyeColor.WHITE)
 
   val byTier = Array(EnumDyeColor.SILVER, EnumDyeColor.YELLOW, EnumDyeColor.CYAN, EnumDyeColor.MAGENTA)
-
-  def byMeta(meta: EnumDyeColor) = byOreName(dyes(meta.getDyeDamage))
-
-  def findDye(stack: ItemStack) = byOreName.keys.find(OreDictionary.getOres(_).exists(oreStack => OreDictionary.itemMatches(stack, oreStack, false)))
-
-  def isDye(stack: ItemStack) = findDye(stack).isDefined
-
-  def dyeColor(stack: ItemStack) = findDye(stack).fold(EnumDyeColor.MAGENTA)(byOreName(_))
 }
