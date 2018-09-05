@@ -3,7 +3,7 @@ package li.cil.oc.common.item
 import li.cil.oc.Settings
 import net.minecraft.item.ItemStack
 
-class HardDiskDrive(val parent: Delegator, val tier: Int) extends traits.Delegate with traits.ItemTier with traits.FileSystemLike {
+class HardDiskDrive(val parent: Delegator, val tier: Int) extends traits.Delegate with traits.FileSystemLike {
   override val unlocalizedName: String = super.unlocalizedName + tier
   val kiloBytes: Int = Settings.get.hddSizes(tier)
   val platterCount: Int = Settings.get.hddPlatterCounts(tier)

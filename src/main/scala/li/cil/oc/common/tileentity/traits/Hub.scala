@@ -6,58 +6,54 @@ import li.cil.oc.api.network._
 import li.cil.oc.common.tileentity.traits
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.MovingAverage
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.{NBT, NBTTagCompound}
 import net.minecraft.util.EnumFacing
-import net.minecraftforge.common.util.Constants.NBT
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
 
 import scala.collection.mutable
 
-trait Hub extends traits.Environment with SidedEnvironment with Tickable {
+trait Hub extends traits.Environment with SidedEnvironment {
   override def node: Node = null
 
-  override protected def isConnected = plugs.exists(plug =>
+  override protected def isConnected: Boolean = plugs.exists(plug =>
     plug != null &&
     plug.node != null &&
     plug.node.address != null &&
     plug.node.network != null)
 
-  protected val plugs = EnumFacing.values.map(side => createPlug(side))
+  protected val plugs: Array[Plug] = EnumFacing.values.map(side => createPlug(side))
 
-  val queue = mutable.Queue.empty[(Option[EnumFacing], Packet)]
+  val queue: mutable.Queue[(Option[EnumFacing], Packet)] = mutable.Queue.empty[(Option[EnumFacing], Packet)]
 
-  var maxQueueSize = queueBaseSize
+  var maxQueueSize: Int = queueBaseSize
 
-  var relayDelay = relayBaseDelay
+  var relayDelay: Int = relayBaseDelay
 
-  var relayAmount = relayBaseAmount
+  var relayAmount: Int = relayBaseAmount
 
-  var relayCooldown = -1
+  var relayCooldown: Int = -1
 
   // 20 cycles
   val packetsPerCycleAvg = new MovingAverage(20)
 
   // ----------------------------------------------------------------------- //
 
-  protected def queueBaseSize = Settings.get.switchDefaultMaxQueueSize
+  protected def queueBaseSize: Int = Settings.get.switchDefaultMaxQueueSize
 
-  protected def queueSizePerUpgrade = Settings.get.switchQueueSizeUpgrade
+  protected def queueSizePerUpgrade: Int = Settings.get.switchQueueSizeUpgrade
 
-  protected def relayBaseDelay = Settings.get.switchDefaultRelayDelay
+  protected def relayBaseDelay: Int = Settings.get.switchDefaultRelayDelay
 
-  protected def relayDelayPerUpgrade = Settings.get.switchRelayDelayUpgrade
+  protected def relayDelayPerUpgrade: Double = Settings.get.switchRelayDelayUpgrade
 
-  protected def relayBaseAmount = Settings.get.switchDefaultRelayAmount
+  protected def relayBaseAmount: Int = Settings.get.switchDefaultRelayAmount
 
-  protected def relayAmountPerUpgrade = Settings.get.switchRelayAmountUpgrade
+  protected def relayAmountPerUpgrade: Int = Settings.get.switchRelayAmountUpgrade
 
   // ----------------------------------------------------------------------- //
 
-  @SideOnly(Side.CLIENT)
-  override def canConnect(side: EnumFacing) = side != null
+  override def canConnect(side: EnumFacing): Boolean = side != null
 
-  override def sidedNode(side: EnumFacing) = if (side != null) plugs(side.ordinal).node else null
+  override def sidedNode(side: EnumFacing): Node = if (side != null) plugs(side.ordinal).node else null
 
   // ----------------------------------------------------------------------- //
 
@@ -70,7 +66,7 @@ trait Hub extends traits.Environment with SidedEnvironment with Tickable {
       relayCooldown = -1
       if (queue.nonEmpty) queue.synchronized {
         packetsPerCycleAvg += queue.size
-        for (i <- 0 until math.min(queue.size, relayAmount)) {
+        for (_ <- 0 until math.min(queue.size, relayAmount)) {
           val (sourceSide, packet) = queue.dequeue()
           relayPacket(sourceSide, packet)
         }
@@ -84,7 +80,7 @@ trait Hub extends traits.Environment with SidedEnvironment with Tickable {
     }
   }
 
-  def tryEnqueuePacket(sourceSide: Option[EnumFacing], packet: Packet) = queue.synchronized {
+  def tryEnqueuePacket(sourceSide: Option[EnumFacing], packet: Packet): Boolean = queue.synchronized {
     if (packet.ttl > 0 && queue.size < maxQueueSize) {
       queue += sourceSide -> packet.hop()
       if (relayCooldown < 0) {
@@ -108,8 +104,8 @@ trait Hub extends traits.Environment with SidedEnvironment with Tickable {
   private final val SideTag = "side"
   private final val RelayCooldownTag = Settings.namespace + "relayCooldown"
 
-  override def readFromNBTForServer(nbt: NBTTagCompound) {
-    super.readFromNBTForServer(nbt)
+  override def readFromNBT(nbt: NBTTagCompound) {
+    super.readFromNBT(nbt)
     nbt.getTagList(PlugsTag, NBT.TAG_COMPOUND).toArray[NBTTagCompound].
       zipWithIndex.foreach {
       case (tag, index) => plugs(index).node.load(tag)
@@ -125,8 +121,8 @@ trait Hub extends traits.Environment with SidedEnvironment with Tickable {
     }
   }
 
-  override def writeToNBTForServer(nbt: NBTTagCompound) = queue.synchronized {
-    super.writeToNBTForServer(nbt)
+  override def writeToNBT(nbt: NBTTagCompound): Unit = queue.synchronized {
+    super.writeToNBT(nbt)
     // Side check for Waila (and other mods that may call this client side).
     if (isServer) {
       nbt.setNewTagList(PlugsTag, plugs.map(plug => {
@@ -153,7 +149,7 @@ trait Hub extends traits.Environment with SidedEnvironment with Tickable {
   protected def createPlug(side: EnumFacing) = new Plug(side)
 
   protected class Plug(val side: EnumFacing) extends api.network.Environment {
-    val node = createNode(this)
+    val node: Node = createNode(this)
 
     override def onMessage(message: Message) {
       if (isPrimary) {
@@ -161,13 +157,13 @@ trait Hub extends traits.Environment with SidedEnvironment with Tickable {
       }
     }
 
-    override def onConnect(node: Node) = onPlugConnect(this, node)
+    override def onConnect(node: Node): Unit = onPlugConnect(this, node)
 
-    override def onDisconnect(node: Node) = onPlugDisconnect(this, node)
+    override def onDisconnect(node: Node): Unit = onPlugDisconnect(this, node)
 
-    def isPrimary = plugs(plugs.indexWhere(_.node.network == node.network)) == this
+    def isPrimary: Boolean = plugs(plugs.indexWhere(_.node.network == node.network)) == this
 
-    def plugsInOtherNetworks = plugs.filter(_.node.network != node.network)
+    def plugsInOtherNetworks: Array[Plug] = plugs.filter(_.node.network != node.network)
   }
 
   protected def onPlugConnect(plug: Plug, node: Node) {}

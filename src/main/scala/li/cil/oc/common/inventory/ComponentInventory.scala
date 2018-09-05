@@ -15,6 +15,7 @@ import net.minecraft.nbt.NBTTagCompound
 
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 trait ComponentInventory extends Inventory with network.Environment {
   private var _components: Array[Option[ManagedEnvironment]] = _
@@ -27,7 +28,7 @@ trait ComponentInventory extends Inventory with network.Environment {
     if (_components == null) Array[Option[ManagedEnvironment]]() else _components
   }
 
-  protected val updatingComponents = mutable.ArrayBuffer.empty[ManagedEnvironment]
+  protected val updatingComponents: ArrayBuffer[ManagedEnvironment] = mutable.ArrayBuffer.empty[ManagedEnvironment]
 
   // ----------------------------------------------------------------------- //
 
@@ -65,7 +66,8 @@ trait ComponentInventory extends Inventory with network.Environment {
                   component.load(dataTag(driver, stack))
                 }
                 catch {
-                  case e: Throwable => OpenComputers.log.warn(s"An item component of type '${component.getClass.getName}' (provided by driver '${driver.getClass.getName}') threw an error while loading.", e)
+                  case e: Throwable => OpenComputers.log.warn(s"An item component of type '${component.getClass.getName}' " +
+                    s"(provided by driver '${driver.getClass.getName}') threw an error while loading.", e)
                 }
                 if (component.canUpdate) {
                   assert(!updatingComponents.contains(component))
@@ -99,7 +101,7 @@ trait ComponentInventory extends Inventory with network.Environment {
 
   // ----------------------------------------------------------------------- //
 
-  override def save(nbt: NBTTagCompound) = {
+  override def save(nbt: NBTTagCompound): Unit = {
     saveComponents()
     super.save(nbt) // Save items after updating their tags.
   }
@@ -130,7 +132,7 @@ trait ComponentInventory extends Inventory with network.Environment {
 
   override def getInventoryStackLimit = 1
 
-  override protected def onItemAdded(slot: Int, stack: ItemStack) = if (slot >= 0 && slot < components.length && isComponentSlot(slot, stack)) {
+  override protected def onItemAdded(slot: Int, stack: ItemStack): Unit = if (slot >= 0 && slot < components.length && isComponentSlot(slot, stack)) {
     Option(Driver.driverFor(stack)).foreach(driver =>
       Option(driver.createEnvironment(stack, host)) match {
         case Some(component) => this.synchronized {
@@ -186,7 +188,7 @@ trait ComponentInventory extends Inventory with network.Environment {
     }
   }
 
-  protected def dataTag(driver: ItemDriver, stack: ItemStack) =
+  protected def dataTag(driver: ItemDriver, stack: ItemStack): NBTTagCompound =
     Option(driver.dataTag(stack)).getOrElse(Item.dataTag(stack))
 
   protected def save(component: ManagedEnvironment, driver: ItemDriver, stack: ItemStack): Unit = {

@@ -3,7 +3,6 @@ package li.cil.oc.common.inventory
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
-import net.minecraft.util.text.ITextComponent
 
 trait InventoryProxy extends IInventory {
   def inventory: IInventory
@@ -17,8 +16,6 @@ trait InventoryProxy extends IInventory {
   override def getInventoryStackLimit: Int = inventory.getInventoryStackLimit
 
   override def getName: String = inventory.getName
-
-  override def getDisplayName: ITextComponent = inventory.getDisplayName
 
   override def hasCustomName: Boolean = inventory.hasCustomName
 

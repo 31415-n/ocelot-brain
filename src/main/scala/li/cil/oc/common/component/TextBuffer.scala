@@ -8,6 +8,7 @@ import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api
 import li.cil.oc.api.driver.DeviceInfo
+import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
@@ -41,11 +42,11 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import scala.collection.convert.WrapAsJava._
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment with api.internal.TextBuffer with DeviceInfo {
-  override val node = api.Network.newNode(this, Visibility.Network).
+  override val node: Component = api.Network.newNode(this, Visibility.Network).
     withComponent("screen").
-    withConnector().
     create()
 
   private var maxResolution = Settings.screenResolutionsByTier(Tier.One)
@@ -54,16 +55,12 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   private var aspectRatio = (1.0, 1.0)
 
-  private var powerConsumptionPerTick = Settings.get.screenCost
-
   private var precisionMode = false
 
   // For client side only.
   private var isRendering = true
 
   private var isDisplaying = true
-
-  private var hasPower = true
 
   private var relativeLitArea = -1.0
 
@@ -80,26 +77,13 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
     pb
   }
 
-  var fullyLitCost = computeFullyLitCost()
-
-  // This computes the energy cost (per tick) to keep the screen running if
-  // every single "pixel" is lit. This cost increases with higher tiers as
-  // their maximum resolution (pixel density) increases. For a basic screen
-  // this is simply the configured cost.
-  def computeFullyLitCost() = {
-    val (w, h) = Settings.screenResolutionsByTier(0)
-    val mw = getMaximumWidth
-    val mh = getMaximumHeight
-    powerConsumptionPerTick * (mw * mh) / (w * h)
-  }
-
-  val proxy =
+  val proxy: TextBuffer.Proxy =
     if (SideTracker.isClient) new TextBuffer.ClientProxy(this)
     else new TextBuffer.ServerProxy(this)
 
   val data = new util.TextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
 
-  var viewport = data.size
+  var viewport: (Int, Int) = data.size
 
   def markInitialized(): Unit = {
     syncCooldown = -1 // Stop polling for init state.
@@ -123,7 +107,7 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   override def update() {
     super.update()
-    if (isDisplaying && host.world.getTotalWorldTime % Settings.get.tickFrequency == 0) {
+    if (isDisplaying) {
       if (relativeLitArea < 0) {
         // The relative lit area is the number of pixels that are not blank
         // versus the number of pixels in the *current* resolution. This is
@@ -146,27 +130,6 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
           }
         }
         relativeLitArea = acc / (w * h).toDouble
-      }
-      if (node != null) {
-        val hadPower = hasPower
-        val neededPower = relativeLitArea * fullyLitCost * Settings.get.tickFrequency
-        hasPower = node.tryChangeBuffer(-neededPower)
-        if (hasPower != hadPower) {
-          ServerPacketSender.sendTextBufferPowerChange(node.address, isDisplaying && hasPower, host)
-        }
-      }
-    }
-
-    this.synchronized {
-      _pendingCommands.foreach(_.sendToPlayersNearHost(host, Option(Settings.get.maxWirelessRange(Tier.Two) * Settings.get.maxWirelessRange(Tier.Two))))
-      _pendingCommands = None
-    }
-
-    if (SideTracker.isClient && syncCooldown > 0) {
-      syncCooldown -= 1
-      if (syncCooldown == 0) {
-        syncCooldown = syncInterval
-        ClientPacketSender.sendTextBufferInit(proxy.nodeAddress)
       }
     }
   }
@@ -223,43 +186,28 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   // ----------------------------------------------------------------------- //
 
-  override def setEnergyCostPerTick(value: Double) {
-    powerConsumptionPerTick = value
-    fullyLitCost = computeFullyLitCost()
-  }
-
-  override def getEnergyCostPerTick = powerConsumptionPerTick
-
   override def setPowerState(value: Boolean) {
-    if (isDisplaying != value) {
-      isDisplaying = value
-      if (isDisplaying) {
-        val neededPower = fullyLitCost * Settings.get.tickFrequency
-        hasPower = node.changeBuffer(-neededPower) == 0
-      }
-      ServerPacketSender.sendTextBufferPowerChange(node.address, isDisplaying && hasPower, host)
-    }
+     isDisplaying = value
   }
 
-  override def getPowerState = isDisplaying
+  override def getPowerState: Boolean = isDisplaying
 
   override def setMaximumResolution(width: Int, height: Int) {
     if (width < 1) throw new IllegalArgumentException("width must be larger or equal to one")
     if (height < 1) throw new IllegalArgumentException("height must be larger or equal to one")
     maxResolution = (width, height)
-    fullyLitCost = computeFullyLitCost()
     proxy.onBufferMaxResolutionChange(width, width)
   }
 
-  override def getMaximumWidth = maxResolution._1
+  override def getMaximumWidth: Int = maxResolution._1
 
-  override def getMaximumHeight = maxResolution._2
+  override def getMaximumHeight: Int = maxResolution._2
 
-  override def setAspectRatio(width: Double, height: Double) = this.synchronized(aspectRatio = (width, height))
+  override def setAspectRatio(width: Double, height: Double): Unit = this.synchronized(aspectRatio = (width, height))
 
-  override def getAspectRatio = aspectRatio._1 / aspectRatio._2
+  override def getAspectRatio: Double = aspectRatio._1 / aspectRatio._2
 
-  override def setResolution(w: Int, h: Int) = {
+  override def setResolution(w: Int, h: Int): Boolean = {
     val (mw, mh) = maxResolution
     if (w < 1 || h < 1 || w > mw || h > mw || h * w > mw * mh)
       throw new IllegalArgumentException("unsupported resolution")
@@ -278,9 +226,9 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
     else false
   }
 
-  override def getWidth = data.width
+  override def getWidth: Int = data.width
 
-  override def getHeight = data.height
+  override def getHeight: Int = data.height
 
   override def setViewport(w: Int, h: Int): Boolean = {
     val (mw, mh) = data.size
@@ -303,11 +251,11 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   override def getViewportHeight: Int = viewport._2
 
-  override def setMaximumColorDepth(depth: api.internal.TextBuffer.ColorDepth) = maxDepth = depth
+  override def setMaximumColorDepth(depth: api.internal.TextBuffer.ColorDepth): Unit = maxDepth = depth
 
-  override def getMaximumColorDepth = maxDepth
+  override def getMaximumColorDepth: TextBuffer.ColorDepth = maxDepth
 
-  override def setColorDepth(depth: api.internal.TextBuffer.ColorDepth) = {
+  override def setColorDepth(depth: api.internal.TextBuffer.ColorDepth): Boolean = {
     if (depth.ordinal > maxDepth.ordinal)
       throw new IllegalArgumentException("unsupported depth")
     // Always send to clients, their state might be dirty.
@@ -315,21 +263,21 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
     data.format = PackedColor.Depth.format(depth)
   }
 
-  override def getColorDepth = data.format.depth
+  override def getColorDepth: TextBuffer.ColorDepth = data.format.depth
 
-  override def setPaletteColor(index: Int, color: Int) = data.format match {
+  override def setPaletteColor(index: Int, color: Int): Unit = data.format match {
     case palette: PackedColor.MutablePaletteFormat =>
       palette(index) = color
       proxy.onBufferPaletteChange(index)
     case _ => throw new Exception("palette not available")
   }
 
-  override def getPaletteColor(index: Int) = data.format match {
+  override def getPaletteColor(index: Int): Int = data.format match {
     case palette: PackedColor.MutablePaletteFormat => palette(index)
     case _ => throw new Exception("palette not available")
   }
 
-  override def setForegroundColor(color: Int) = setForegroundColor(color, isFromPalette = false)
+  override def setForegroundColor(color: Int): Unit = setForegroundColor(color, isFromPalette = false)
 
   override def setForegroundColor(color: Int, isFromPalette: Boolean) {
     val value = PackedColor.Color(color, isFromPalette)
@@ -339,11 +287,11 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
     }
   }
 
-  override def getForegroundColor = data.foreground.value
+  override def getForegroundColor: Int = data.foreground.value
 
-  override def isForegroundFromPalette = data.foreground.isPalette
+  override def isForegroundFromPalette: Boolean = data.foreground.isPalette
 
-  override def setBackgroundColor(color: Int) = setBackgroundColor(color, isFromPalette = false)
+  override def setBackgroundColor(color: Int): Unit = setBackgroundColor(color, isFromPalette = false)
 
   override def setBackgroundColor(color: Int, isFromPalette: Boolean) {
     val value = PackedColor.Color(color, isFromPalette)
@@ -353,15 +301,15 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
     }
   }
 
-  override def getBackgroundColor = data.background.value
+  override def getBackgroundColor: Int = data.background.value
 
-  override def isBackgroundFromPalette = data.background.isPalette
+  override def isBackgroundFromPalette: Boolean = data.background.isPalette
 
-  def copy(col: Int, row: Int, w: Int, h: Int, tx: Int, ty: Int) =
+  def copy(col: Int, row: Int, w: Int, h: Int, tx: Int, ty: Int): Unit =
     if (data.copy(col, row, w, h, tx, ty))
       proxy.onBufferCopy(col, row, w, h, tx, ty)
 
-  def fill(col: Int, row: Int, w: Int, h: Int, c: Char) =
+  def fill(col: Int, row: Int, w: Int, h: Int, c: Char): Unit =
     if (data.fill(col, row, w, h, c))
       proxy.onBufferFill(col, row, w, h, c)
 
@@ -382,9 +330,9 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
         proxy.onBufferSet(x, row, truncated, vertical)
     }
 
-  def get(col: Int, row: Int) = data.get(col, row)
+  def get(col: Int, row: Int): Char = data.get(col, row)
 
-  override def getForegroundColor(column: Int, row: Int) =
+  override def getForegroundColor(column: Int, row: Int): Int =
     if (isForegroundFromPalette(column, row)) {
       PackedColor.extractForeground(color(column, row))
     }
@@ -392,10 +340,10 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
       PackedColor.unpackForeground(color(column, row), data.format)
     }
 
-  override def isForegroundFromPalette(column: Int, row: Int) =
+  override def isForegroundFromPalette(column: Int, row: Int): Boolean =
     data.format.isFromPalette(PackedColor.extractForeground(color(column, row)))
 
-  override def getBackgroundColor(column: Int, row: Int) =
+  override def getBackgroundColor(column: Int, row: Int): Int =
     if (isBackgroundFromPalette(column, row)) {
       PackedColor.extractBackground(color(column, row))
     }
@@ -403,7 +351,7 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
       PackedColor.unpackBackground(color(column, row), data.format)
     }
 
-  override def isBackgroundFromPalette(column: Int, row: Int) =
+  override def isBackgroundFromPalette(column: Int, row: Int): Boolean =
     data.format.isFromPalette(PackedColor.extractBackground(color(column, row)))
 
   override def rawSetText(col: Int, row: Int, text: Array[Array[Char]]): Unit = {
@@ -448,40 +396,31 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
     else data.color(row)(column)
   }
 
-  @SideOnly(Side.CLIENT)
-  override def renderText() = relativeLitArea != 0 && proxy.render()
+  override def renderText(): Boolean = relativeLitArea != 0 && proxy.render()
 
-  @SideOnly(Side.CLIENT)
-  override def renderWidth = TextBufferRenderCache.renderer.charRenderWidth * getViewportWidth
+  override def setRenderingEnabled(enabled: Boolean): Unit = isRendering = enabled
 
-  @SideOnly(Side.CLIENT)
-  override def renderHeight = TextBufferRenderCache.renderer.charRenderHeight * getViewportHeight
+  override def isRenderingEnabled: Boolean = isRendering
 
-  @SideOnly(Side.CLIENT)
-  override def setRenderingEnabled(enabled: Boolean) = isRendering = enabled
-
-  @SideOnly(Side.CLIENT)
-  override def isRenderingEnabled = isRendering
-
-  override def keyDown(character: Char, code: Int, player: EntityPlayer) =
+  override def keyDown(character: Char, code: Int, player: EntityPlayer): Unit =
     proxy.keyDown(character, code, player)
 
-  override def keyUp(character: Char, code: Int, player: EntityPlayer) =
+  override def keyUp(character: Char, code: Int, player: EntityPlayer): Unit =
     proxy.keyUp(character, code, player)
 
-  override def clipboard(value: String, player: EntityPlayer) =
+  override def clipboard(value: String, player: EntityPlayer): Unit =
     proxy.clipboard(value, player)
 
-  override def mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer) =
+  override def mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer): Unit =
     proxy.mouseDown(x, y, button, player)
 
-  override def mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer) =
+  override def mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer): Unit =
     proxy.mouseDrag(x, y, button, player)
 
-  override def mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer) =
+  override def mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer): Unit =
     proxy.mouseUp(x, y, button, player)
 
-  override def mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer) =
+  override def mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer): Unit =
     proxy.mouseScroll(x, y, delta, player)
 
   def copyToAnalyzer(line: Int, player: EntityPlayer): Unit = {
@@ -508,7 +447,6 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   private def bufferPath = node.address + "_buffer"
   private final val IsOnTag = Settings.namespace + "isOn"
-  private final val HasPowerTag = Settings.namespace + "hasPower"
   private final val MaxWidthTag = Settings.namespace + "maxWidth"
   private final val MaxHeightTag = Settings.namespace + "maxHeight"
   private final val PreciseTag = Settings.namespace + "precise"
@@ -534,9 +472,6 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
     if (nbt.hasKey(IsOnTag)) {
       isDisplaying = nbt.getBoolean(IsOnTag)
     }
-    if (nbt.hasKey(HasPowerTag)) {
-      hasPower = nbt.getBoolean(HasPowerTag)
-    }
     if (nbt.hasKey(MaxWidthTag) && nbt.hasKey(MaxHeightTag)) {
       val maxWidth = nbt.getInteger(MaxWidthTag)
       val maxHeight = nbt.getInteger(MaxHeightTag)
@@ -554,7 +489,7 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
   }
 
   // Null check for Waila (and other mods that may call this client side).
-  override def save(nbt: NBTTagCompound) = if (node != null) {
+  override def save(nbt: NBTTagCompound): Unit = if (node != null) {
     super.save(nbt)
     // Happy thread synchronization hack! Here's the problem: GPUs allow direct
     // calls for modifying screens to give a more responsive experience. This
@@ -575,7 +510,6 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
     SaveHandler.scheduleSave(host, nbt, bufferPath, data.save _)
     nbt.setBoolean(IsOnTag, isDisplaying)
-    nbt.setBoolean(HasPowerTag, hasPower)
     nbt.setInteger(MaxWidthTag, maxResolution._1)
     nbt.setInteger(MaxHeightTag, maxResolution._2)
     nbt.setBoolean(PreciseTag, precisionMode)
@@ -585,37 +519,7 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 }
 
 object TextBuffer {
-  var clientBuffers = mutable.ListBuffer.empty[TextBuffer]
-
-  @SubscribeEvent
-  def onChunkUnload(e: ChunkEvent.Unload) {
-    val chunk = e.getChunk
-    clientBuffers = clientBuffers.filter(t => {
-      val blockPos = BlockPosition(t.host)
-      val keep = t.host.world != e.getWorld || !chunk.isAtLocation(blockPos.x >> 4, blockPos.z >> 4)
-      if (!keep) {
-        ClientComponentTracker.remove(t.host.world, t)
-      }
-      keep
-    })
-  }
-
-  @SubscribeEvent
-  def onWorldUnload(e: WorldEvent.Unload) {
-    clientBuffers = clientBuffers.filter(t => {
-      val keep = t.host.world != e.getWorld
-      if (!keep) {
-        ClientComponentTracker.remove(t.host.world, t)
-      }
-      keep
-    })
-  }
-
-  def registerClientBuffer(t: TextBuffer) {
-    ClientPacketSender.sendTextBufferInit(t.proxy.nodeAddress)
-    ClientComponentTracker.add(t.host.world, t.proxy.nodeAddress, t)
-    clientBuffers += t
-  }
+  var clientBuffers: ListBuffer[TextBuffer] = mutable.ListBuffer.empty[TextBuffer]
 
   abstract class Proxy {
     def owner: TextBuffer
@@ -684,22 +588,28 @@ object TextBuffer {
     def mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer): Unit
 
     def mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer): Unit
-
-    def copyToAnalyzer(line: Int, player: EntityPlayer): Unit
   }
 
   class ClientProxy(val owner: TextBuffer) extends Proxy {
-    val renderer = new TextBufferRenderData {
-      override def dirty = ClientProxy.this.dirty
+    val renderer: Object {
+      def viewport: (Int, Int)
 
-      override def dirty_=(value: Boolean) = ClientProxy.this.dirty = value
+      def dirty: Boolean
 
-      override def data = owner.data
+      def dirty_=(value: Boolean): Unit
+
+      def data: util.TextBuffer
+    } = new TextBufferRenderData {
+      override def dirty: Boolean = ClientProxy.this.dirty
+
+      override def dirty_=(value: Boolean): Unit = ClientProxy.this.dirty = value
+
+      override def data: util.TextBuffer = owner.data
 
       override def viewport: (Int, Int) = owner.viewport
     }
 
-    override def render() = {
+    override def render(): Boolean = {
       val wasDirty = dirty
       TextBufferRenderCache.render(renderer)
       wasDirty
@@ -740,53 +650,6 @@ object TextBuffer {
     override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean) {
       super.onBufferSet(col, row, s, vertical)
       markDirty()
-    }
-
-    override def keyDown(character: Char, code: Int, player: EntityPlayer) {
-      debug(s"{type = keyDown, char = $character, code = $code}")
-      ClientPacketSender.sendKeyDown(nodeAddress, character, code)
-    }
-
-    override def keyUp(character: Char, code: Int, player: EntityPlayer) {
-      debug(s"{type = keyUp, char = $character, code = $code}")
-      ClientPacketSender.sendKeyUp(nodeAddress, character, code)
-    }
-
-    override def clipboard(value: String, player: EntityPlayer) {
-      debug(s"{type = clipboard}")
-      ClientPacketSender.sendClipboard(nodeAddress, value)
-    }
-
-    override def mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer) {
-      debug(s"{type = mouseDown, x = $x, y = $y, button = $button}")
-      ClientPacketSender.sendMouseClick(nodeAddress, x, y, drag = false, button)
-    }
-
-    override def mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer) {
-      debug(s"{type = mouseDrag, x = $x, y = $y, button = $button}")
-      ClientPacketSender.sendMouseClick(nodeAddress, x, y, drag = true, button)
-    }
-
-    override def mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer) {
-      debug(s"{type = mouseUp, x = $x, y = $y, button = $button}")
-      ClientPacketSender.sendMouseUp(nodeAddress, x, y, button)
-    }
-
-    override def mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer) {
-      debug(s"{type = mouseScroll, x = $x, y = $y, delta = $delta}")
-      ClientPacketSender.sendMouseScroll(nodeAddress, x, y, delta)
-    }
-
-    override def copyToAnalyzer(line: Int, player: EntityPlayer): Unit = {
-      ClientPacketSender.sendCopyToAnalyzer(nodeAddress, line)
-    }
-
-    private lazy val Debugger = api.Items.get(Constants.ItemName.Debugger)
-
-    private def debug(message: String) {
-      if (Minecraft.getMinecraft != null && Minecraft.getMinecraft.player != null && api.Items.get(Minecraft.getMinecraft.player.getHeldItemMainhand) == Debugger) {
-        OpenComputers.log.info(s"[NETWORK DEBUGGER] Sending packet to node $nodeAddress: " + message)
-      }
     }
   }
 
@@ -890,28 +753,7 @@ object TextBuffer {
       sendMouseEvent(player, "scroll", x, y, delta)
     }
 
-    override def copyToAnalyzer(line: Int, player: EntityPlayer): Unit = {
-      val stack = player.getHeldItem(EnumHand.MAIN_HAND)
-      if (!stack.isEmpty) {
-        if (!stack.hasTagCompound) {
-          stack.setTagCompound(new NBTTagCompound())
-        }
-        stack.getTagCompound.removeTag(Settings.namespace + "clipboard")
-
-        if (line >= 0 && line < owner.getViewportHeight) {
-          val text = new String(owner.data.buffer(line)).trim
-          if (!Strings.isNullOrEmpty(text)) {
-            stack.getTagCompound.setString(Settings.namespace + "clipboard", text)
-          }
-        }
-
-        if (stack.getTagCompound.hasNoTags) {
-          stack.setTagCompound(null)
-        }
-      }
-    }
-
-    private def sendMouseEvent(player: EntityPlayer, name: String, x: Double, y: Double, data: Int) = {
+    private def sendMouseEvent(player: EntityPlayer, name: String, x: Double, y: Double, data: Int): Unit = {
       val args = mutable.ArrayBuffer.empty[AnyRef]
 
       args += player
@@ -941,5 +783,4 @@ object TextBuffer {
       }
     }
   }
-
 }

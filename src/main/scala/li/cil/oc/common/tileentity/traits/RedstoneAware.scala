@@ -2,16 +2,12 @@ package li.cil.oc.common.tileentity.traits
 
 import li.cil.oc.Settings
 import li.cil.oc.common.EventHandler
-import li.cil.oc.integration.util.BundledRedstone
-import li.cil.oc.server.{PacketSender => ServerPacketSender}
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
 
 case class RedstoneChangedEventArgs (side: EnumFacing, oldValue: Int, newValue: Int, color: Int = -1)
 
-trait RedstoneAware extends RotationAware {
+trait RedstoneAware extends TileEntity {
   protected[tileentity] val _input: Array[Int] = Array.fill(6)(-1)
 
   protected[tileentity] val _output: Array[Int] = Array.fill(6)(0)
@@ -47,20 +43,16 @@ trait RedstoneAware extends RotationAware {
 
   def maxInput: Int = EnumFacing.values.map(input).max
 
-  def output(side: EnumFacing): Int = _output(toLocal(side).ordinal())
+  def output(side: EnumFacing): Int = _output(side.ordinal())
 
   def output(side: EnumFacing, value: Int): Unit = if (value != output(side)) {
-    _output(toLocal(side).ordinal()) = value
+    _output(side.ordinal()) = value
 
     onRedstoneOutputChanged(side)
   }
 
   def checkRedstoneInputChanged() {
-    if (this.isInstanceOf[Tickable]) {
-      shouldUpdateInput = isServer
-    } else {
-      EnumFacing.values().foreach(updateRedstoneInput)
-    }
+    EnumFacing.values().foreach(updateRedstoneInput)
   }
 
   // ----------------------------------------------------------------------- //
@@ -75,21 +67,18 @@ trait RedstoneAware extends RotationAware {
     }
   }
 
-  override def validate(): Unit = {
-    super.validate()
-    if (!this.isInstanceOf[Tickable]) {
-      EventHandler.scheduleServer(() => EnumFacing.values().foreach(updateRedstoneInput))
-    }
+  override def initialize(): Unit = {
+    super.initialize()
+    EventHandler.scheduleServer(() => EnumFacing.values().foreach(updateRedstoneInput))
   }
 
   def updateRedstoneInput(side: EnumFacing) {
-    input(side, BundledRedstone.computeInput(position, side))
   }
 
   // ----------------------------------------------------------------------- //
 
-  override def readFromNBTForServer(nbt: NBTTagCompound): Unit = {
-    super.readFromNBTForServer(nbt)
+  override def readFromNBT(nbt: NBTTagCompound): Unit = {
+    super.readFromNBT(nbt)
 
     val input = nbt.getIntArray(Settings.namespace + "rs.input")
     input.copyToArray(_input, 0, input.length min _input.length)
@@ -97,44 +86,18 @@ trait RedstoneAware extends RotationAware {
     output.copyToArray(_output, 0, output.length min _output.length)
   }
 
-  override def writeToNBTForServer(nbt: NBTTagCompound): Unit = {
-    super.writeToNBTForServer(nbt)
+  override def writeToNBT(nbt: NBTTagCompound): Unit = {
+    super.writeToNBT(nbt)
 
     nbt.setIntArray(Settings.namespace + "rs.input", _input)
     nbt.setIntArray(Settings.namespace + "rs.output", _output)
-  }
-
-  @SideOnly(Side.CLIENT)
-  override def readFromNBTForClient(nbt: NBTTagCompound) {
-    super.readFromNBTForClient(nbt)
-    isOutputEnabled = nbt.getBoolean("isOutputEnabled")
-    nbt.getIntArray("output").copyToArray(_output)
-  }
-
-  override def writeToNBTForClient(nbt: NBTTagCompound) {
-    super.writeToNBTForClient(nbt)
-    nbt.setBoolean("isOutputEnabled", isOutputEnabled)
-    nbt.setIntArray("output", _output)
   }
 
   // ----------------------------------------------------------------------- //
 
   protected def onRedstoneInputChanged(args: RedstoneChangedEventArgs) {}
 
-  protected def onRedstoneOutputEnabledChanged() {
-    if (getWorld != null) {
-      getWorld.notifyNeighborsOfStateChange(getPos, getBlockType, true)
-      if (isServer) ServerPacketSender.sendRedstoneState(this)
-      else getWorld.notifyBlockUpdate(getPos, getWorld.getBlockState(getPos), getWorld.getBlockState(getPos), 3)
-    }
-  }
+  protected def onRedstoneOutputEnabledChanged() {}
 
-  protected def onRedstoneOutputChanged(side: EnumFacing) {
-    val blockPos = getPos.offset(side)
-    getWorld.neighborChanged(blockPos, getBlockType, blockPos)
-    getWorld.notifyNeighborsOfStateExcept(blockPos, getWorld.getBlockState(blockPos).getBlock, side.getOpposite)
-
-    if (isServer) ServerPacketSender.sendRedstoneState(this)
-    else getWorld.notifyBlockUpdate(getPos, getWorld.getBlockState(getPos), getWorld.getBlockState(getPos), 3)
-  }
+  protected def onRedstoneOutputChanged(side: EnumFacing) {}
 }

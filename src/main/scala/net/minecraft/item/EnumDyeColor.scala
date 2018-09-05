@@ -18,3 +18,5 @@ object EnumDyeColor {
   val RED: Int = 14
   val BLACK: Int = 15
 }
+
+class EnumDyeColor(code: Int)

@@ -12,13 +12,13 @@ trait Inventory extends TileEntity with inventory.Inventory {
 
   // ----------------------------------------------------------------------- //
 
-  override def readFromNBTForServer(nbt: NBTTagCompound) {
-    super.readFromNBTForServer(nbt)
+  override def readFromNBT(nbt: NBTTagCompound) {
+    super.readFromNBT(nbt)
     load(nbt)
   }
 
-  override def writeToNBTForServer(nbt: NBTTagCompound) {
-    super.writeToNBTForServer(nbt)
+  override def writeToNBT(nbt: NBTTagCompound) {
+    super.writeToNBT(nbt)
     save(nbt)
   }
 

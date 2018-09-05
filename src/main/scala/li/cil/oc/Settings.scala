@@ -99,6 +99,15 @@ class Settings(val config: Config) {
   val internetThreads: Int = config.getInt("internet.threads") max 1
 
   // ----------------------------------------------------------------------- //
+  // switch
+  val switchDefaultMaxQueueSize: Int = config.getInt("switch.defaultMaxQueueSize") max 1
+  val switchQueueSizeUpgrade: Int = config.getInt("switch.queueSizeUpgrade") max 0
+  val switchDefaultRelayDelay: Int = config.getInt("switch.defaultRelayDelay") max 1
+  val switchRelayDelayUpgrade: Double = config.getDouble("switch.relayDelayUpgrade") max 0
+  val switchDefaultRelayAmount: Int = config.getInt("switch.defaultRelayAmount") max 1
+  val switchRelayAmountUpgrade: Int = config.getInt("switch.relayAmountUpgrade") max 0
+
+  // ----------------------------------------------------------------------- //
   // misc
   val inputUsername: Boolean = config.getBoolean("misc.inputUsername")
   val maxClipboard: Int = config.getInt("misc.maxClipboard") max 0

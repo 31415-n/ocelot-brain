@@ -23,7 +23,7 @@ public interface IInventory {
     ItemStack getStackInSlot(int index);
 
     /**
-      Removes up to a specified number of items from an inventory slot and returns them in a new stack.
+     * Removes up to a specified number of items from an inventory slot and returns them in a new stack.
      */
     @Nullable
     ItemStack decrStackSize(int index, int count);
@@ -71,4 +71,6 @@ public interface IInventory {
     int getFieldCount();
 
     void clear();
+
+    boolean isEmpty();
 }

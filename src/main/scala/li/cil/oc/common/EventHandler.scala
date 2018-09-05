@@ -70,10 +70,6 @@ object EventHandler {
 
   private val machines = mutable.Set.empty[Machine]
 
-  def onRobotStart(robot: Robot): Unit = runningRobots += robot
-
-  def onRobotStopped(robot: Robot): Unit = runningRobots -= robot
-
   def addKeyboard(keyboard: Keyboard): Unit = keyboards += keyboard
 
   def scheduleClose(machine: Machine): Unit = machines += machine
@@ -81,7 +77,7 @@ object EventHandler {
   def unscheduleClose(machine: Machine): Unit = machines -= machine
 
   def scheduleServer(tileEntity: TileEntity) {
-    if (SideTracker.isServer) pendingServer.synchronized {
+    pendingServer.synchronized {
       pendingServer += (() => Network.joinOrCreateNetwork(tileEntity))
     }
   }

@@ -2,6 +2,7 @@ package li.cil.oc.common
 
 import li.cil.oc.api.driver
 
+//noinspection TypeAnnotation
 object Slot {
   val None = driver.item.Slot.None
   val Any = driver.item.Slot.Any

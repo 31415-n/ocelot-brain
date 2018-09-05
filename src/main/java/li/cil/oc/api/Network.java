@@ -7,6 +7,7 @@ import li.cil.oc.api.network.Packet;
 import li.cil.oc.api.network.Visibility;
 import li.cil.oc.api.network.WirelessEndpoint;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 
 /**
  * This class provides factories for networks and nodes.
@@ -27,6 +28,26 @@ import net.minecraft.nbt.NBTTagCompound;
  * at that time. Only start calling these methods in the init phase or later.
  */
 public final class Network {
+    /**
+     * Tries to add a tile entity's network node(s) at the specified coordinates
+     * to adjacent networks.
+     * <p/>
+     * If the tile entity implements {@link Environment} its one node will be
+     * connected to any existing adjacent tile entity nodes. If none exist a
+     * new network with the specified tile entity's node as its sole entry.
+     * <p/>
+     * If the tile entity is a {@link li.cil.oc.api.network.SidedEnvironment}
+     * the same rules as for simple environments apply, except that the
+     * respective for each side is used when connecting, and each side's node
+     * is added to its own new network, if necessary.
+     *
+     * @param tileEntity the tile entity to initialize.
+     */
+    public static void joinOrCreateNetwork(final TileEntity tileEntity) {
+        if (API.network != null)
+            API.network.joinOrCreateNetwork(tileEntity);
+    }
+
     /**
      * Creates a new network with the specified node as its initial node.
      * <p/>

@@ -43,19 +43,10 @@ object Delegator {
     else None
 }
 
-class Delegator extends Item with driver.item.UpgradeRenderer with Chargeable {
-  setHasSubtypes(true)
-  setCreativeTab(CreativeTab)
-
+class Delegator extends Item {
   // ----------------------------------------------------------------------- //
   // SubItem
   // ----------------------------------------------------------------------- //
-
-  override def getItemStackLimit(stack: ItemStack): Int =
-    Delegator.subItem(stack) match {
-      case Some(subItem) => subItem.maxStackSize
-      case _ => maxStackSize
-    }
 
   val subItems: ArrayBuffer[Delegate] = mutable.ArrayBuffer.empty[traits.Delegate]
 
@@ -70,16 +61,6 @@ class Delegator extends Item with driver.item.UpgradeRenderer with Chargeable {
       case itemId if itemId >= 0 && itemId < subItems.length => Some(subItems(itemId))
       case _ => None
     }
-
-  override def getSubItems(tab: CreativeTabs, list: NonNullList[ItemStack]) {
-    // Workaround for MC's untyped lists...
-    if(isInCreativeTab(tab)){
-      subItems.indices.filter(subItems(_).showInItemList).
-        map(subItems(_).createItemStack()).
-        sortBy(_.getUnlocalizedName).
-        foreach(list.add)
-    }
-  }
 
   // ----------------------------------------------------------------------- //
   // Item
@@ -219,24 +200,4 @@ class Delegator extends Item with driver.item.UpgradeRenderer with Chargeable {
     }
 
   override def toString: String = getUnlocalizedName
-
-  // ----------------------------------------------------------------------- //
-
-  def canCharge(stack: ItemStack): Boolean =
-    Delegator.subItem(stack) match {
-      case Some(subItem: Chargeable) => true
-      case _ => false
-    }
-
-  def charge(stack: ItemStack, amount: Double, simulate: Boolean): Double =
-    Delegator.subItem(stack) match {
-      case Some(subItem: Chargeable) => subItem.charge(stack, amount, simulate)
-      case _ => amount
-    }
-
-  // ----------------------------------------------------------------------- //
-
-  override def computePreferredMountPoint(stack: ItemStack, robot: Robot, availableMountPoints: util.Set[String]): String = UpgradeRenderer.preferredMountPoint(stack, availableMountPoints)
-
-  override def render(stack: ItemStack, mountPoint: MountPoint, robot: Robot, pt: Float): Unit = UpgradeRenderer.render(stack, mountPoint)
 }

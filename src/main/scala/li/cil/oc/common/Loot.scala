@@ -14,50 +14,32 @@ import li.cil.oc.util.Color
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.common.DimensionManager
-import net.minecraftforge.common.util.Constants.NBT
-import net.minecraftforge.event.world.WorldEvent
-import net.minecraftforge.fml.common.Loader
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
-
-//class Loot extends WeightedRandomChestContent(api.Items.get(Constants.ItemName.Floppy).item(), api.Items.get(Constants.ItemName.Floppy).createItemStack(1).getItemDamage, 1, 1, Settings.get.lootProbability) {
-//  override def generateChestContent(random: Random, newInventory: IInventory) =
-//    Loot.randomDisk(random) match {
-//      case Some(disk) =>
-//        ChestGenHooks.generateStacks(random, disk, minStackSize, maxStackSize)
-//      case _ => Array.empty[ItemStack]
-//    }
-//}
+import scala.collection.mutable.ArrayBuffer
 
 object Loot {
-//  val containers = Array(
-//    ChestGenHooks.DUNGEON_CHEST,
-//    ChestGenHooks.PYRAMID_DESERT_CHEST,
-//    ChestGenHooks.PYRAMID_JUNGLE_CHEST,
-//    ChestGenHooks.STRONGHOLD_LIBRARY)
 
   val factories = mutable.Map.empty[String, Callable[FileSystem]]
 
-  val globalDisks = mutable.ArrayBuffer.empty[(ItemStack, Int)]
+  val globalDisks: ArrayBuffer[(ItemStack, Int)] = mutable.ArrayBuffer.empty[(ItemStack, Int)]
 
-  val worldDisks = mutable.ArrayBuffer.empty[(ItemStack, Int)]
+  val worldDisks: ArrayBuffer[(ItemStack, Int)] = mutable.ArrayBuffer.empty[(ItemStack, Int)]
 
-  def disksForCycling = if(disksForCyclingClient.nonEmpty) disksForCyclingClient else disksForCyclingServer
+  def disksForCycling: ArrayBuffer[ItemStack] = if(disksForCyclingClient.nonEmpty) disksForCyclingClient else disksForCyclingServer
 
-  val disksForCyclingServer = mutable.ArrayBuffer.empty[ItemStack]
+  val disksForCyclingServer: ArrayBuffer[ItemStack] = mutable.ArrayBuffer.empty[ItemStack]
 
-  val disksForCyclingClient = mutable.ArrayBuffer.empty[ItemStack]
+  val disksForCyclingClient: ArrayBuffer[ItemStack] = mutable.ArrayBuffer.empty[ItemStack]
 
-  val disksForSampling = mutable.ArrayBuffer.empty[ItemStack]
+  val disksForSampling: ArrayBuffer[ItemStack] = mutable.ArrayBuffer.empty[ItemStack]
 
-  val disksForClient = mutable.ArrayBuffer.empty[ItemStack]
+  val disksForClient: ArrayBuffer[ItemStack] = mutable.ArrayBuffer.empty[ItemStack]
 
   def isLootDisk(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.Floppy) && stack.hasTagCompound && stack.getTagCompound.hasKey(Settings.namespace + "lootFactory", NBT.TAG_STRING)
 
-  def randomDisk(rng: Random) =
+  def randomDisk(rng: Random): Option[ItemStack] =
     if (disksForSampling.nonEmpty) Some(disksForSampling(rng.nextInt(disksForSampling.length)))
     else None
 
@@ -91,10 +73,6 @@ object Loot {
   }
 
   def init() {
-//    for (container <- containers) {
-//      ChestGenHooks.addItem(container, new Loot())
-//    }
-
     val list = new java.util.Properties()
     val listStream = getClass.getResourceAsStream("/assets/" + Settings.resourceDomain + "/loot/loot.properties")
     list.load(listStream)
@@ -151,7 +129,7 @@ object Loot {
     }
   }
 
-  def createLootDisk(name: String, path: String, external: Boolean, color: Option[EnumDyeColor] = None) = {
+  def createLootDisk(name: String, path: String, external: Boolean, color: Option[EnumDyeColor] = None): ItemStack = {
     val callable = if (external) new Callable[FileSystem] {
       override def call(): FileSystem = api.FileSystem.asReadOnly(api.FileSystem.fromSaveDirectory("loot/" + path, 0, false))
     } else new Callable[FileSystem] {

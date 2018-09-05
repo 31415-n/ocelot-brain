@@ -6,8 +6,23 @@ import li.cil.oc.api.network.Packet;
 import li.cil.oc.api.network.Visibility;
 import li.cil.oc.api.network.WirelessEndpoint;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntity;
 
 public interface NetworkAPI {
+    /**
+     * If the tile entity implements {@link Environment} its one node will be
+     * connected to any existing adjacent tile entity nodes. If none exist a
+     * new network with the specified tile entity's node as its sole entry.
+     * <p/>
+     * If the tile entity is a {@link li.cil.oc.api.network.SidedEnvironment}
+     * the same rules as for simple environments apply, except that the
+     * respective for each side is used when connecting, and each side's node
+     * is added to its own new network, if necessary.
+     *
+     * @param tileEntity the tile entity to initialize.
+     */
+    void joinOrCreateNetwork(TileEntity tileEntity);
+
     /**
      * Creates a new network with the specified node as its initial node.
      * <p/>

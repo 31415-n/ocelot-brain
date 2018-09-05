@@ -34,6 +34,7 @@ class ItemStack(private var item: Item, private var amount: Int = 1, private var
   def getTagCompound: NBTTagCompound = nbt
 
   def getItem: Item = item
+  def getItemDamage: Int = damage
 
   def writeToNBT(nbt: NBTTagCompound): Unit = { }
 

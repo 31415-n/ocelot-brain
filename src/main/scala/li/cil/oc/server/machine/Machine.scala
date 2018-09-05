@@ -215,7 +215,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
       }
     case Machine.State.Paused if remainingPause > 0 =>
       remainingPause = 0
-      host.markChanged()
       true
     case Machine.State.Stopping =>
       switchTo(Machine.State.Restarting)
@@ -240,7 +239,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
           state.push(Machine.State.Paused)
         }
         remainingPause = ticksToPause
-        host.markChanged()
         return true
       }))
     }
@@ -267,11 +265,9 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
   }
 
   override def beep(frequency: Short, duration: Short): Unit = {
-    PacketSender.sendSound(host.world, host.xPosition, host.yPosition, host.zPosition, frequency, duration)
   }
 
   override def beep(pattern: String) {
-    PacketSender.sendSound(host.world, host.xPosition, host.yPosition, host.zPosition, pattern)
   }
 
   override def crash(message: String): Boolean = {
@@ -405,7 +401,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     val duration = args.optDouble(1, 0.1)
     val durationInMilliseconds = math.max(50, math.min(5000, (duration * 1000).toInt))
     context.pause(durationInMilliseconds / 1000.0)
-    PacketSender.sendSound(host.world, host.xPosition, host.yPosition, host.zPosition, frequency, durationInMilliseconds)
     null
   }
 
@@ -733,8 +728,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     catch {
       case t: Throwable =>
         OpenComputers.log.error(
-          s"""Unexpected error loading a state of computer at (${host.xPosition}, ${host.yPosition}, ${host.zPosition}). """ +
-            s"""State: ${state.headOption.fold("no state")(_.toString)}. Unless you're upgrading/downgrading across a major version, please report this! Thank you.""", t)
+          s"""Unexpected error loading a state of computer. State: ${state.headOption.fold("no state")(_.toString)}.""", t)
         close()
     }
     else {
@@ -748,7 +742,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     // If something other than regular saving tries to save while we are executing code,
     // e.g. SpongeForge saving during robot.move due to block changes being captured,
     // just don't save this at all. What could possibly go wrong?
-    if(isExecuting) return
+    if (isExecuting) return
 
     if (SaveHandler.savingForClients) {
       return
@@ -815,8 +809,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     catch {
       case t: Throwable =>
         OpenComputers.log.error(
-          s"""Unexpected error saving a state of computer at (${host.xPosition}, ${host.yPosition}, ${host.zPosition}). """ +
-            s"""State: ${state.headOption.fold("no state")(_.toString)}. Unless you're upgrading/downgrading across a major version, please report this! Thank you.""", t)
+          s"""Unexpected error saving a state of computer. State: ${state.headOption.fold("no state")(_.toString)}. """, t)
     }
   })
 
@@ -875,9 +868,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
         cpuStart = 0
         remainIdle = 0
       })
-
-      // Mark state change in owner, to send it to clients.
-      host.markChanged()
     }
 
   // ----------------------------------------------------------------------- //
@@ -892,10 +882,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
       remainIdle = 0
       Machine.threadPool.schedule(this, Settings.get.executionDelay, TimeUnit.MILLISECONDS)
     }
-
-    // Mark state change in owner, to send it to clients.
-    host.markChanged()
-
     result
   }
 

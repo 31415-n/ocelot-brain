@@ -9,23 +9,15 @@ import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.internal
-import li.cil.oc.api.network.Connector
-import li.cil.oc.common
 import li.cil.oc.common.InventorySlots
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
-import li.cil.oc.common.block.property.PropertyRunning
-import li.cil.oc.util.Color
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
 
 import scala.collection.convert.WrapAsJava._
 
-class Case(var tier: Int) extends traits.PowerAcceptor with traits.Computer with traits.Colored with internal.Case with DeviceInfo {
+class Case(var tier: Int) extends traits.Computer with internal.Case with DeviceInfo {
   def this() = {
     this(0)
     // If no tier was defined when constructing this case, then we don't yet know the inventory size
@@ -36,8 +28,6 @@ class Case(var tier: Int) extends traits.PowerAcceptor with traits.Computer with
   // Used on client side to check whether to render disk activity/network indicators.
   var lastFileSystemAccess = 0L
   var lastNetworkActivity = 0L
-
-  setColor(Color.rgbValues(Color.byTier(tier)))
 
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.System,
@@ -51,85 +41,41 @@ class Case(var tier: Int) extends traits.PowerAcceptor with traits.Computer with
 
   // ----------------------------------------------------------------------- //
 
-  @SideOnly(Side.CLIENT)
-  override protected def hasConnector(side: EnumFacing) = side != facing
-
-  override protected def connector(side: EnumFacing) = Option(if (side != facing && machine != null) machine.node.asInstanceOf[Connector] else null)
-
-  override def energyThroughput = Settings.get.caseRate(tier)
-
-  def isCreative = tier == Tier.Four
+  def isCreative: Boolean = tier == Tier.Four
 
   // ----------------------------------------------------------------------- //
 
-  override def componentSlot(address: String) = components.indexWhere(_.exists(env => env.node != null && env.node.address == address))
-
-  // ----------------------------------------------------------------------- //
-
-  override def updateEntity() {
-    if (isServer && isCreative && getWorld.getTotalWorldTime % Settings.get.tickFrequency == 0) {
-      // Creative case, make it generate power.
-      node.asInstanceOf[Connector].changeBuffer(Double.PositiveInfinity)
-    }
-    super.updateEntity()
-  }
-
-  // ----------------------------------------------------------------------- //
-
-  override protected def onRunningChanged(): Unit = {
-    super.onRunningChanged()
-    getBlockType match {
-      case block: common.block.Case => getWorld.setBlockState(getPos, getWorld.getBlockState(getPos).withProperty(PropertyRunning.Running, Boolean.box(isRunning)))
-      case _ =>
-    }
-  }
+  override def componentSlot(address: String): Int = components.indexWhere(_.exists(env => env.node != null && env.node.address == address))
 
   // ----------------------------------------------------------------------- //
 
   private final val TierTag = Settings.namespace + "tier"
 
-  override def readFromNBTForServer(nbt: NBTTagCompound) {
+  override def readFromNBT(nbt: NBTTagCompound) {
     tier = nbt.getByte(TierTag) max 0 min 3
-    setColor(Color.rgbValues(Color.byTier(tier)))
-    super.readFromNBTForServer(nbt)
+    super.readFromNBT(nbt)
     isSizeInventoryReady = true
   }
 
-  override def writeToNBTForServer(nbt: NBTTagCompound) {
+  override def writeToNBT(nbt: NBTTagCompound) {
     nbt.setByte(TierTag, tier.toByte)
-    super.writeToNBTForServer(nbt)
+    super.writeToNBT(nbt)
   }
 
   // ----------------------------------------------------------------------- //
 
-  override protected def onItemAdded(slot: Int, stack: ItemStack) {
-    super.onItemAdded(slot, stack)
-    if (isServer) {
-      if (InventorySlots.computer(tier)(slot).slot == Slot.Floppy) {
-        common.Sound.playDiskInsert(this)
-      }
-    }
-  }
-
   override protected def onItemRemoved(slot: Int, stack: ItemStack) {
     super.onItemRemoved(slot, stack)
-    if (isServer) {
       val slotType = InventorySlots.computer(tier)(slot).slot
-      if (slotType == Slot.Floppy) {
-        common.Sound.playDiskEject(this)
-      }
-      if (slotType == Slot.CPU) {
-        machine.stop()
-      }
+    if (slotType == Slot.CPU) {
+      machine.stop()
     }
   }
 
-  override def getSizeInventory = if (tier < 0 || tier >= InventorySlots.computer.length) 0 else InventorySlots.computer(tier).length
+  override def getSizeInventory: Int =
+    if (tier < 0 || tier >= InventorySlots.computer.length) 0 else InventorySlots.computer(tier).length
 
-  override def isUsableByPlayer(player: EntityPlayer) =
-    super.isUsableByPlayer(player) && (!isCreative || player.capabilities.isCreativeMode)
-
-  override def isItemValidForSlot(slot: Int, stack: ItemStack) =
+  override def isItemValidForSlot(slot: Int, stack: ItemStack): Boolean =
     Option(Driver.driverFor(stack, getClass)).fold(false)(driver => {
       val provided = InventorySlots.computer(tier)(slot)
       driver.slot(stack) == provided.slot && driver.tier(stack) <= provided.tier

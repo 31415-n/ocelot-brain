@@ -3,8 +3,6 @@ package li.cil.oc.api.internal;
 import li.cil.oc.api.Persistable;
 import li.cil.oc.api.network.ManagedEnvironment;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 /**
  * This interface implements functionality for displaying and manipulating
@@ -21,34 +19,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
  * </pre>
  */
 public interface TextBuffer extends ManagedEnvironment, Persistable {
-    /**
-     * Controls how much energy the buffer will consume per tick.
-     * <p/>
-     * This is <em>not</em> necessarily the actual amount consumed per tick,
-     * instead it is a base value that cost is based on, incorporating a few
-     * other factors. This is the cost a tier one screen will consume if every
-     * character is lit (non-black). Larger buffers (i.e. buffers with a higher
-     * maximum resolution) cost proportionally more.
-     * <p/>
-     * Note that this amount of energy is not necessarily subtracted each tick,
-     * instead every n ticks, n times the amount of energy it costs to run the
-     * buffer will be consumed, where n is configurable in the OC config.
-     * <p/>
-     * This defaults to OC's built-in default value.
-     *
-     * @param value the base energy cost per tick.
-     * @see #getEnergyCostPerTick()
-     */
-    void setEnergyCostPerTick(double value);
-
-    /**
-     * Get the energy cost per tick.
-     *
-     * @return the base energy cost per tick.
-     * @see #setEnergyCostPerTick(double)
-     */
-    double getEnergyCostPerTick();
-
     /**
      * Set whether the buffer is powered on.
      * <p/>
@@ -446,32 +416,7 @@ public interface TextBuffer extends ManagedEnvironment, Persistable {
      * @return <tt>true</tt> if the displayed content changed since the last
      * call to this method.
      */
-    @SideOnly(Side.CLIENT)
     boolean renderText();
-
-    /**
-     * The natural width of the rendered text.
-     * <p/>
-     * This is the width of the complete text buffer, in pixels. In other
-     * words, this is the width of the buffer in chars times the actual width
-     * of a single char in pixels.
-     *
-     * @return the total width of the rendered buffer, in pixels.
-     */
-    @SideOnly(Side.CLIENT)
-    int renderWidth();
-
-    /**
-     * The natural height of the rendered text.
-     * <p/>
-     * This is the height of the complete text buffer, in pixels. In other
-     * words, this is the height of the buffer in chars times the actual height
-     * of a single char in pixels.
-     *
-     * @return the total height of the rendered buffer, in pixels.
-     */
-    @SideOnly(Side.CLIENT)
-    int renderHeight();
 
     /**
      * Set whether the contents of the buffer should currently be rendered.
@@ -481,7 +426,6 @@ public interface TextBuffer extends ManagedEnvironment, Persistable {
      *
      * @param enabled whether the text buffer should be rendered.
      */
-    @SideOnly(Side.CLIENT)
     void setRenderingEnabled(boolean enabled);
 
     /**
@@ -489,7 +433,6 @@ public interface TextBuffer extends ManagedEnvironment, Persistable {
      *
      * @see #setRenderingEnabled(boolean)
      */
-    @SideOnly(Side.CLIENT)
     boolean isRenderingEnabled();
 
     // ----------------------------------------------------------------------- //

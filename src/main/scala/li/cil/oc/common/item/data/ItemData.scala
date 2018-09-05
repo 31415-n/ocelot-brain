@@ -10,7 +10,7 @@ abstract class ItemData(val itemName: String) extends Persistable {
     if (stack.hasTagCompound) {
       // Because ItemStack's load function doesn't copy the compound tag,
       // but keeps it as is, leading to oh so fun bugs!
-      load(stack.getTagCompound.copy().asInstanceOf[NBTTagCompound])
+      load(stack.getTagCompound.copy())
     }
   }
 
@@ -21,7 +21,7 @@ abstract class ItemData(val itemName: String) extends Persistable {
     save(stack.getTagCompound)
   }
 
-  def createItemStack() = {
+  def createItemStack(): ItemStack = {
     if (itemName == null) ItemStack.EMPTY
     else {
       val stack = api.Items.get(itemName).createItemStack(1)

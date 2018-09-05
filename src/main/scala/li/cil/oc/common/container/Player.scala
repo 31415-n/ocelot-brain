@@ -16,7 +16,7 @@ import net.minecraftforge.common.util.FakePlayer
 
 import scala.collection.convert.WrapAsScala._
 
-abstract class Player(val playerInventory: InventoryPlayer, val otherInventory: IInventory) extends Container {
+abstract class Player(val otherInventory: IInventory) extends Container {
   /** Number of player inventory slots to display horizontally. */
   protected val playerInventorySizeX = math.min(9, InventoryPlayer.getHotbarSize)
 
