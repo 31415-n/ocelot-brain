@@ -24,7 +24,6 @@ trait SimpleInventory extends IInventory {
           stack
         case stack: ItemStack =>
           val result = stack.splitStack(amount)
-          markDirty()
           result
         case _ => ItemStack.EMPTY
       }) match {

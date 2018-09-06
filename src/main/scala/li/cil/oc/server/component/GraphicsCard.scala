@@ -3,7 +3,6 @@ package li.cil.oc.server.component
 import java.util
 
 import li.cil.oc.Constants
-import li.cil.oc.Localization
 import li.cil.oc.Settings
 import li.cil.oc.api
 import li.cil.oc.api.Network
@@ -14,7 +13,6 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network._
-import li.cil.oc.api.prefab
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.util.PackedColor
 import net.minecraft.nbt.NBTTagCompound
@@ -35,9 +33,8 @@ import scala.util.matching.Regex
 // the save file - a Bad Thing (TM).
 
 class GraphicsCard(val tier: Int) extends AbstractManagedEnvironment with DeviceInfo {
-  override val node = Network.newNode(this, Visibility.Neighbors).
+  override val node: Node = Network.newNode(this, Visibility.Neighbors).
     withComponent("gpu").
-    withConnector().
     create()
 
   private val maxResolution = Settings.screenResolutionsByTier(tier)
@@ -48,7 +45,7 @@ class GraphicsCard(val tier: Int) extends AbstractManagedEnvironment with Device
 
   private var screenInstance: Option[api.internal.TextBuffer] = None
 
-  private def screen(f: (api.internal.TextBuffer) => Array[AnyRef]) = screenInstance match {
+  private def screen(f: api.internal.TextBuffer => Array[AnyRef]) = screenInstance match {
     case Some(screen) => screen.synchronized(f(screen))
     case _ => Array(Unit, "no screen")
   }
@@ -72,11 +69,11 @@ class GraphicsCard(val tier: Int) extends AbstractManagedEnvironment with Device
     DeviceAttribute.Clock -> clockInfo
   )
 
-  def capacityInfo = (maxResolution._1 * maxResolution._2).toString
+  def capacityInfo: String = (maxResolution._1 * maxResolution._2).toString
 
   def widthInfo = Array("1", "4", "8").apply(maxDepth.ordinal())
 
-  def clockInfo = ((2000 / setBackgroundCosts(tier)).toInt / 100).toString + "/" + ((2000 / setForegroundCosts(tier)).toInt / 100).toString + "/" + ((2000 / setPaletteColorCosts(tier)).toInt / 100).toString + "/" + ((2000 / setCosts(tier)).toInt / 100).toString + "/" + ((2000 / copyCosts(tier)).toInt / 100).toString + "/" + ((2000 / fillCosts(tier)).toInt / 100).toString
+  def clockInfo: String = ((2000 / setBackgroundCosts(tier)).toInt / 100).toString + "/" + ((2000 / setForegroundCosts(tier)).toInt / 100).toString + "/" + ((2000 / setPaletteColorCosts(tier)).toInt / 100).toString + "/" + ((2000 / setCosts(tier)).toInt / 100).toString + "/" + ((2000 / copyCosts(tier)).toInt / 100).toString + "/" + ((2000 / fillCosts(tier)).toInt / 100).toString
 
   override def getDeviceInfo: util.Map[String, String] = deviceInfo
 
@@ -283,11 +280,8 @@ class GraphicsCard(val tier: Int) extends AbstractManagedEnvironment with Device
     val vertical = args.optBoolean(3, false)
 
     screen(s => {
-      if (consumePower(value.length, Settings.get.gpuSetCost)) {
-        s.set(x, y, value, vertical)
-        result(true)
-      }
-      else result(Unit, "not enough energy")
+      s.set(x, y, value, vertical)
+      result(true)
     })
   }
 
@@ -301,11 +295,8 @@ class GraphicsCard(val tier: Int) extends AbstractManagedEnvironment with Device
     val tx = args.checkInteger(4)
     val ty = args.checkInteger(5)
     screen(s => {
-      if (consumePower(w * h, Settings.get.gpuCopyCost)) {
-        s.copy(x, y, w, h, tx, ty)
-        result(true)
-      }
-      else result(Unit, "not enough energy")
+      s.copy(x, y, w, h, tx, ty)
+      result(true)
     })
   }
 
@@ -318,20 +309,11 @@ class GraphicsCard(val tier: Int) extends AbstractManagedEnvironment with Device
     val h = math.max(0, args.checkInteger(3))
     val value = args.checkString(4)
     if (value.length == 1) screen(s => {
-      val c = value.charAt(0)
-      val cost = if (c == ' ') Settings.get.gpuClearCost else Settings.get.gpuFillCost
-      if (consumePower(w * h, cost)) {
-        s.fill(x, y, w, h, value.charAt(0))
-        result(true)
-      }
-      else {
-        result(Unit, "not enough energy")
-      }
+      s.fill(x, y, w, h, value.charAt(0))
+      result(true)
     })
     else throw new Exception("invalid fill value")
   }
-
-  private def consumePower(n: Double, cost: Double) = node.tryChangeBuffer(-n * cost)
 
   // ----------------------------------------------------------------------- //
 
@@ -354,7 +336,7 @@ class GraphicsCard(val tier: Int) extends AbstractManagedEnvironment with Device
             s.fill(0, 0, w, h, ' ')
             try {
               val wrapRegEx = s"(.{1,${math.max(1, w - 2)}})\\s".r
-              val lines = wrapRegEx.replaceAllIn(Localization.localizeImmediately(machine.lastError).replace("\t", "  ") + "\n", m => Regex.quoteReplacement(m.group(1) + "\n")).lines.toArray
+              val lines = wrapRegEx.replaceAllIn(machine.lastError.replace("\t", "  ") + "\n", m => Regex.quoteReplacement(m.group(1) + "\n")).lines.toArray
               val firstRow = ((h - lines.length) / 2) max 2
 
               val message = "Unrecoverable Error"

@@ -108,6 +108,24 @@ class Settings(val config: Config) {
   val switchRelayAmountUpgrade: Int = config.getInt("switch.relayAmountUpgrade") max 0
 
   // ----------------------------------------------------------------------- //
+  // hologram
+  val hologramMaxScaleByTier: Array[Double] = Array(config.getDoubleList("hologram.maxScale"): _*) match {
+    case Array(tier1, tier2) =>
+      Array((tier1: Double) max 1.0, (tier2: Double) max 1.0)
+    case _ =>
+      OpenComputers.log.warn("Bad number of hologram max scales, ignoring.")
+      Array(3.0, 4.0)
+  }
+  val hologramMaxTranslationByTier: Array[Double] = Array(config.getDoubleList("hologram.maxTranslation"): _*) match {
+    case Array(tier1, tier2) =>
+      Array((tier1: Double) max 0.0, (tier2: Double) max 0.0)
+    case _ =>
+      OpenComputers.log.warn("Bad number of hologram max translations, ignoring.")
+      Array(0.25, 0.5)
+  }
+  val hologramSetRawDelay: Double = config.getDouble("hologram.setRawDelay") max 0
+
+  // ----------------------------------------------------------------------- //
   // misc
   val inputUsername: Boolean = config.getBoolean("misc.inputUsername")
   val maxClipboard: Int = config.getInt("misc.maxClipboard") max 0

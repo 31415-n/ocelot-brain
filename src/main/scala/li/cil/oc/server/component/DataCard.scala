@@ -7,12 +7,12 @@ import java.security.spec.X509EncodedKeySpec
 import java.util
 import java.util.zip.DeflaterOutputStream
 import java.util.zip.InflaterOutputStream
+
 import javax.crypto.Cipher
 import javax.crypto.KeyAgreement
 import javax.crypto.Mac
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
-
 import com.google.common.hash.Hashing
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -22,7 +22,7 @@ import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.api.network.Visibility
+import li.cil.oc.api.network.{Node, Visibility}
 import li.cil.oc.api.prefab
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import net.minecraft.nbt.NBTTagCompound
@@ -32,37 +32,18 @@ import org.apache.commons.io.output.ByteArrayOutputStream
 import scala.collection.convert.WrapAsJava._
 
 abstract class DataCard extends AbstractManagedEnvironment with DeviceInfo {
-  override val node = Network.newNode(this, Visibility.Neighbors).
+  override val node: Node = Network.newNode(this, Visibility.Neighbors).
     withComponent("data", Visibility.Neighbors).
-    withConnector().
     create()
 
   // ----------------------------------------------------------------------- //
 
-  protected def checkCost(context: Context, args: Arguments, baseCost: Double, byteCost: Double): Array[Byte] = {
+  protected def check(context: Context, args: Arguments): Array[Byte] = {
     val data = args.checkByteArray(0)
     if (data.length > Settings.get.dataCardHardLimit) throw new IllegalArgumentException("data size limit exceeded")
-    val cost = baseCost + data.length * byteCost
-    if (!node.tryChangeBuffer(-cost)) throw new Exception("not enough energy")
     if (data.length > Settings.get.dataCardSoftLimit) context.pause(Settings.get.dataCardTimeout)
     data
   }
-
-  protected def checkCost(baseCost: Double): Unit = {
-    if (!node.tryChangeBuffer(-baseCost)) throw new Exception("not enough energy")
-  }
-
-  protected def trivialCost(context: Context, args: Arguments) =
-    checkCost(context, args, Settings.get.dataCardTrivial, Settings.get.dataCardTrivialByte)
-
-  protected def simpleCost(context: Context, args: Arguments) =
-    checkCost(context, args, Settings.get.dataCardSimple, Settings.get.dataCardSimpleByte)
-
-  protected def complexCost(context: Context, args: Arguments) =
-    checkCost(context, args, Settings.get.dataCardComplex, Settings.get.dataCardComplexByte)
-
-  protected def asymmetricCost(context: Context, args: Arguments) =
-    checkCost(context, args, Settings.get.dataCardAsymmetric, Settings.get.dataCardComplexByte)
 
   // ----------------------------------------------------------------------- //
 
@@ -73,8 +54,8 @@ abstract class DataCard extends AbstractManagedEnvironment with DeviceInfo {
 }
 
 object DataCard {
-  val SecureRandomInstance = new ThreadLocal[SecureRandom]() {
-    override def initialValue = SecureRandom.getInstance("SHA1PRNG")
+  val SecureRandomInstance: ThreadLocal[SecureRandom] = new ThreadLocal[SecureRandom]() {
+    override def initialValue: SecureRandom = SecureRandom.getInstance("SHA1PRNG")
   }
 
   class Tier1 extends DataCard {
@@ -91,17 +72,17 @@ object DataCard {
 
     @Callback(direct = true, limit = 32, doc = """function(data:string):string -- Applies base64 encoding to the data.""")
     def encode64(context: Context, args: Arguments): Array[AnyRef] = {
-      result(Base64.encodeBase64(trivialCost(context, args)))
+      result(Base64.encodeBase64(check(context, args)))
     }
 
     @Callback(direct = true, limit = 32, doc = """function(data:string):string -- Applies base64 decoding to the data.""")
     def decode64(context: Context, args: Arguments): Array[AnyRef] = {
-      result(Base64.decodeBase64(trivialCost(context, args)))
+      result(Base64.decodeBase64(check(context, args)))
     }
 
     @Callback(direct = true, limit = 4, doc = """function(data:string):string -- Applies deflate compression to the data.""")
     def deflate(context: Context, args: Arguments): Array[AnyRef] = {
-      val data = complexCost(context, args)
+      val data = check(context, args)
       val baos = new ByteArrayOutputStream(512)
       val deos = new DeflaterOutputStream(baos)
       deos.write(data)
@@ -181,7 +162,7 @@ object DataCard {
       if (len <= 0 || len > 1024)
         throw new IllegalArgumentException("length must be in range [1..1024]")
 
-      checkCost(Settings.get.dataCardComplex + Settings.get.dataCardComplexByte * len)
+      check(Settings.get.dataCardComplex + Settings.get.dataCardComplexByte * len)
       val target = new Array[Byte](len)
       SecureRandomInstance.get.nextBytes(target)
       result(target)
@@ -226,7 +207,7 @@ object DataCard {
 
     @Callback(direct = true, limit = 1, doc = """function([bitLen:number]):userdata, userdata -- Generates key pair. Returns: public, private keys. Allowed key lengths: 256, 384 bits.""")
     def generateKeyPair(context: Context, args: Arguments): Array[AnyRef] = {
-      checkCost(Settings.get.dataCardAsymmetric)
+      check(Settings.get.dataCardAsymmetric)
 
       val bitLen = args.optInteger(0, 384)
       if (bitLen != 256 && bitLen != 384)
@@ -249,7 +230,7 @@ object DataCard {
 
     @Callback(direct = true, limit = 1, doc = """function(priv:userdata, pub:userdata):string -- Generates a shared key. ecdh(a.priv, b.pub) == ecdh(b.priv, a.pub)""")
     def ecdh(context: Context, args: Arguments): Array[AnyRef] = {
-      checkCost(Settings.get.dataCardAsymmetric)
+      check(Settings.get.dataCardAsymmetric)
       val privKey = checkUserdata(args, 0, isPublic = Option(false)).value
       val pubKey = checkUserdata(args, 1, isPublic = Option(true)).value
 
@@ -308,9 +289,9 @@ object DataCard {
     // Empty constructor for deserialization.
     def this() = this(null)
 
-    def isPublic = value.isInstanceOf[ECPublicKey]
+    def isPublic: Boolean = value.isInstanceOf[ECPublicKey]
 
-    def keyType = if (isPublic) ECUserdata.PublicTypeName else ECUserdata.PrivateTypeName
+    def keyType: String = if (isPublic) ECUserdata.PublicTypeName else ECUserdata.PrivateTypeName
 
     // ----------------------------------------------------------------------- //
 

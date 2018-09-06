@@ -8,14 +8,13 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
-import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab
+import li.cil.oc.api.network.{Node, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 
 import scala.collection.convert.WrapAsJava._
 
 class CPU(val tier: Int) extends AbstractManagedEnvironment with DeviceInfo {
-  override val node = Network.newNode(this, Visibility.Neighbors).
+  override val node: Node = Network.newNode(this, Visibility.Neighbors).
     create()
 
   private final lazy val deviceInfo = Map(

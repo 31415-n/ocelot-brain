@@ -41,8 +41,6 @@ trait Inventory extends SimpleInventory {
       if (!items(slot).isEmpty) {
         onItemAdded(slot, items(slot))
       }
-
-      markDirty()
     }
   }
 

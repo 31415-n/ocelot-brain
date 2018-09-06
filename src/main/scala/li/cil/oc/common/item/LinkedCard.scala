@@ -1,3 +1,5 @@
 package li.cil.oc.common.item
 
-class LinkedCard(val parent: Delegator) extends traits.Delegate
+import net.minecraft.item.Item
+
+class LinkedCard() extends Item

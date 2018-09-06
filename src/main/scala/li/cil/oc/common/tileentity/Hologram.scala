@@ -9,27 +9,19 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network._
-import li.cil.oc.common.SaveHandler
 import li.cil.oc.server.{PacketSender => ServerPacketSender}
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
-import net.minecraft.util.math.AxisAlignedBB
-import net.minecraft.util.math.Vec3d
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
+import totoro.ocelot.math.Vec3d
 
 import scala.collection.convert.WrapAsJava._
-import scala.collection.mutable
 
-class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment with Analyzable with traits.RotatableTile with traits.Tickable with DeviceInfo {
+class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment with DeviceInfo {
   def this() = this(0)
 
-  val node = api.Network.newNode(this, Visibility.Network).
+  val node: Node = api.Network.newNode(this, Visibility.Network).
     withComponent("hologram").
-    withConnector().
     create()
 
   final val width = 3 * 16
@@ -57,26 +49,11 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
   var scale = 1.0
 
   // Projection Y position offset - consider adding X,Z later perhaps
-  var translation = new Vec3d(0, 0, 0)
-
-  // Relative number of lit columns (for energy cost).
-  var litRatio = -1.0
-
-  // Whether we need to recompile our display list.
-  var needsRendering = false
+  var translation = Vec3d(0, 0, 0)
 
   // Store it here for convenience, this is the number of visible voxel faces
   // as determined in the last VBO index update. See HologramRenderer.
   var visibleQuads = 0
-
-  // What parts of the hologram changed and need an update packet.
-  var dirty = mutable.Set.empty[Short]
-
-  // Interval of dirty columns.
-  var dirtyFromX = Int.MaxValue
-  var dirtyUntilX = -1
-  var dirtyFromZ = Int.MaxValue
-  var dirtyUntilZ = -1
 
   var hasPower = true
 
@@ -95,7 +72,7 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
   // This is a def and not a val for loading (where the tier comes from the nbt and is always 0 here).
   def colors = colorsByTier(tier)
 
-  def getColor(x: Int, y: Int, z: Int) = {
+  def getColor(x: Int, y: Int, z: Int): Int = {
     val lbit = (volume(x + z * width) >>> y) & 1
     val hbit = (volume(x + z * width + width * width) >>> y) & 1
     lbit | (hbit << 1)
@@ -107,45 +84,20 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
       val hbit = (value >>> 1) & 1
       volume(x + z * width) = (volume(x + z * width) & ~(1 << y)) | (lbit << y)
       volume(x + z * width + width * width) = (volume(x + z * width + width * width) & ~(1 << y)) | (hbit << y)
-      setDirty(x, z)
     }
-  }
-
-  private def setDirty(x: Int, z: Int) {
-    dirty += ((x.toByte << 8) | z.toByte).toShort
-    dirtyFromX = math.min(dirtyFromX, x)
-    dirtyUntilX = math.max(dirtyUntilX, x + 1)
-    dirtyFromZ = math.min(dirtyFromZ, z)
-    dirtyUntilZ = math.max(dirtyUntilZ, z + 1)
-    litRatio = -1
-  }
-
-  private def resetDirtyFlag() {
-    dirty.clear()
-    dirtyFromX = Int.MaxValue
-    dirtyUntilX = -1
-    dirtyFromZ = Int.MaxValue
-    dirtyUntilZ = -1
   }
 
   // ----------------------------------------------------------------------- //
 
-  @SideOnly(Side.CLIENT)
-  override def canConnect(side: EnumFacing) = toLocal(side) == EnumFacing.DOWN
+  override def canConnect(side: EnumFacing): Boolean = true
 
-  override def sidedNode(side: EnumFacing) = if (toLocal(side) == EnumFacing.DOWN) node else null
-
-  // Override automatic analyzer implementation for sided environments.
-  override def onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float) = Array(node)
+  override def sidedNode(side: EnumFacing): Node = node
 
   // ----------------------------------------------------------------------- //
 
   @Callback(doc = """function() -- Clears the hologram.""")
   def clear(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
     for (i <- volume.indices) volume(i) = 0
-    ServerPacketSender.sendHologramClear(this)
-    resetDirtyFlag()
-    litRatio = 0
     null
   }
 
@@ -181,7 +133,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
     if (hbit == 0 || height == 0) volume(x + z * width + width * width) &= ~mask
     else volume(x + z * width + width * width) |= mask
 
-    setDirty(x, z)
     null
   }
 
@@ -202,7 +153,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
         if (volume(index) != lbit || volume(index + width * width) != hbit) {
           volume(index) = lbit
           volume(index + width * width) = hbit
-          setDirty(x, z)
         }
       }
     }
@@ -249,10 +199,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
       }
     }
 
-    // Mark target rectangle dirty.
-    setDirty(math.min(dx0, dx1), math.min(dz0, dz1))
-    setDirty(math.max(dx0, dx1), math.max(dz0, dz1))
-
     // The reasoning here is: it'd take 18 ticks to do the whole are with fills,
     // so make this slightly more efficient (15 ticks - 0.75 seconds). Make it
     // 'free' if it's less than 0.25 seconds, i.e. for small copies.
@@ -288,7 +234,7 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
     val ty = math.max(0, math.min(maxTranslation * 2, args.checkDouble(1)))
     val tz = math.max(-maxTranslation, math.min(maxTranslation, args.checkDouble(2)))
 
-    translation = new Vec3d(tx, ty, tz)
+    translation = Vec3d(tx, ty, tz)
 
     ServerPacketSender.sendHologramOffset(this)
     null
@@ -384,77 +330,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
 
   // ----------------------------------------------------------------------- //
 
-  override def updateEntity() {
-    super.updateEntity()
-    if (isServer) {
-      if (dirty.nonEmpty) this.synchronized {
-        val dirtySizeX = dirtyUntilX - dirtyFromX
-        val dirtySizeZ = dirtyUntilZ - dirtyFromZ
-        // Sending the dirty area requires
-        //   dirtySizeX * dirtySizeZ * (4 + 4)
-        // bytes (2 = low + high byte).
-        // Sending a single changes requires
-        //   changes * (4 + 4 + 2)
-        // bytes (other 2 byte = coords).
-        // So at some point it'll be cheaper to just send the area:
-        // changes * (4 + 4 + 2) = dirtySizeX * dirtySizeZ * (4 + 4)
-        // changes = dirtySizeX * dirtySizeZ * (4 + 4) / (4 + 4 + 2) = dirtySizeX * dirtySizeZ * 0.8
-        // So if changes are larger than that, just send the full hologram.
-        if (dirty.size > dirtySizeX * dirtySizeZ * 0.8)
-          ServerPacketSender.sendHologramArea(this)
-        else
-          ServerPacketSender.sendHologramValues(this)
-        resetDirtyFlag()
-      }
-      if (getWorld.getTotalWorldTime % Settings.get.tickFrequency == 0) {
-        if (litRatio < 0) this.synchronized {
-          litRatio = 0
-          for (i <- volume.indices) {
-            if (volume(i) != 0) litRatio += 1
-          }
-          litRatio /= volume.length
-        }
-
-        val hadPower = hasPower
-        val neededPower = Settings.get.hologramCost * litRatio * scale * Settings.get.tickFrequency
-        hasPower = node.tryChangeBuffer(-neededPower)
-        if (hasPower != hadPower) {
-          ServerPacketSender.sendHologramPowerChange(this)
-        }
-      }
-    }
-  }
-
-  // ----------------------------------------------------------------------- //
-
-  override def shouldRenderInPass(pass: Int) = pass == 1
-
-  override def getMaxRenderDistanceSquared = scale / Settings.get.hologramMaxScaleByTier.max * Settings.get.hologramRenderDistance * Settings.get.hologramRenderDistance
-
-  def getFadeStartDistanceSquared = scale / Settings.get.hologramMaxScaleByTier.max * Settings.get.hologramFadeStartDistance * Settings.get.hologramFadeStartDistance
-
-  private final val Sqrt2 = Math.sqrt(2)
-
-  override def getRenderBoundingBox = {
-    val cx = x + 0.5
-    val cy = y + 0.5
-    val cz = z + 0.5
-    val sh = width / 16 * scale * Sqrt2
-    // overscale to take into account 45 degree rotation
-    val sv = height / 16 * scale * Sqrt2
-    new AxisAlignedBB(
-      cx + (-0.5 + translation.x) * sh,
-      cy + translation.y * sv,
-      cz + (-0.5 + translation.z) * sh,
-      cx + (0.5 + translation.x) * sh,
-      cy + (1 + translation.y) * sv,
-      cz + (0.5 + translation.x) * sh)
-  }
-
-  // ----------------------------------------------------------------------- //
-
-  private def dataPath = node.address + "_data"
-
   private final val TierTag = Settings.namespace + "tier"
   private final val VolumeTag = "volume"
   private final val ColorsTag = "colors"
@@ -472,59 +347,16 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
   private final val RotationSpeedZTag = Settings.namespace + "rotationSpeedZ"
   private final val HasPowerTag = Settings.namespace + "hasPower"
 
-  override def readFromNBTForServer(nbt: NBTTagCompound) {
+  override def readFromNBT(nbt: NBTTagCompound) {
     tier = nbt.getByte(TierTag) max 0 min 1
-    super.readFromNBTForServer(nbt)
-    val tag = SaveHandler.loadNBT(nbt, dataPath)
-    tag.getIntArray(VolumeTag).copyToArray(volume)
-    tag.getIntArray(ColorsTag).map(convertColor).copyToArray(colors)
-    scale = nbt.getDouble(ScaleTag)
-    val tx = nbt.getDouble(OffsetXTag)
-    val ty = nbt.getDouble(OffsetYTag)
-    val tz = nbt.getDouble(OffsetZTag)
-    translation = new Vec3d(tx, ty, tz)
-    rotationAngle = nbt.getFloat(RotationAngleTag)
-    rotationX = nbt.getFloat(RotationXTag)
-    rotationY = nbt.getFloat(RotationYTag)
-    rotationZ = nbt.getFloat(RotationZTag)
-    rotationSpeed = nbt.getFloat(RotationSpeedTag)
-    rotationSpeedX = nbt.getFloat(RotationSpeedXTag)
-    rotationSpeedY = nbt.getFloat(RotationSpeedYTag)
-    rotationSpeedZ = nbt.getFloat(RotationSpeedZTag)
-  }
-
-  override def writeToNBTForServer(nbt: NBTTagCompound) = this.synchronized {
-    nbt.setByte(TierTag, tier.toByte)
-    super.writeToNBTForServer(nbt)
-    SaveHandler.scheduleSave(getWorld, x, z, nbt, dataPath, tag => {
-      tag.setIntArray(VolumeTag, volume)
-      tag.setIntArray(ColorsTag, colors.map(convertColor))
-    })
-    nbt.setDouble(ScaleTag, scale)
-    nbt.setDouble(OffsetXTag, translation.x)
-    nbt.setDouble(OffsetYTag, translation.y)
-    nbt.setDouble(OffsetZTag, translation.z)
-    nbt.setFloat(RotationAngleTag, rotationAngle)
-    nbt.setFloat(RotationXTag, rotationX)
-    nbt.setFloat(RotationYTag, rotationY)
-    nbt.setFloat(RotationZTag, rotationZ)
-    nbt.setFloat(RotationSpeedTag, rotationSpeed)
-    nbt.setFloat(RotationSpeedXTag, rotationSpeedX)
-    nbt.setFloat(RotationSpeedYTag, rotationSpeedY)
-    nbt.setFloat(RotationSpeedZTag, rotationSpeedZ)
-  }
-
-  @SideOnly(Side.CLIENT)
-  override def readFromNBTForClient(nbt: NBTTagCompound) {
-    super.readFromNBTForClient(nbt)
+    super.readFromNBT(nbt)
     nbt.getIntArray(VolumeTag).copyToArray(volume)
-    nbt.getIntArray(ColorsTag).copyToArray(colors)
+    nbt.getIntArray(ColorsTag).map(convertColor).copyToArray(colors)
     scale = nbt.getDouble(ScaleTag)
-    hasPower = nbt.getBoolean(HasPowerTag)
     val tx = nbt.getDouble(OffsetXTag)
     val ty = nbt.getDouble(OffsetYTag)
     val tz = nbt.getDouble(OffsetZTag)
-    translation = new Vec3d(tx, ty, tz)
+    translation = Vec3d(tx, ty, tz)
     rotationAngle = nbt.getFloat(RotationAngleTag)
     rotationX = nbt.getFloat(RotationXTag)
     rotationY = nbt.getFloat(RotationYTag)
@@ -535,12 +367,12 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
     rotationSpeedZ = nbt.getFloat(RotationSpeedZTag)
   }
 
-  override def writeToNBTForClient(nbt: NBTTagCompound) {
-    super.writeToNBTForClient(nbt)
+  override def writeToNBT(nbt: NBTTagCompound): Unit = this.synchronized {
+    nbt.setByte(TierTag, tier.toByte)
+    super.writeToNBT(nbt)
     nbt.setIntArray(VolumeTag, volume)
-    nbt.setIntArray(ColorsTag, colors)
+    nbt.setIntArray(ColorsTag, colors.map(convertColor))
     nbt.setDouble(ScaleTag, scale)
-    nbt.setBoolean(HasPowerTag, hasPower)
     nbt.setDouble(OffsetXTag, translation.x)
     nbt.setDouble(OffsetYTag, translation.y)
     nbt.setDouble(OffsetZTag, translation.z)

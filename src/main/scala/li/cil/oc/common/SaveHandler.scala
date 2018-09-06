@@ -42,9 +42,9 @@ object SaveHandler {
   // which takes a lot of time and is completely unnecessary in those cases.
   var savingForClients = false
 
-  val saveData = mutable.Map.empty[Int, mutable.Map[ChunkPos, mutable.Map[String, Array[Byte]]]]
+  val saveData = mutable.Map.empty[Int, mutable.Map[String, Array[Byte]]]
 
-  def savePath = new io.File(DimensionManager.getCurrentSaveRootDirectory, Settings.savePath)
+  def savePath = new io.File(Settings.saveRootDirectory, Settings.savePath)
 
   def statePath = new io.File(savePath, "state")
 
@@ -60,26 +60,16 @@ object SaveHandler {
     scheduleSave(BlockPosition(host), nbt, name, writeNBT(save))
   }
 
-  def scheduleSave(world: World, x: Double, z: Double, nbt: NBTTagCompound, name: String, data: Array[Byte]) {
-    scheduleSave(BlockPosition(x, 0, z, world), nbt, name, data)
+  def scheduleSave(nbt: NBTTagCompound, name: String, data: Array[Byte]) {
+    scheduleSave(nbt, name, data)
   }
 
-  def scheduleSave(world: World, x: Double, z: Double, nbt: NBTTagCompound, name: String, save: NBTTagCompound => Unit) {
-    scheduleSave(world, x, z, nbt, name, writeNBT(save))
+  def scheduleSave(nbt: NBTTagCompound, name: String, save: NBTTagCompound => Unit) {
+    scheduleSave(nbt, name, writeNBT(save))
   }
 
-  def scheduleSave(position: BlockPosition, nbt: NBTTagCompound, name: String, data: Array[Byte]) {
-    val world = position.world.get
-    val dimension = world.provider.getDimension
-    val chunk = new ChunkPos(position.x >> 4, position.z >> 4)
-
-    // We have to save the dimension and chunk coordinates, because they are
-    // not available on load / may have changed if the computer was moved.
-    nbt.setInteger("dimension", dimension)
-    nbt.setInteger("chunkX", chunk.x)
-    nbt.setInteger("chunkZ", chunk.z)
-
-    scheduleSave(dimension, chunk, name, data)
+  def scheduleSave(nbt: NBTTagCompound, name: String, data: Array[Byte]) {
+    scheduleSave(name, data)
   }
 
   private def writeNBT(save: NBTTagCompound => Unit) = {

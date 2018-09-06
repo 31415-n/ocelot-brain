@@ -1,8 +1,7 @@
 package li.cil.oc.common.item
 
-import scala.language.existentials
+import net.minecraft.item.Item
 
-class CPU(val parent: Delegator, val tier: Int) extends traits.Delegate with traits.CPULike {
-  override val unlocalizedName: String = super.unlocalizedName + tier
+class CPU(val tier: Int) extends Item with traits.CPULike {
   override def cpuTier: Int = tier
 }

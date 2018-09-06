@@ -12,7 +12,7 @@ import net.minecraft.nbt.NBTTagCompound
 
 import scala.collection.mutable.ArrayBuffer
 
-trait RedstoneSignaller extends AbstractManagedEnvironment {
+trait edstoneSignaller extends AbstractManagedEnvironment {
   override val node = Network.newNode(this, Visibility.Network).
     withComponent("redstone", Visibility.Neighbors).
     create()

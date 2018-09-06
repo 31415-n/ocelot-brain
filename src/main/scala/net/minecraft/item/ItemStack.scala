@@ -1,5 +1,6 @@
 package net.minecraft.item
 
+import li.cil.oc.common.init.Items
 import net.minecraft.nbt.{NBT, NBTTagCompound}
 
 object ItemStack {
@@ -11,10 +12,9 @@ class ItemStack(private var item: Item, private var amount: Int = 1, private var
   var nbt: NBTTagCompound = _
 
   def load(nbt: NBTTagCompound): Unit = {
-    item = Item.REGISTRY(nbt.getString("id"))
-    amount = nbt.getByte("Count")
-    damage = nbt.getShort("Damage")
-
+    item = Items.get(nbt.getString("name")).item()
+    amount = nbt.getByte("count")
+    damage = nbt.getShort("damage")
     if (nbt.hasKeyOfType("tag", NBT.TAG_COMPOUND)) {
       this.nbt = nbt.getCompoundTag("tag").copy()
     }
@@ -50,4 +50,7 @@ class ItemStack(private var item: Item, private var amount: Int = 1, private var
   def isEmpty: Boolean = amount <= 0
 
   def isItemEqual(stack: ItemStack): Boolean = item.equals(stack.item)
+
+  def copy(): ItemStack =
+    new ItemStack(item, amount, damage)
 }

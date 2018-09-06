@@ -9,24 +9,23 @@ import li.cil.oc.Settings
 import li.cil.oc.api
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.machine.Arguments
-import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab
+import li.cil.oc.api.network.{Component, EnvironmentHost, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.tileentity
 import li.cil.oc.server.{PacketSender => ServerPacketSender}
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedArguments._
+import net.minecraft.util.EnumFacing
 
 import scala.collection.convert.WrapAsJava._
 import scala.language.existentials
 
 object Transposer {
 
-  abstract class Common extends AbstractManagedEnvironment with traits.WorldInventoryAnalytics with traits.WorldTankAnalytics with traits.InventoryTransfer with DeviceInfo {
-    override val node = api.Network.newNode(this, Visibility.Network).
+  abstract class Common extends AbstractManagedEnvironment with traits.WorldInventoryAnalytics
+    with traits.WorldTankAnalytics with traits.InventoryTransfer with DeviceInfo {
+    override val node: Component = api.Network.newNode(this, Visibility.Network).
       withComponent("transposer").
-      withConnector().
       create()
 
     private final lazy val deviceInfo = Map(
@@ -38,7 +37,7 @@ object Transposer {
 
     override def getDeviceInfo: util.Map[String, String] = deviceInfo
 
-    override protected def checkSideForAction(args: Arguments, n: Int) =
+    override protected def checkSideForAction(args: Arguments, n: Int): EnumFacing =
       args.checkSideAny(n)
 
     override def onTransferContents(): Option[String] = {

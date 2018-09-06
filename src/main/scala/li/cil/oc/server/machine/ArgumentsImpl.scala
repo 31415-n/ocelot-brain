@@ -3,9 +3,10 @@ package li.cil.oc.server.machine
 import java.util
 
 import com.google.common.base.Charsets
+import li.cil.oc.api.detail.ItemInfo
 import li.cil.oc.api.machine.Arguments
+import li.cil.oc.common.init.Items
 import li.cil.oc.util.ItemUtils
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
@@ -219,12 +220,12 @@ class ArgumentsImpl(val args: Seq[AnyRef]) extends Arguments {
   }
 
   private def makeStack(name: String, damage: Int, tag: Option[NBTTagCompound]) = {
-    Item.REGISTRY.get(name) match {
-      case Some(item) =>
-        val stack = new ItemStack(item, 1, damage)
+    Items.get(name) match {
+      case null => throw new IllegalArgumentException("invalid item stack")
+      case itemInfo: ItemInfo =>
+        val stack = new ItemStack(itemInfo.item(), 1, damage)
         tag.foreach(stack.setTagCompound)
         stack
-      case _ => throw new IllegalArgumentException("invalid item stack")
     }
   }
 

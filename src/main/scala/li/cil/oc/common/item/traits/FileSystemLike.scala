@@ -1,5 +1,7 @@
 package li.cil.oc.common.item.traits
 
-trait FileSystemLike extends Delegate {
+import net.minecraft.item.Item
+
+trait FileSystemLike extends Item {
   def kiloBytes: Int
 }

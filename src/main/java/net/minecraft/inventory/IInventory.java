@@ -45,12 +45,6 @@ public interface IInventory {
     int getInventoryStackLimit();
 
     /**
-     * For tile entities, ensures the chunk containing the tile entity is saved to disk later - the game won't think it
-     * hasn't changed and skip it.
-     */
-    void markDirty();
-
-    /**
      * Do not make give this method the name canInteractWith because it clashes with Container
      */
     boolean isUsableByPlayer(EntityPlayer player);

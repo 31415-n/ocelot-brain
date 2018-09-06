@@ -423,24 +423,14 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
   override def mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer): Unit =
     proxy.mouseScroll(x, y, delta, player)
 
-  def copyToAnalyzer(line: Int, player: EntityPlayer): Unit = {
-    proxy.copyToAnalyzer(line, player)
-  }
-
   // ----------------------------------------------------------------------- //
 
   override def onConnect(node: Node) {
     super.onConnect(node)
-    if (node == this.node) {
-      ServerComponentTracker.add(host.world, node.address, this)
-    }
   }
 
   override def onDisconnect(node: Node) {
     super.onDisconnect(node)
-    if (node == this.node) {
-      ServerComponentTracker.remove(host.world, this)
-    }
   }
 
   // ----------------------------------------------------------------------- //
@@ -455,18 +445,12 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)
-    if (SideTracker.isClient) {
-      if (!Strings.isNullOrEmpty(proxy.nodeAddress)) return // Only load once.
-      proxy.nodeAddress = nbt.getCompoundTag(NodeData.NodeTag).getString(NodeData.AddressTag)
-      TextBuffer.registerClientBuffer(this)
+
+    if (nbt.hasKey(NodeData.BufferTag)) {
+      data.load(nbt.getCompoundTag(NodeData.BufferTag))
     }
-    else {
-      if (nbt.hasKey(NodeData.BufferTag)) {
-        data.load(nbt.getCompoundTag(NodeData.BufferTag))
-      }
-      else if (!Strings.isNullOrEmpty(node.address)) {
-        data.load(SaveHandler.loadNBT(nbt, bufferPath))
-      }
+    else if (!Strings.isNullOrEmpty(node.address)) {
+      data.load(SaveHandler.loadNBT(nbt, bufferPath))
     }
 
     if (nbt.hasKey(IsOnTag)) {
@@ -590,29 +574,9 @@ object TextBuffer {
     def mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer): Unit
   }
 
-  class ClientProxy(val owner: TextBuffer) extends Proxy {
-    val renderer: Object {
-      def viewport: (Int, Int)
-
-      def dirty: Boolean
-
-      def dirty_=(value: Boolean): Unit
-
-      def data: util.TextBuffer
-    } = new TextBufferRenderData {
-      override def dirty: Boolean = ClientProxy.this.dirty
-
-      override def dirty_=(value: Boolean): Unit = ClientProxy.this.dirty = value
-
-      override def data: util.TextBuffer = owner.data
-
-      override def viewport: (Int, Int) = owner.viewport
-    }
-
+  class ServerProxy(val owner: TextBuffer) extends Proxy {
     override def render(): Boolean = {
-      val wasDirty = dirty
-      TextBufferRenderCache.render(renderer)
-      wasDirty
+      true
     }
 
     override def onBufferColorChange() {
@@ -650,79 +614,26 @@ object TextBuffer {
     override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean) {
       super.onBufferSet(col, row, s, vertical)
       markDirty()
-    }
-  }
-
-  class ServerProxy(val owner: TextBuffer) extends Proxy {
-    override def onBufferColorChange() {
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferColorChange(owner.pendingCommands, owner.data.foreground, owner.data.background))
-    }
-
-    override def onBufferCopy(col: Int, row: Int, w: Int, h: Int, tx: Int, ty: Int) {
-      super.onBufferCopy(col, row, w, h, tx, ty)
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferCopy(owner.pendingCommands, col, row, w, h, tx, ty))
-    }
-
-    override def onBufferDepthChange(depth: api.internal.TextBuffer.ColorDepth) {
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferDepthChange(owner.pendingCommands, depth))
-    }
-
-    override def onBufferFill(col: Int, row: Int, w: Int, h: Int, c: Char) {
-      super.onBufferFill(col, row, w, h, c)
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferFill(owner.pendingCommands, col, row, w, h, c))
-    }
-
-    override def onBufferPaletteChange(index: Int) {
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferPaletteChange(owner.pendingCommands, index, owner.getPaletteColor(index)))
-    }
-
-    override def onBufferResolutionChange(w: Int, h: Int) {
-      super.onBufferResolutionChange(w, h)
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferResolutionChange(owner.pendingCommands, w, h))
-    }
-
-    override def onBufferViewportResolutionChange(w: Int, h: Int) {
-      super.onBufferViewportResolutionChange(w, h)
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferViewportResolutionChange(owner.pendingCommands, w, h))
     }
 
     override def onBufferMaxResolutionChange(w: Int, h: Int) {
-      if (owner.node.network != null) {
-        super.onBufferMaxResolutionChange(w, h)
-        owner.host.markChanged()
-        owner.synchronized(ServerPacketSender.appendTextBufferMaxResolutionChange(owner.pendingCommands, w, h))
-      }
-    }
-
-    override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean) {
-      super.onBufferSet(col, row, s, vertical)
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferSet(owner.pendingCommands, col, row, s, vertical))
+      super.onBufferMaxResolutionChange(w, h)
+      markDirty()
     }
 
     override def onBufferRawSetText(col: Int, row: Int, text: Array[Array[Char]]) {
       super.onBufferRawSetText(col, row, text)
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferRawSetText(owner.pendingCommands, col, row, text))
+      markDirty()
     }
 
     override def onBufferRawSetBackground(col: Int, row: Int, color: Array[Array[Int]]) {
       super.onBufferRawSetBackground(col, row, color)
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferRawSetBackground(owner.pendingCommands, col, row, color))
+      markDirty()
     }
 
     override def onBufferRawSetForeground(col: Int, row: Int, color: Array[Array[Int]]) {
       super.onBufferRawSetForeground(col, row, color)
-      owner.host.markChanged()
-      owner.synchronized(ServerPacketSender.appendTextBufferRawSetForeground(owner.pendingCommands, col, row, color))
+      markDirty()
     }
 
     override def keyDown(character: Char, code: Int, player: EntityPlayer) {

@@ -1,5 +1,5 @@
 package li.cil.oc.common.item
 
-class DataCard(val parent: Delegator, val tier: Int) extends traits.Delegate {
-  override val unlocalizedName: String = super.unlocalizedName + tier
-}
+import net.minecraft.item.Item
+
+class DataCard(val tier: Int) extends Item

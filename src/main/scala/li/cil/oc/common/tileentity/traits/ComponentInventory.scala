@@ -9,13 +9,13 @@ trait ComponentInventory extends Environment with Inventory with inventory.Compo
 
   override protected def initialize(): Unit = {
     super.initialize()
-    // TODO: ?
+    // TODO: do I need to keep this call below?
     connectComponents()
   }
 
   override def dispose(): Unit = {
     super.dispose()
-    // TODO: ?
+    // TODO: do I need to keep this call below?
     disconnectComponents()
   }
 

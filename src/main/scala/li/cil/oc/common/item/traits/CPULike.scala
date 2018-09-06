@@ -1,5 +1,5 @@
 package li.cil.oc.common.item.traits
 
-trait CPULike extends Delegate {
+trait CPULike {
   def cpuTier: Int
 }
