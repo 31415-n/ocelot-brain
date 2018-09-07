@@ -9,23 +9,23 @@ import li.cil.repack.org.luaj.vm2.Varargs
 import li.cil.repack.org.luaj.vm2.lib.VarArgFunction
 
 import scala.collection.convert.WrapAsScala._
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 import scala.language.implicitConversions
 import scala.math.ScalaNumber
 import scala.runtime.BoxedUnit
 
-class ScalaClosure(val f: (Varargs) => Varargs) extends VarArgFunction {
+class ScalaClosure(val f: Varargs => Varargs) extends VarArgFunction {
   override def invoke(args: Varargs) = f(args)
 }
 
 object ScalaClosure {
-  implicit def wrapClosure(f: (Varargs) => LuaValue): ScalaClosure = new ScalaClosure(args => f(args) match {
+  implicit def wrapClosure(f: Varargs => LuaValue): ScalaClosure = new ScalaClosure(args => f(args) match {
     case varargs: Varargs => varargs
     case LuaValue.NONE => LuaValue.NONE
     case result => LuaValue.varargsOf(Array(result))
   })
 
-  implicit def wrapVarArgClosure(f: (Varargs) => Varargs): ScalaClosure = new ScalaClosure(f)
+  implicit def wrapVarArgClosure(f: Varargs => Varargs): ScalaClosure = new ScalaClosure(f)
 
   def toLuaValue(value: Any): LuaValue = {
     (value match {
@@ -84,6 +84,6 @@ object ScalaClosure {
     case _ => null
   }
 
-  def toSimpleJavaObjects(args: Varargs, start: Int = 1) =
+  def toSimpleJavaObjects(args: Varargs, start: Int = 1): immutable.IndexedSeq[AnyRef] =
     for (index <- start to args.narg()) yield toSimpleJavaObject(args.arg(index))
 }

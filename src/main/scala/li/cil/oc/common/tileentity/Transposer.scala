@@ -1,23 +1,21 @@
 package li.cil.oc.common.tileentity
 
+import li.cil.oc.api.network.Node
 import li.cil.oc.server.component
 import net.minecraft.nbt.NBTTagCompound
 
 class Transposer extends traits.Environment {
-  val transposer = new component.Transposer.Block(this)
+  val transposer = new component.Transposer
 
-  def node = transposer.node
+  def node: Node = transposer.node
 
-  // Used on client side to check whether to render activity indicators.
-  var lastOperation = 0L
-
-  override def readFromNBTForServer(nbt: NBTTagCompound) {
-    super.readFromNBTForServer(nbt)
+  override def readFromNBT(nbt: NBTTagCompound) {
+    super.readFromNBT(nbt)
     transposer.load(nbt)
   }
 
-  override def writeToNBTForServer(nbt: NBTTagCompound) {
-    super.writeToNBTForServer(nbt)
+  override def writeToNBT(nbt: NBTTagCompound) {
+    super.writeToNBT(nbt)
     transposer.save(nbt)
   }
 }

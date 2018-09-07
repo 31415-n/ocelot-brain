@@ -17,13 +17,13 @@ trait Capacity extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def spaceTotal = capacity
+  override def spaceTotal: Long = capacity
 
-  override def spaceUsed = used
+  override def spaceUsed: Long = used
 
   // ----------------------------------------------------------------------- //
 
-  override def delete(path: String) = {
+  override def delete(path: String): Boolean = {
     val freed = Settings.get.fileCost + size(path)
     if (super.delete(path)) {
       used = math.max(0, used - freed)
@@ -32,7 +32,7 @@ trait Capacity extends OutputStreamFileSystem {
     else false
   }
 
-  override def makeDirectory(path: String) = {
+  override def makeDirectory(path: String): Boolean = {
     if (capacity - used < Settings.get.fileCost && !ignoreCapacity) {
       throw new io.IOException("not enough space")
     }
@@ -105,15 +105,15 @@ trait Capacity extends OutputStreamFileSystem {
       else 0)
 
   protected class CountingOutputHandle(override val owner: Capacity, val inner: OutputHandle) extends OutputHandle(inner.owner, inner.handle, inner.path) {
-    override def isClosed = inner.isClosed
+    override def isClosed: Boolean = inner.isClosed
 
-    override def length = inner.length
+    override def length: Long = inner.length
 
-    override def position = inner.position
+    override def position: Long = inner.position
 
-    override def close() = inner.close()
+    override def close(): Unit = inner.close()
 
-    override def seek(to: Long) = inner.seek(to)
+    override def seek(to: Long): Long = inner.seek(to)
 
     override def write(b: Array[Byte]) {
       if (owner.capacity - owner.used < b.length && !ignoreCapacity)
@@ -122,5 +122,4 @@ trait Capacity extends OutputStreamFileSystem {
       owner.used = owner.used + b.length
     }
   }
-
 }

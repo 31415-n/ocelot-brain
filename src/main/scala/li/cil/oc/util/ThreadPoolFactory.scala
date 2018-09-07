@@ -1,19 +1,18 @@
 package li.cil.oc.util
 
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadFactory
+import java.util.concurrent.{Executors, ScheduledExecutorService, ThreadFactory}
 import java.util.concurrent.atomic.AtomicInteger
 
 import li.cil.oc.Settings
 
 object ThreadPoolFactory {
-  val priority = {
+  val priority: Int = {
     val custom = Settings.get.threadPriority
     if (custom < 1) Thread.MIN_PRIORITY + (Thread.NORM_PRIORITY - Thread.MIN_PRIORITY) / 2
     else custom max Thread.MIN_PRIORITY min Thread.MAX_PRIORITY
   }
 
-  def create(name: String, threads: Int) = Executors.newScheduledThreadPool(threads,
+  def create(name: String, threads: Int): ScheduledExecutorService = Executors.newScheduledThreadPool(threads,
     new ThreadFactory() {
       private val baseName = "OpenComputers-" + name + "-"
 
@@ -24,7 +23,7 @@ object ThreadPoolFactory {
         case s => s.getThreadGroup
       }
 
-      def newThread(r: Runnable) = {
+      def newThread(r: Runnable): Thread = {
         val thread = new Thread(group, r, baseName + threadNumber.getAndIncrement)
         if (!thread.isDaemon) {
           thread.setDaemon(true)

@@ -6,10 +6,8 @@ import li.cil.oc.api
 import li.cil.oc.api.internal
 import li.cil.oc.api.network.Node
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
 
-trait TextBuffer extends Environment with Tickable {
+trait TextBuffer extends Environment {
   lazy val buffer: internal.TextBuffer = {
     val screenItem = api.Items.get(Constants.BlockName.ScreenTier1).createItemStack(1)
     val buffer = api.Driver.driverFor(screenItem, getClass).createEnvironment(screenItem, this).asInstanceOf[api.internal.TextBuffer]
@@ -25,31 +23,20 @@ trait TextBuffer extends Environment with Tickable {
 
   override def updateEntity() {
     super.updateEntity()
-    if (isClient || isConnected) {
+    if (isConnected) {
       buffer.update()
     }
   }
 
   // ----------------------------------------------------------------------- //
 
-  override def readFromNBTForServer(nbt: NBTTagCompound): Unit = {
-    super.readFromNBTForServer(nbt)
+  override def readFromNBT(nbt: NBTTagCompound): Unit = {
+    super.readFromNBT(nbt)
     buffer.load(nbt)
   }
 
-  override def writeToNBTForServer(nbt: NBTTagCompound): Unit = {
-    super.writeToNBTForServer(nbt)
-    buffer.save(nbt)
-  }
-
-  @SideOnly(Side.CLIENT)
-  override def readFromNBTForClient(nbt: NBTTagCompound) {
-    super.readFromNBTForClient(nbt)
-    buffer.load(nbt)
-  }
-
-  override def writeToNBTForClient(nbt: NBTTagCompound) {
-    super.writeToNBTForClient(nbt)
+  override def writeToNBT(nbt: NBTTagCompound): Unit = {
+    super.writeToNBT(nbt)
     buffer.save(nbt)
   }
 }

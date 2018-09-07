@@ -6,7 +6,7 @@ class MovingAverage(val size: Int) {
   private var cachedAverage = 0
   private var dirty = true
 
-  def apply() = {
+  def apply(): Int = {
     if (dirty) {
       cachedAverage = data.sum / size
       dirty = false
@@ -14,7 +14,7 @@ class MovingAverage(val size: Int) {
     cachedAverage
   }
 
-  def +=(value: Int) = {
+  def +=(value: Int): MovingAverage = {
     data(head) = value
     head = (head + 1) % size
     dirty = true

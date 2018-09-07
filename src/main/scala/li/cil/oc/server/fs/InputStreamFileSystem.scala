@@ -7,9 +7,7 @@ import java.nio.channels.ReadableByteChannel
 
 import li.cil.oc.api
 import li.cil.oc.api.fs.Mode
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraftforge.common.util.Constants.NBT
+import net.minecraft.nbt.{NBT, NBTTagCompound, NBTTagList}
 
 import scala.collection.mutable
 
@@ -30,7 +28,7 @@ trait InputStreamFileSystem extends api.fs.FileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def open(path: String, mode: Mode) = {
+  override def open(path: String, mode: Mode): Int = {
     FileSystem.validatePath(path)
     this.synchronized(if (mode == Mode.Read && exists(path) && !isDirectory(path)) {
       val handle = Iterator.continually((Math.random() * Int.MaxValue).toInt + 1).filterNot(handles.contains).next()
@@ -45,7 +43,7 @@ trait InputStreamFileSystem extends api.fs.FileSystem {
 
   override def getHandle(handle: Int): api.fs.Handle = this.synchronized(handles.get(handle).orNull)
 
-  override def close() = this.synchronized {
+  override def close(): Unit = this.synchronized {
     for (handle <- handles.values)
       handle.close()
     handles.clear()
@@ -74,7 +72,7 @@ trait InputStreamFileSystem extends api.fs.FileSystem {
     })
   }
 
-  override def save(nbt: NBTTagCompound) = this.synchronized {
+  override def save(nbt: NBTTagCompound): Unit = this.synchronized {
     val handlesNbt = new NBTTagList()
     for (file <- handles.values) {
       assert(file.channel.isOpen)
@@ -102,7 +100,7 @@ trait InputStreamFileSystem extends api.fs.FileSystem {
 
     def read(dst: Array[Byte]): Int
 
-    override def read(dst: ByteBuffer) = {
+    override def read(dst: ByteBuffer): Int = {
       if (dst.hasArray) {
         read(dst.array())
       }
@@ -121,20 +119,20 @@ trait InputStreamFileSystem extends api.fs.FileSystem {
 
     private var position_ = 0L
 
-    override def close() = if (isOpen) {
+    override def close(): Unit = if (isOpen) {
       isOpen = false
       inputStream.close()
     }
 
-    override def position = position_
+    override def position: Long = position_
 
-    override def position(newPosition: Long) = {
+    override def position(newPosition: Long): Long = {
       inputStream.reset()
       position_ = inputStream.skip(newPosition)
       position_
     }
 
-    override def read(dst: Array[Byte]) = {
+    override def read(dst: Array[Byte]): Int = {
       val read = inputStream.read(dst)
       position_ += read
       read
@@ -144,20 +142,19 @@ trait InputStreamFileSystem extends api.fs.FileSystem {
   // ----------------------------------------------------------------------- //
 
   private class Handle(val owner: InputStreamFileSystem, val handle: Int, val path: String, val channel: InputChannel) extends api.fs.Handle {
-    override def position = channel.position
+    override def position: Long = channel.position
 
-    override def length = owner.size(path)
+    override def length: Long = owner.size(path)
 
-    override def close() = if (channel.isOpen) {
+    override def close(): Unit = if (channel.isOpen) {
       owner.handles -= handle
       channel.close()
     }
 
-    override def read(into: Array[Byte]) = channel.read(into)
+    override def read(into: Array[Byte]): Int = channel.read(into)
 
-    override def seek(to: Long) = channel.position(to)
+    override def seek(to: Long): Long = channel.position(to)
 
-    override def write(value: Array[Byte]) = throw new IOException("bad file descriptor")
+    override def write(value: Array[Byte]): Unit = throw new IOException("bad file descriptor")
   }
-
 }

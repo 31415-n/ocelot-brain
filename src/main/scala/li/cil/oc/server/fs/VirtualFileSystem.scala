@@ -4,39 +4,38 @@ import java.io
 import java.io.FileNotFoundException
 
 import li.cil.oc.api.fs.Mode
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraftforge.common.util.Constants.NBT
+import net.minecraft.nbt.{NBT, NBTTagCompound, NBTTagList}
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 
 trait VirtualFileSystem extends OutputStreamFileSystem {
   protected val root = new VirtualDirectory
 
   // ----------------------------------------------------------------------- //
 
-  override def exists(path: String) =
+  override def exists(path: String): Boolean =
     root.get(segments(path)).isDefined
 
-  override def isDirectory(path: String) =
+  override def isDirectory(path: String): Boolean =
     root.get(segments(path)) match {
       case Some(obj) => obj.isDirectory
       case _ => false
     }
 
-  override def size(path: String) =
+  override def size(path: String): Long =
     root.get(segments(path)) match {
       case Some(obj) => obj.size
       case _ => 0L
     }
 
-  override def lastModified(path: String) =
+  override def lastModified(path: String): Long =
     root.get(segments(path)) match {
       case Some(obj) => obj.lastModified
       case _ => 0L
     }
 
-  override def list(path: String) =
+  override def list(path: String): Array[String] =
     root.get(segments(path)) match {
       case Some(obj: VirtualDirectory) => obj.list()
       case _ => null
@@ -44,7 +43,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def delete(path: String) = {
+  override def delete(path: String): Boolean = {
     val parts = segments(path)
     if (parts.isEmpty) true
     else {
@@ -55,7 +54,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
     }
   }
 
-  override def makeDirectory(path: String) = {
+  override def makeDirectory(path: String): Boolean = {
     val parts = segments(path)
     if (parts.isEmpty) false
     else {
@@ -66,7 +65,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
     }
   }
 
-  override def rename(from: String, to: String) =
+  override def rename(from: String, to: String): Boolean =
     if (from == "" || !exists(from)) throw new FileNotFoundException(from)
     else if (!exists(to)) {
       val segmentsTo = segments(to)
@@ -91,7 +90,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
     }
     else false
 
-  override def setLastModified(path: String, time: Long) =
+  override def setLastModified(path: String, time: Long): Boolean =
     root.get(segments(path)) match {
       case Some(obj) if time >= 0 =>
         obj.lastModified = time
@@ -101,13 +100,13 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  protected def openInputChannel(path: String) =
+  protected def openInputChannel(path: String): Option[InputStreamChannel] =
     root.get(segments(path)) match {
       case Some(obj: VirtualFile) => obj.openInputStream().map(new InputStreamChannel(_))
       case _ => None
     }
 
-  protected def openOutputHandle(id: Int, path: String, mode: Mode) = {
+  protected def openOutputHandle(id: Int, path: String, mode: Mode): Option[OutputHandle] = {
     val parts = segments(path)
     if (parts.isEmpty) None
     else {
@@ -123,19 +122,19 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound) = {
+  override def load(nbt: NBTTagCompound): Unit = {
     if (!this.isInstanceOf[Buffered]) root.load(nbt)
     super.load(nbt) // Last to ensure streams can be re-opened.
   }
 
-  override def save(nbt: NBTTagCompound) = {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt) // First to allow flushing.
     if (!this.isInstanceOf[Buffered]) root.save(nbt)
   }
 
   // ----------------------------------------------------------------------- //
 
-  protected def segments(path: String) = FileSystem.validatePath(path).split("/").filter(_ != "")
+  protected def segments(path: String): Array[String] = FileSystem.validatePath(path).split("/").filter(_ != "")
 
   // ----------------------------------------------------------------------- //
 
@@ -144,7 +143,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
     def size: Long
 
-    var lastModified = System.currentTimeMillis()
+    var lastModified: Long = System.currentTimeMillis()
 
     def load(nbt: NBTTagCompound) {
       if (nbt.hasKey("lastModified"))
@@ -164,17 +163,17 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
   // ----------------------------------------------------------------------- //
 
   protected class VirtualFile extends VirtualObject {
-    val data = mutable.ArrayBuffer.empty[Byte]
+    val data: ArrayBuffer[Byte] = mutable.ArrayBuffer.empty[Byte]
 
     var handle: Option[VirtualOutputHandle] = None
 
     override def isDirectory = false
 
-    override def size = data.length
+    override def size: Long = data.length
 
     def openInputStream() = Some(new VirtualFileInputStream(this))
 
-    def openOutputHandle(owner: OutputStreamFileSystem, id: Int, path: String, mode: Mode) =
+    def openOutputHandle(owner: OutputStreamFileSystem, id: Int, path: String, mode: Mode): Option[OutputHandle] =
       if (handle.isDefined) None
       else {
         if (mode == Mode.Write) {
@@ -196,7 +195,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
       nbt.setByteArray("data", data.toArray)
     }
 
-    override def canDelete = handle.isEmpty
+    override def canDelete: Boolean = handle.isEmpty
   }
 
   // ----------------------------------------------------------------------- //
@@ -208,11 +207,11 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
     override def size = 0
 
-    def list() = children.map {
+    def list(): Array[String] = children.map {
       case (childName, child) => if (child.isDirectory) childName + "/" else childName
     }.toArray
 
-    def makeDirectory(name: String) =
+    def makeDirectory(name: String): Boolean =
       if (children.contains(name)) false
       else {
         children += name -> new VirtualDirectory
@@ -220,7 +219,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
         true
       }
 
-    def delete(name: String) = {
+    def delete(name: String): Boolean = {
       children.get(name) match {
         case Some(child) if child.canDelete =>
           children -= name
@@ -230,7 +229,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
       }
     }
 
-    def touch(name: String) =
+    def touch(name: String): Option[VirtualFile] =
       children.get(name) match {
         case Some(obj: VirtualFile) => Some(obj)
         case None =>
@@ -270,7 +269,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
       nbt.setTag(ChildrenTag, childrenNbt)
     }
 
-    override def get(path: Iterable[String]) =
+    override def get(path: Iterable[String]): Option[VirtualObject] =
       super.get(path) orElse {
         children.get(path.head) match {
           case Some(child) => child.get(path.drop(1))
@@ -278,7 +277,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
         }
       }
 
-    override def canDelete = children.isEmpty
+    override def canDelete: Boolean = children.isEmpty
   }
 
   // ----------------------------------------------------------------------- //
@@ -288,13 +287,13 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
     private var position = 0
 
-    override def available() =
+    override def available(): Int =
       if (isClosed) 0
       else math.max(file.data.length - position, 0)
 
-    override def close() = isClosed = true
+    override def close(): Unit = isClosed = true
 
-    override def read() =
+    override def read(): Int =
       if (!isClosed) {
         if (available == 0) -1
         else {
@@ -304,7 +303,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
       }
       else throw new io.IOException("file is closed")
 
-    override def read(b: Array[Byte], off: Int, len: Int) =
+    override def read(b: Array[Byte], off: Int, len: Int): Int =
       if (!isClosed) {
         val count = available()
         if (count == 0) -1
@@ -317,13 +316,13 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
       }
       else throw new io.IOException("file is closed")
 
-    override def reset() =
+    override def reset(): Unit =
       if (!isClosed) {
         position = 0
       }
       else throw new io.IOException("file is closed")
 
-    override def skip(n: Long) =
+    override def skip(n: Long): Long =
       if (!isClosed) {
         position = math.min((position + n).toInt, Int.MaxValue)
         position
@@ -333,24 +332,26 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  protected class VirtualOutputHandle(val file: VirtualFile, owner: OutputStreamFileSystem, handle: Int, path: String) extends OutputHandle(owner, handle, path) {
-    override def length = file.size
+  protected class VirtualOutputHandle(val file: VirtualFile, owner: OutputStreamFileSystem, handle: Int, path: String)
+    extends OutputHandle(owner, handle, path) {
+
+    override def length: Long = file.size
 
     var position: Long = file.data.length
 
-    override def close() = if (!isClosed) {
+    override def close(): Unit = if (!isClosed) {
       super.close()
       assert(file.handle.get == this)
       file.handle = None
     }
 
-    override def seek(to: Long) = {
+    override def seek(to: Long): Long = {
       if (to < 0) throw new io.IOException("invalid offset")
       position = to
       position
     }
 
-    override def write(b: Array[Byte]) =
+    override def write(b: Array[Byte]): Unit =
       if (!isClosed) {
         val pos = position.toInt
         file.data.insertAll(file.data.length, Seq.fill[Byte]((pos + b.length) - file.data.length)(0))
@@ -362,5 +363,4 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
       }
       else throw new io.IOException("file is closed")
   }
-
 }

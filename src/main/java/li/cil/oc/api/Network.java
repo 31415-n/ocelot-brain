@@ -7,7 +7,6 @@ import li.cil.oc.api.network.Packet;
 import li.cil.oc.api.network.Visibility;
 import li.cil.oc.api.network.WirelessEndpoint;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
 
 /**
  * This class provides factories for networks and nodes.
@@ -41,11 +40,10 @@ public final class Network {
      * respective for each side is used when connecting, and each side's node
      * is added to its own new network, if necessary.
      *
-     * @param tileEntity the tile entity to initialize.
+     * @param environment the tile entity to initialize.
      */
-    public static void joinOrCreateNetwork(final TileEntity tileEntity) {
-        if (API.network != null)
-            API.network.joinOrCreateNetwork(tileEntity);
+    public static void joinOrCreateNetwork(Environment environment) {
+       joinNewNetwork(environment.node());
     }
 
     /**
@@ -84,22 +82,6 @@ public final class Network {
     }
 
     /**
-     * Updates a wireless endpoint in the wireless network.
-     * <p/>
-     * This is more efficient than removing and then adding the node again, as
-     * it only performs the update if the position significantly changed since
-     * the last time the position was updated (more than 0.5 along any axis).
-     * <p/>
-     * Calling this for an endpoint that was not added before does nothing.
-     *
-     * @param endpoint the endpoint for which to update the position.
-     */
-    public static void updateWirelessNetwork(final WirelessEndpoint endpoint) {
-        if (API.network != null)
-            API.network.updateWirelessNetwork(endpoint);
-    }
-
-    /**
      * Removes a wireless endpoint from the wireless network.
      * <p/>
      * This must be called when an endpoint becomes invalid, otherwise it will
@@ -112,22 +94,6 @@ public final class Network {
     public static void leaveWirelessNetwork(final WirelessEndpoint endpoint) {
         if (API.network != null)
             API.network.leaveWirelessNetwork(endpoint);
-    }
-
-    /**
-     * Removes a wireless endpoint from the wireless network of a specific dimension.
-     * <p/>
-     * This may be useful if the dimension of an endpoint changed and you can only
-     * react to that change (e.g. a player changing dimensions).
-     * <p/>
-     * Calling this for an endpoint that was not added before does nothing.
-     *
-     * @param endpoint  the endpoint to remove from the wireless network.
-     * @param dimension the dimension with the wireless network to remove the endpoint from.
-     */
-    public static void leaveWirelessNetwork(final WirelessEndpoint endpoint, final int dimension) {
-        if (API.network != null)
-            API.network.leaveWirelessNetwork(endpoint, dimension);
     }
 
     /**

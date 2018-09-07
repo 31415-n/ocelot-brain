@@ -1,10 +1,8 @@
 package li.cil.oc.server.machine.luac
 
-import li.cil.oc.Settings
 import li.cil.oc.api
 import li.cil.oc.api.driver.item.MutableProcessor
 import li.cil.oc.api.driver.item.Processor
-import li.cil.oc.api.network.Connector
 import li.cil.oc.util.ExtendedLuaState.extendLuaState
 
 import scala.collection.convert.WrapAsScala._
@@ -99,23 +97,20 @@ class ComputerAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     lua.setField(-2, "removeUser")
 
     lua.pushScalaFunction(lua => {
-      if (Settings.get.ignorePower)
-        lua.pushNumber(Double.PositiveInfinity)
-      else
-        lua.pushNumber(node.asInstanceOf[Connector].globalBuffer)
+      lua.pushNumber(Double.PositiveInfinity)
       1
     })
     lua.setField(-2, "energy")
 
     lua.pushScalaFunction(lua => {
-      lua.pushNumber(node.asInstanceOf[Connector].globalBufferSize)
+      lua.pushNumber(Double.PositiveInfinity)
       1
     })
     lua.setField(-2, "maxEnergy")
 
     lua.pushScalaFunction(lua => {
       machine.host.internalComponents.map(stack => (stack, api.Driver.driverFor(stack))).collectFirst {
-        case (stack, processor: MutableProcessor) => processor.allArchitectures.toSeq
+        case (_, processor: MutableProcessor) => processor.allArchitectures.toSeq
         case (stack, processor: Processor) => Seq(processor.architecture(stack))
       } match {
         case Some(architectures) =>

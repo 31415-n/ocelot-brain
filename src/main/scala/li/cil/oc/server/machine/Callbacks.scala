@@ -19,10 +19,10 @@ import scala.collection.mutable
 object Callbacks {
   private val cache = mutable.Map.empty[Class[_], immutable.Map[String, Callback]]
 
-  def apply(host: Any) = host match {
-    case multi: CompoundBlockEnvironment => dynamicAnalyze(host)
-    case peripheral: ManagedPeripheral => dynamicAnalyze(host)
-    case filtered: FilteredEnvironment => dynamicAnalyze(host)
+  def apply(host: Any): Map[String, Callback] = host match {
+    case _: CompoundBlockEnvironment => dynamicAnalyze(host)
+    case _: ManagedPeripheral => dynamicAnalyze(host)
+    case _: FilteredEnvironment => dynamicAnalyze(host)
     case _ => cache.getOrElseUpdate(host.getClass, dynamicAnalyze(host))
   }
 
@@ -32,7 +32,7 @@ object Callbacks {
     cache.clear()
   }
 
-  def fromClass(environment: Class[_]) = staticAnalyze(environment)
+  def fromClass(environment: Class[_]): mutable.Map[String, Callback] = staticAnalyze(environment)
 
   private def dynamicAnalyze(host: Any) = {
     val whitelists = mutable.Buffer.empty[Set[String]]
@@ -86,7 +86,7 @@ object Callbacks {
       val ms = c.getDeclaredMethods
 
       ms.filter(_.isAnnotationPresent(classOf[machine.Callback])).foreach(m =>
-        if (m.getParameterTypes.size != 2 ||
+        if (m.getParameterTypes.length != 2 ||
           m.getParameterTypes()(0) != classOf[Context] ||
           m.getParameterTypes()(1) != classOf[Arguments]) {
           OpenComputers.log.error(s"Invalid use of Callback annotation on ${m.getDeclaringClass.getName}.${m.getName}: invalid argument types or count.")
@@ -120,15 +120,14 @@ object Callbacks {
   class ComponentCallback(val method: Method, annotation: machine.Callback) extends Callback(annotation) {
     final val callWrapper = CallbackWrapper.createCallbackWrapper(method)
 
-    override def apply(instance: AnyRef, context: Context, args: Arguments) = callWrapper.call(instance, context, args)
+    override def apply(instance: AnyRef, context: Context, args: Arguments): Array[AnyRef] = callWrapper.call(instance, context, args)
   }
 
   class PeripheralCallback(name: String) extends Callback(new PeripheralAnnotation(name)) {
-    override def apply(instance: AnyRef, context: Context, args: Arguments) =
+    override def apply(instance: AnyRef, context: Context, args: Arguments): Array[AnyRef] =
       instance match {
         case peripheral: ManagedPeripheral => peripheral.invoke(name, context, args)
         case _ => throw new NoSuchMethodException()
       }
   }
-
 }

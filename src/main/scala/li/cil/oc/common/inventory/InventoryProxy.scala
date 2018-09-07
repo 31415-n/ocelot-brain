@@ -49,8 +49,6 @@ trait InventoryProxy extends IInventory {
     if (isValidSlot(offsetSlot)) inventory.setInventorySlotContents(offsetSlot, stack)
   }
 
-  override def markDirty(): Unit = inventory.markDirty()
-
   override def openInventory(player: EntityPlayer): Unit = inventory.openInventory(player)
 
   override def closeInventory(player: EntityPlayer): Unit = inventory.closeInventory(player)

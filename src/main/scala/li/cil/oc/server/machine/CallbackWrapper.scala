@@ -69,7 +69,7 @@ object CallbackWrapper {
   private object GeneratedClassLoader extends ClassLoader(OpenComputers.getClass.getClassLoader) {
     private val GeneratedClasses = mutable.Map.empty[String, Class[_]]
 
-    def containsClass(name: String) = GeneratedClasses.contains(name)
+    def containsClass(name: String): Boolean = GeneratedClasses.contains(name)
 
     def addClass(name: String, bytes: Array[Byte]): Unit = {
       GeneratedClasses += name -> defineClass(name, bytes, 0, bytes.length)
@@ -82,5 +82,4 @@ object CallbackWrapper {
       }
     }
   }
-
 }

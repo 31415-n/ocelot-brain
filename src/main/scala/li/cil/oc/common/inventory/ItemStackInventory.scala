@@ -9,7 +9,7 @@ trait ItemStackInventory extends Inventory {
 
   private lazy val inventory = Array.fill[ItemStack](getSizeInventory)(ItemStack.EMPTY)
 
-  override def items = inventory
+  override def items: Array[ItemStack] = inventory
 
   // Initialize the list automatically if we have a container.
   {
@@ -31,7 +31,7 @@ trait ItemStackInventory extends Inventory {
   }
 
   // Write items back to tag.
-  override def markDirty() {
+  def markDirty() {
     if (!container.hasTagCompound) {
       container.setTagCompound(new NBTTagCompound())
     }

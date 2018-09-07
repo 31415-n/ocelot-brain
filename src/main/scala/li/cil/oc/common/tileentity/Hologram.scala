@@ -10,14 +10,12 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network._
-import li.cil.oc.server.{PacketSender => ServerPacketSender}
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
 import totoro.ocelot.math.Vec3d
 
 import scala.collection.convert.WrapAsJava._
 
-class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment with DeviceInfo {
+class Hologram(var tier: Int) extends traits.Environment with DeviceInfo {
   def this() = this(0)
 
   val node: Node = api.Network.newNode(this, Visibility.Network).
@@ -86,12 +84,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
       volume(x + z * width + width * width) = (volume(x + z * width + width * width) & ~(1 << y)) | (hbit << y)
     }
   }
-
-  // ----------------------------------------------------------------------- //
-
-  override def canConnect(side: EnumFacing): Boolean = true
-
-  override def sidedNode(side: EnumFacing): Node = node
 
   // ----------------------------------------------------------------------- //
 
@@ -217,7 +209,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
   @Callback(doc = """function(value:number) -- Set the render scale. A larger scale consumes more energy.""")
   def setScale(context: Context, args: Arguments): Array[AnyRef] = {
     scale = math.max(0.333333, math.min(Settings.get.hologramMaxScaleByTier(tier), args.checkDouble(0)))
-    ServerPacketSender.sendHologramScale(this)
     null
   }
 
@@ -236,7 +227,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
 
     translation = Vec3d(tx, ty, tz)
 
-    ServerPacketSender.sendHologramOffset(this)
     null
   }
 
@@ -262,7 +252,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
     // Change byte order here to allow passing stored color to OpenGL "as-is"
     // (as whole Int, i.e. 0xAABBGGRR, alpha is unused but present for alignment)
     colors(index - 1) = convertColor(value)
-    ServerPacketSender.sendHologramColor(this, index - 1, colors(index - 1))
     result(oldValue)
   }
 
@@ -278,7 +267,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
       rotationX = x.toFloat
       rotationY = y.toFloat
       rotationZ = z.toFloat
-      ServerPacketSender.sendHologramRotation(this)
 
       result(true)
     }
@@ -297,7 +285,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
       rotationSpeedX = x.toFloat
       rotationSpeedY = y.toFloat
       rotationSpeedZ = z.toFloat
-      ServerPacketSender.sendHologramRotationSpeed(this)
 
       result(true)
     }
@@ -345,7 +332,6 @@ class Hologram(var tier: Int) extends traits.Environment with SidedEnvironment w
   private final val RotationSpeedXTag = Settings.namespace + "rotationSpeedX"
   private final val RotationSpeedYTag = Settings.namespace + "rotationSpeedY"
   private final val RotationSpeedZTag = Settings.namespace + "rotationSpeedZ"
-  private final val HasPowerTag = Settings.namespace + "hasPower"
 
   override def readFromNBT(nbt: NBTTagCompound) {
     tier = nbt.getByte(TierTag) max 0 min 1

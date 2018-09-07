@@ -16,9 +16,9 @@ import scala.language.postfixOps
 
 class ZipFileInputStreamFileSystem(private val archive: ArchiveDirectory) extends InputStreamFileSystem {
 
-  def spaceTotal = spaceUsed
+  def spaceTotal: Long = spaceUsed
 
-  def spaceUsed = spaceUsed_
+  def spaceUsed: Long = spaceUsed_
 
   private lazy val spaceUsed_ = ZipFileInputStreamFileSystem.synchronized {
     def recurse(d: ArchiveDirectory): Long = d.children.foldLeft(0L)((acc, c) => acc + (c match {
@@ -30,29 +30,29 @@ class ZipFileInputStreamFileSystem(private val archive: ArchiveDirectory) extend
 
   // ----------------------------------------------------------------------- //
 
-  override def exists(path: String) = ZipFileInputStreamFileSystem.synchronized {
+  override def exists(path: String): Boolean = ZipFileInputStreamFileSystem.synchronized {
     entry(path).isDefined
   }
 
-  override def size(path: String) = ZipFileInputStreamFileSystem.synchronized {
+  override def size(path: String): Long = ZipFileInputStreamFileSystem.synchronized {
     entry(path) match {
       case Some(file) if !file.isDirectory => file.size
       case _ => 0L
     }
   }
 
-  override def isDirectory(path: String) = ZipFileInputStreamFileSystem.synchronized {
+  override def isDirectory(path: String): Boolean = ZipFileInputStreamFileSystem.synchronized {
     entry(path).exists(_.isDirectory)
   }
 
-  def lastModified(path: String) = ZipFileInputStreamFileSystem.synchronized {
+  def lastModified(path: String): Long = ZipFileInputStreamFileSystem.synchronized {
     entry(path) match {
       case Some(file) => file.lastModified
       case _ => 0L
     }
   }
 
-  override def list(path: String) = ZipFileInputStreamFileSystem.synchronized {
+  override def list(path: String): Array[String] = ZipFileInputStreamFileSystem.synchronized {
     entry(path) match {
       case Some(entry) if entry.isDirectory => entry.list()
       case _ => null
@@ -61,7 +61,7 @@ class ZipFileInputStreamFileSystem(private val archive: ArchiveDirectory) extend
 
   // ----------------------------------------------------------------------- //
 
-  override protected def openInputChannel(path: String) = ZipFileInputStreamFileSystem.synchronized {
+  override protected def openInputChannel(path: String): Option[InputStreamChannel] = ZipFileInputStreamFileSystem.synchronized {
     entry(path).map(entry => new InputStreamChannel(entry.openStream()))
   }
 
@@ -80,10 +80,10 @@ object ZipFileInputStreamFileSystem {
     asInstanceOf[CacheBuilder[String, ArchiveDirectory]].
     build[String, ArchiveDirectory]()
 
-  def fromFile(file: io.File, innerPath: String) = ZipFileInputStreamFileSystem.synchronized {
+  def fromFile(file: io.File, innerPath: String): ZipFileInputStreamFileSystem = ZipFileInputStreamFileSystem.synchronized {
     try {
       Option(cache.get(file.getPath + ":" + innerPath, new Callable[ArchiveDirectory] {
-        def call = {
+        def call: ArchiveDirectory = {
           val zip = new ZipFile(file.getPath)
           try {
             val cleanedPath = innerPath.stripPrefix("/").stripSuffix("/") + "/"
@@ -134,13 +134,13 @@ object ZipFileInputStreamFileSystem {
   }
 
   abstract class Archive(entry: ZipEntry, root: String) {
-    val path = entry.getName.stripPrefix(root).stripSuffix("/")
+    val path: String = entry.getName.stripPrefix(root).stripSuffix("/")
 
-    val name = path.substring(path.lastIndexOf('/') + 1)
+    val name: String = path.substring(path.lastIndexOf('/') + 1)
 
-    val lastModified = entry.getTime
+    val lastModified: Long = entry.getTime
 
-    val isDirectory = entry.isDirectory
+    val isDirectory: Boolean = entry.isDirectory
 
     def size: Int
 
@@ -152,18 +152,18 @@ object ZipFileInputStreamFileSystem {
   }
 
   private class ArchiveFile(zip: ZipFile, entry: ZipEntry, root: String) extends Archive(entry, root) {
-    val data = {
+    val data: Array[Byte] = {
       val in = zip.getInputStream(entry)
       Iterator.continually(in.read).takeWhile(-1 !=).map(_.toByte).toArray
     }
 
-    val size = data.length
+    val size: Int = data.length
 
-    def list() = null
+    def list(): Null = null
 
     def openStream() = new ByteArrayInputStream(data)
 
-    def find(path: Iterable[String]) =
+    def find(path: Iterable[String]): Option[ArchiveFile] =
       if (path.size == 1 && path.head == name) Some(this)
       else None
   }
@@ -173,11 +173,11 @@ object ZipFileInputStreamFileSystem {
 
     val size = 0
 
-    def list() = children.map(c => c.name + (if (c.isDirectory) "/" else "")).toArray
+    def list(): Array[String] = children.map(c => c.name + (if (c.isDirectory) "/" else "")).toArray
 
-    def openStream() = null
+    def openStream(): Null = null
 
-    def find(path: Iterable[String]) =
+    def find(path: Iterable[String]): Option[Archive] =
       if (path.head == name) {
         if (path.size == 1) Some(this)
         else {
@@ -189,5 +189,4 @@ object ZipFileInputStreamFileSystem {
       }
       else None
   }
-
 }

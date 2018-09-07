@@ -10,7 +10,6 @@ import li.cil.oc.api.machine.Architecture
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item
-import li.cil.oc.common.item.Delegator
 import li.cil.oc.server.component
 import li.cil.oc.server.machine.luac.NativeLuaArchitecture
 import net.minecraft.item.ItemStack
@@ -34,8 +33,8 @@ abstract class DriverCPU extends Item with api.driver.item.MutableProcessor with
   override def tier(stack: ItemStack): Int = cpuTier(stack)
 
   def cpuTier(stack: ItemStack): Int =
-    Delegator.subItem(stack) match {
-      case Some(cpu: item.CPU) => cpu.cpuTier
+    stack.getItem match {
+      case cpu: item.CPU => cpu.cpuTier
       case _ => Tier.One
     }
 

@@ -92,7 +92,7 @@ object DataCard {
 
     @Callback(direct = true, limit = 4, doc = """function(data:string):string -- Applies inflate decompression to the data.""")
     def inflate(context: Context, args: Arguments): Array[AnyRef] = {
-      val data = complexCost(context, args)
+      val data = check(context, args)
       val baos = new ByteArrayOutputStream(512)
       val inos = new InflaterOutputStream(baos)
       inos.write(data)
@@ -102,19 +102,19 @@ object DataCard {
 
     @Callback(direct = true, limit = 32, doc = """function(data:string):string -- Computes CRC-32 hash of the data. Result is binary data.""")
     def crc32(context: Context, args: Arguments): Array[AnyRef] = {
-      val data = trivialCost(context, args)
+      val data = check(context, args)
       result(Hashing.crc32().hashBytes(data).asBytes())
     }
 
     @Callback(direct = true, limit = 8, doc = """function(data:string):string -- Computes MD5 hash of the data. Result is binary data.""")
     def md5(context: Context, args: Arguments): Array[AnyRef] = {
-      val data = simpleCost(context, args)
+      val data = check(context, args)
       result(Hashing.md5().hashBytes(data).asBytes())
     }
 
     @Callback(direct = true, limit = 4, doc = """function(data:string):string -- Computes SHA2-256 hash of the data. Result is binary data.""")
     def sha256(context: Context, args: Arguments): Array[AnyRef] = {
-      val data = complexCost(context, args)
+      val data = check(context, args)
       result(Hashing.sha256().hashBytes(data).asBytes())
     }
   }
@@ -134,7 +134,7 @@ object DataCard {
     @Callback(direct = true, limit = 8, doc = """function(data:string[, hmacKey:string]):string -- Computes MD5 hash of the data. Result is binary data.""")
     override def md5(context: Context, args: Arguments): Array[AnyRef] =
       if (args.count() > 1) {
-        val data = simpleCost(context, args)
+        val data = check(context, args)
         val key = args.checkByteArray(1)
         hash(data, key, "MD5", "HmacMD5")
       }
@@ -143,7 +143,7 @@ object DataCard {
     @Callback(direct = true, limit = 4, doc = """function(data:string[, hmacKey:string]):string -- Computes SHA2-256 hash of the data. Result is binary data.""")
     override def sha256(context: Context, args: Arguments): Array[AnyRef] =
       if (args.count() > 1) {
-        val data = complexCost(context, args)
+        val data = check(context, args)
         val key = args.checkByteArray(1)
         hash(data, key, "SHA-256", "HmacSHA256")
       }
@@ -162,7 +162,6 @@ object DataCard {
       if (len <= 0 || len > 1024)
         throw new IllegalArgumentException("length must be in range [1..1024]")
 
-      check(Settings.get.dataCardComplex + Settings.get.dataCardComplexByte * len)
       val target = new Array[Byte](len)
       SecureRandomInstance.get.nextBytes(target)
       result(target)
@@ -171,7 +170,7 @@ object DataCard {
     // ----------------------------------------------------------------------- //
 
     private def crypt(context: Context, args: Arguments, mode: Int): Array[AnyRef] = {
-      val data = simpleCost(context, args)
+      val data = check(context, args)
 
       val key = args.checkByteArray(1)
       if (key.length != 16)
@@ -207,7 +206,6 @@ object DataCard {
 
     @Callback(direct = true, limit = 1, doc = """function([bitLen:number]):userdata, userdata -- Generates key pair. Returns: public, private keys. Allowed key lengths: 256, 384 bits.""")
     def generateKeyPair(context: Context, args: Arguments): Array[AnyRef] = {
-      check(Settings.get.dataCardAsymmetric)
 
       val bitLen = args.optInteger(0, 384)
       if (bitLen != 256 && bitLen != 384)
@@ -222,7 +220,7 @@ object DataCard {
 
     @Callback(direct = true, limit = 8, doc = """function(data:string, type:string):userdata -- Restores key from its string representation.""")
     def deserializeKey(context: Context, args: Arguments): Array[AnyRef] = {
-      val data = simpleCost(context, args)
+      val data = check(context, args)
       val t = args.checkString(1)
 
       result(new ECUserdata(ECUserdata.deserializeKey(t, data)))
@@ -230,7 +228,6 @@ object DataCard {
 
     @Callback(direct = true, limit = 1, doc = """function(priv:userdata, pub:userdata):string -- Generates a shared key. ecdh(a.priv, b.pub) == ecdh(b.priv, a.pub)""")
     def ecdh(context: Context, args: Arguments): Array[AnyRef] = {
-      check(Settings.get.dataCardAsymmetric)
       val privKey = checkUserdata(args, 0, isPublic = Option(false)).value
       val pubKey = checkUserdata(args, 1, isPublic = Option(true)).value
 
@@ -242,7 +239,7 @@ object DataCard {
 
     @Callback(direct = true, limit = 1, doc = """function(data:string, key:userdata[, sig:string]):string or boolean -- Signs or verifies data.""")
     def ecdsa(context: Context, args: Arguments): Array[AnyRef] = {
-      val data = asymmetricCost(context, args)
+      val data = check(context, args)
       val key = checkUserdata(args, 1)
       val sig = args.optByteArray(2, null)
 
@@ -331,5 +328,4 @@ object DataCard {
       else throw new IllegalArgumentException("invalid key type, must be ec-public or ec-private")
     }
   }
-
 }

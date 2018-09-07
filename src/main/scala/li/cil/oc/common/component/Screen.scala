@@ -4,7 +4,6 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.common.tileentity
-import li.cil.oc.server.{PacketSender => ServerPacketSender}
 
 class Screen(val screen: tileentity.Screen) extends TextBuffer(screen) {
   @Callback(direct = true, doc = """function():boolean -- Whether touch mode is inverted (sneak-activate opens GUI, instead of normal activate).""")
@@ -16,7 +15,6 @@ class Screen(val screen: tileentity.Screen) extends TextBuffer(screen) {
     val oldValue = screen.invertTouchMode
     if (newValue != oldValue) {
       screen.invertTouchMode = newValue
-      ServerPacketSender.sendScreenTouchMode(screen, newValue)
     }
     result(oldValue)
   }

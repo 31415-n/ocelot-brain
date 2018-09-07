@@ -26,10 +26,7 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.EventHandler
-import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.Slot
-import li.cil.oc.common.tileentity
-import li.cil.oc.server.PacketSender
 import li.cil.oc.server.component.FileSystem
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.fs.FileSystem
@@ -466,18 +463,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     // Reset direct call budget.
     callBudget = maxCallBudget
 
-    // Avoid spamming user list across the network.
-    if (host.world.getTotalWorldTime % 20 == 0 && usersChanged) {
-      val list = _users.synchronized {
-        usersChanged = false
-        users
-      }
-      host match {
-        case computer: tileentity.traits.Computer => PacketSender.sendComputerUserList(computer, list)
-        case _ =>
-      }
-    }
-
     // Check if we should switch states. These are all the states in which we're
     // guaranteed that the executor thread isn't running anymore.
     state.synchronized(state.top) match {
@@ -688,7 +673,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
 
     tmp.foreach(fs => {
       if (nbt.hasKey(TmpTag)) fs.load(nbt.getCompoundTag(TmpTag))
-      else fs.load(SaveHandler.loadNBT(nbt, tmpPath))
     })
 
     if (state.nonEmpty && isRunning && init()) try {
@@ -744,10 +728,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     // just don't save this at all. What could possibly go wrong?
     if (isExecuting) return
 
-    if (SaveHandler.savingForClients) {
-      return
-    }
-
     // Make sure we don't continue running until everything has saved.
     pause(0.05)
 
@@ -768,8 +748,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
       componentsNbt.appendTag(componentNbt)
     }
     nbt.setTag(ComponentsTag, componentsNbt)
-
-    tmp.foreach(fs => SaveHandler.scheduleSave(host, nbt, tmpPath, fs.save _))
 
     if (state.top != Machine.State.Stopped) try {
       architecture.save(nbt)

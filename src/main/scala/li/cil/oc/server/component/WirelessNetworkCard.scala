@@ -1,6 +1,5 @@
 package li.cil.oc.server.component
 
-import java.io._
 import java.util
 
 import li.cil.oc.Constants
@@ -15,41 +14,24 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network._
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedWorld._
 import net.minecraft.nbt.NBTTagCompound
 
 import scala.collection.convert.WrapAsJava._
 import scala.language.implicitConversions
 
 abstract class WirelessNetworkCard(host: EnvironmentHost) extends NetworkCard(host) with WirelessEndpoint {
-  override val node = Network.newNode(this, Visibility.Network).
+  override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("modem", Visibility.Neighbors).
-    withConnector().
     create()
-
-  protected def wirelessCostPerRange: Double
 
   protected def maxWirelessRange: Double
 
   protected def shouldSendWiredTraffic: Boolean
 
-  var strength = maxWirelessRange
-
-  def position = BlockPosition(host)
-
-  override def x = position.x
-
-  override def y = position.y
-
-  override def z = position.z
-
-  override def world = host.world
+  var strength: Double = maxWirelessRange
 
   def receivePacket(packet: Packet, source: WirelessEndpoint) {
-    val (dx, dy, dz) = ((source.x + 0.5) - host.xPosition, (source.y + 0.5) - host.yPosition, (source.z + 0.5) - host.zPosition)
-    val distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
-    receivePacket(packet, distance)
+    receivePacket(packet, 1)
   }
 
   // ----------------------------------------------------------------------- //
@@ -69,7 +51,6 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) extends NetworkCard(ho
   
   override protected def doSend(packet: Packet) {
     if (strength > 0) {
-      checkPower()
       api.Network.sendWirelessPacket(this, strength, packet)
     }
     if (shouldSendWiredTraffic)
@@ -78,32 +59,15 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) extends NetworkCard(ho
 
   override protected def doBroadcast(packet: Packet) {
     if (strength > 0) {
-      checkPower()
       api.Network.sendWirelessPacket(this, strength, packet)
     }
     if (shouldSendWiredTraffic)
       super.doBroadcast(packet)
   }
-  
-  private def checkPower() {
-    val cost = wirelessCostPerRange
-    if (cost > 0 && !Settings.get.ignorePower) {
-      if (!node.tryChangeBuffer(-strength * cost)) {
-        throw new IOException("not enough energy")
-      }
-    }
-  }
 
   // ----------------------------------------------------------------------- //
 
   override val canUpdate = true
-
-  override def update() {
-    super.update()
-    if (world.getTotalWorldTime % 20 == 0) {
-      api.Network.updateWirelessNetwork(this)
-    }
-  }
 
   override def onConnect(node: Node) {
     super.onConnect(node)
@@ -114,7 +78,7 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) extends NetworkCard(ho
 
   override def onDisconnect(node: Node) {
     super.onDisconnect(node)
-    if (node == this.node || !world.isBlockLoaded(position)) {
+    if (node == this.node) {
       api.Network.leaveWirelessNetwork(this)
     }
   }
@@ -138,9 +102,7 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) extends NetworkCard(ho
 
 object WirelessNetworkCard {
   class Tier1(host: EnvironmentHost) extends WirelessNetworkCard(host) {
-    override protected def wirelessCostPerRange = Settings.get.wirelessCostPerRange(Tier.One)
-    
-    override protected def maxWirelessRange = Settings.get.maxWirelessRange(Tier.One)
+    override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.One)
     
     // wired network card is before wireless cards in max port list
     override protected def maxOpenPorts = Settings.get.maxOpenPorts(Tier.One + 1)
@@ -164,9 +126,7 @@ object WirelessNetworkCard {
   }
   
   class Tier2(host: EnvironmentHost) extends Tier1(host) {
-    override protected def wirelessCostPerRange = Settings.get.wirelessCostPerRange(Tier.Two)
-    
-    override protected def maxWirelessRange = Settings.get.maxWirelessRange(Tier.Two)
+    override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.Two)
     
     // wired network card is before wireless cards in max port list
     override protected def maxOpenPorts = Settings.get.maxOpenPorts(Tier.Two + 1)

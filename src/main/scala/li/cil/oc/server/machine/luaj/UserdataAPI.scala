@@ -45,10 +45,10 @@ class UserdataAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
 
     userdata.set("methods", (args: Varargs) => {
       val value = args.checkuserdata(1, classOf[Value])
-      LuaValue.tableOf(machine.methods(value).map(entry => {
+      LuaValue.tableOf(machine.methods(value).flatMap(entry => {
         val (name, annotation) = entry
         Seq(LuaValue.valueOf(name), LuaValue.valueOf(annotation.direct))
-      }).flatten.toArray)
+      }).toArray)
     })
 
     userdata.set("invoke", (args: Varargs) => {

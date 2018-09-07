@@ -4,16 +4,15 @@ import li.cil.oc.api.Network
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab
+import li.cil.oc.api.network.{Component, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import net.minecraft.nbt.NBTTagCompound
 
 import scala.collection.mutable.ArrayBuffer
 
-trait edstoneSignaller extends AbstractManagedEnvironment {
-  override val node = Network.newNode(this, Visibility.Network).
+trait RedstoneSignaller extends AbstractManagedEnvironment {
+  override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("redstone", Visibility.Neighbors).
     create()
 

@@ -87,7 +87,7 @@ class LuaJLuaArchitecture(val machine: api.machine.Machine) extends Architecture
     else LuaValue.valueOf(doc)
   }
   catch {
-    case e: NoSuchMethodException =>
+    case _: NoSuchMethodException =>
       LuaValue.varargsOf(LuaValue.NIL, LuaValue.valueOf("no such method"))
     case t: Throwable =>
       LuaValue.varargsOf(LuaValue.NIL, LuaValue.valueOf(if (t.getMessage != null) t.getMessage else t.toString))
@@ -95,9 +95,9 @@ class LuaJLuaArchitecture(val machine: api.machine.Machine) extends Architecture
 
   // ----------------------------------------------------------------------- //
 
-  override def isInitialized = doneWithInitRun
+  override def isInitialized: Boolean = doneWithInitRun
 
-  override def recomputeMemory(components: java.lang.Iterable[ItemStack]) = {
+  override def recomputeMemory(components: java.lang.Iterable[ItemStack]): Boolean = {
     memory = memoryInBytes(components)
     memory > 0
   }
@@ -114,7 +114,7 @@ class LuaJLuaArchitecture(val machine: api.machine.Machine) extends Architecture
     synchronizedCall = null
   }
 
-  override def runThreaded(isSynchronizedReturn: Boolean) = {
+  override def runThreaded(isSynchronizedReturn: Boolean): ExecutionResult = {
     try {
       // Resume the Lua state and remember the number of results we get.
       val results = if (isSynchronizedReturn) {
@@ -215,7 +215,7 @@ class LuaJLuaArchitecture(val machine: api.machine.Machine) extends Architecture
 
   // ----------------------------------------------------------------------- //
 
-  override def initialize() = {
+  override def initialize(): Boolean = {
     lua = JsePlatform.debugGlobals()
     lua.set("package", LuaValue.NIL)
     lua.set("require", LuaValue.NIL)
@@ -240,7 +240,7 @@ class LuaJLuaArchitecture(val machine: api.machine.Machine) extends Architecture
   override def onConnect() {
   }
 
-  override def close() = {
+  override def close(): Unit = {
     lua = null
     thread = null
     synchronizedCall = null

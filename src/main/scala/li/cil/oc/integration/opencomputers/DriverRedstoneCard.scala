@@ -8,8 +8,6 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item
-import li.cil.oc.common.item.Delegator
-import li.cil.oc.common.tileentity.traits.BundledRedstoneAware
 import li.cil.oc.common.tileentity.traits.RedstoneAware
 import li.cil.oc.server.component
 import li.cil.oc.server.component.RedstoneVanilla
@@ -24,8 +22,6 @@ object DriverRedstoneCard extends Item with HostAware {
     val isAdvanced = tier(stack) == Tier.Two
     val hasBundled = isAdvanced
     host match {
-      case redstone: BundledRedstoneAware if hasBundled =>
-        new component.Redstone.Bundled(redstone)
       case redstone: RedstoneAware =>
         new component.Redstone.Vanilla(redstone)
       case _ => null
@@ -35,23 +31,15 @@ object DriverRedstoneCard extends Item with HostAware {
   override def slot(stack: ItemStack): String = Slot.Card
 
   override def tier(stack: ItemStack): Int =
-    Delegator.subItem(stack) match {
-      case Some(card: item.RedstoneCard) => card.tier
+    stack.getItem match {
+      case card: item.RedstoneCard => card.tier
       case _ => Tier.One
     }
 
   object Provider extends EnvironmentProvider {
     override def getEnvironment(stack: ItemStack): Class[_] =
-      if (worksWith(stack)) {
-        val isAdvanced = tier(stack) == Tier.Two
-        val hasBundled = isAdvanced
-        if (hasBundled) {
-          classOf[component.Redstone.Bundled]
-        }
-        else {
-          classOf[component.Redstone.Vanilla]
-        }
-      }
+      if (worksWith(stack))
+        classOf[component.Redstone.Vanilla]
       else null
   }
 }

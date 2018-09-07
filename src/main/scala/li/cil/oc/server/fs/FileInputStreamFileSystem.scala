@@ -1,15 +1,16 @@
 package li.cil.oc.server.fs
 
 import java.io
+import java.nio.channels
 
 trait FileInputStreamFileSystem extends InputStreamFileSystem {
   protected def root: io.File
 
   // ----------------------------------------------------------------------- //
 
-  override def spaceTotal = spaceUsed
+  override def spaceTotal: Long = spaceUsed
 
-  override def spaceUsed = spaceUsed_
+  override def spaceUsed: Long = spaceUsed_
 
   private lazy val spaceUsed_ = {
     def recurse(path: io.File): Long = {
@@ -23,18 +24,18 @@ trait FileInputStreamFileSystem extends InputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def exists(path: String) = new io.File(root, FileSystem.validatePath(path)).exists()
+  override def exists(path: String): Boolean = new io.File(root, FileSystem.validatePath(path)).exists()
 
-  override def size(path: String) = new io.File(root, FileSystem.validatePath(path)) match {
+  override def size(path: String): Long = new io.File(root, FileSystem.validatePath(path)) match {
     case file if file.isFile => file.length()
     case _ => 0L
   }
 
-  override def isDirectory(path: String) = new io.File(root, FileSystem.validatePath(path)).isDirectory
+  override def isDirectory(path: String): Boolean = new io.File(root, FileSystem.validatePath(path)).isDirectory
 
-  override def lastModified(path: String) = new io.File(root, FileSystem.validatePath(path)).lastModified
+  override def lastModified(path: String): Long = new io.File(root, FileSystem.validatePath(path)).lastModified
 
-  override def list(path: String) = new io.File(root, FileSystem.validatePath(path)) match {
+  override def list(path: String): Array[String] = new io.File(root, FileSystem.validatePath(path)) match {
     case file if file.exists() && file.isFile => Array(file.getName)
     case directory if directory.exists() && directory.isDirectory && directory.list() != null =>
       directory.listFiles().map(file => if (file.isDirectory) file.getName + "/" else file.getName)
@@ -46,20 +47,19 @@ trait FileInputStreamFileSystem extends InputStreamFileSystem {
   override protected def openInputChannel(path: String) = Some(new FileChannel(new io.File(root, path)))
 
   protected class FileChannel(file: io.File) extends InputChannel {
-    val channel = new io.RandomAccessFile(file, "r").getChannel
+    val channel: channels.FileChannel = new io.RandomAccessFile(file, "r").getChannel
 
-    override def position(newPosition: Long) = {
+    override def position(newPosition: Long): Long = {
       channel.position(newPosition)
       channel.position
     }
 
-    override def position = channel.position
+    override def position: Long = channel.position
 
-    override def close() = channel.close()
+    override def close(): Unit = channel.close()
 
-    override def isOpen = channel.isOpen
+    override def isOpen: Boolean = channel.isOpen
 
-    override def read(dst: Array[Byte]) = channel.read(java.nio.ByteBuffer.wrap(dst))
+    override def read(dst: Array[Byte]): Int = channel.read(java.nio.ByteBuffer.wrap(dst))
   }
-
 }

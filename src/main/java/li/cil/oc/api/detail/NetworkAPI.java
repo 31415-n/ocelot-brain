@@ -19,9 +19,9 @@ public interface NetworkAPI {
      * respective for each side is used when connecting, and each side's node
      * is added to its own new network, if necessary.
      *
-     * @param tileEntity the tile entity to initialize.
+     * @param environment the environment to initialize.
      */
-    void joinOrCreateNetwork(TileEntity tileEntity);
+    void joinOrCreateNetwork(Environment environment);
 
     /**
      * Creates a new network with the specified node as its initial node.
@@ -53,19 +53,6 @@ public interface NetworkAPI {
     void joinWirelessNetwork(WirelessEndpoint endpoint);
 
     /**
-     * Updates a wireless endpoint in the wireless network.
-     * <p/>
-     * This is more efficient than removing and then adding the node again, as
-     * it only performs the update if the position significantly changed since
-     * the last time the position was updated (more than 0.5 along any axis).
-     * <p/>
-     * Calling this for an endpoint that was not added before does nothing.
-     *
-     * @param endpoint the endpoint for which to update the position.
-     */
-    void updateWirelessNetwork(WirelessEndpoint endpoint);
-
-    /**
      * Removes a wireless endpoint from the wireless network.
      * <p/>
      * This must be called when an endpoint becomes invalid, otherwise it will
@@ -76,19 +63,6 @@ public interface NetworkAPI {
      * @param endpoint the endpoint to remove from the wireless network.
      */
     void leaveWirelessNetwork(WirelessEndpoint endpoint);
-
-    /**
-     * Removes a wireless endpoint from the wireless network of a specific dimension.
-     * <p/>
-     * This may be useful if the dimension of an endpoint changed and you can only
-     * react to that change (e.g. a player changing dimensions).
-     * <p/>
-     * Calling this for an endpoint that was not added before does nothing.
-     *
-     * @param endpoint  the endpoint to remove from the wireless network.
-     * @param dimension the dimension with the wireless network to remove the endpoint from.
-     */
-    void leaveWirelessNetwork(WirelessEndpoint endpoint, int dimension);
 
     /**
      * Sends a packet via the wireless network.

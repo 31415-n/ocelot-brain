@@ -1,10 +1,8 @@
 package li.cil.oc.server.machine.luaj
 
-import li.cil.oc.Settings
 import li.cil.oc.api
 import li.cil.oc.api.driver.item.MutableProcessor
 import li.cil.oc.api.driver.item.Processor
-import li.cil.oc.api.network.Connector
 import li.cil.oc.util.ScalaClosure._
 import li.cil.repack.org.luaj.vm2.LuaValue
 import li.cil.repack.org.luaj.vm2.Varargs
@@ -51,17 +49,14 @@ class ComputerAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
 
     computer.set("removeUser", (args: Varargs) => LuaValue.valueOf(machine.removeUser(args.checkjstring(1))))
 
-    computer.set("energy", (_: Varargs) =>
-      if (Settings.get.ignorePower)
-        LuaValue.valueOf(Double.PositiveInfinity)
-      else
-        LuaValue.valueOf(node.asInstanceOf[Connector].globalBuffer))
+    val infinity: Double = Double.PositiveInfinity
+    computer.set("energy", (_: Varargs) => LuaValue.valueOf(infinity))
 
-    computer.set("maxEnergy", (_: Varargs) => LuaValue.valueOf(node.asInstanceOf[Connector].globalBufferSize))
+    computer.set("maxEnergy", (_: Varargs) => LuaValue.valueOf(infinity))
 
-    computer.set("getArchitectures", (args: Varargs) => {
+    computer.set("getArchitectures", (_: Varargs) => {
       machine.host.internalComponents.map(stack => (stack, api.Driver.driverFor(stack))).collectFirst {
-        case (stack, processor: MutableProcessor) => processor.allArchitectures.toSeq
+        case (_, processor: MutableProcessor) => processor.allArchitectures.toSeq
         case (stack, processor: Processor) => Seq(processor.architecture(stack))
       } match {
         case Some(architectures) => LuaValue.listOf(architectures.map(api.Machine.getArchitectureName).map(LuaValue.valueOf).toArray)
@@ -69,7 +64,7 @@ class ComputerAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
       }
     })
 
-    computer.set("getArchitecture", (args: Varargs) => {
+    computer.set("getArchitecture", (_: Varargs) => {
       machine.host.internalComponents.map(stack => (stack, api.Driver.driverFor(stack))).collectFirst {
         case (stack, processor: Processor) => LuaValue.valueOf(api.Machine.getArchitectureName(processor.architecture(stack)))
       }.getOrElse(LuaValue.NONE)

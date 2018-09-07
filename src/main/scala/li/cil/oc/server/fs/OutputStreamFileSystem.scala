@@ -5,9 +5,7 @@ import java.io.IOException
 
 import li.cil.oc.api
 import li.cil.oc.api.fs.Mode
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-import net.minecraftforge.common.util.Constants.NBT
+import net.minecraft.nbt.{NBT, NBTTagCompound, NBTTagList}
 
 import scala.collection.mutable
 
@@ -20,7 +18,7 @@ trait OutputStreamFileSystem extends InputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def open(path: String, mode: Mode) = this.synchronized(mode match {
+  override def open(path: String, mode: Mode): Int = this.synchronized(mode match {
     case Mode.Read => super.open(path, mode)
     case _ =>
       FileSystem.validatePath(path)
@@ -37,7 +35,7 @@ trait OutputStreamFileSystem extends InputStreamFileSystem {
 
   override def getHandle(handle: Int): api.fs.Handle = this.synchronized(Option(super.getHandle(handle)).orElse(handles.get(handle)).orNull)
 
-  override def close() = this.synchronized {
+  override def close(): Unit = this.synchronized {
     super.close()
     for (handle <- handles.values)
       handle.close()
@@ -64,7 +62,7 @@ trait OutputStreamFileSystem extends InputStreamFileSystem {
     })
   }
 
-  override def save(nbt: NBTTagCompound) = this.synchronized {
+  override def save(nbt: NBTTagCompound): Unit = this.synchronized {
     super.save(nbt)
 
     val handlesNbt = new NBTTagList()
@@ -87,9 +85,9 @@ trait OutputStreamFileSystem extends InputStreamFileSystem {
   protected abstract class OutputHandle(val owner: OutputStreamFileSystem, val handle: Int, val path: String) extends api.fs.Handle {
     protected var _isClosed = false
 
-    def isClosed = _isClosed
+    def isClosed: Boolean = _isClosed
 
-    override def close() = if (!isClosed) {
+    override def close(): Unit = if (!isClosed) {
       _isClosed = true
       owner.handles -= handle
     }
@@ -98,5 +96,4 @@ trait OutputStreamFileSystem extends InputStreamFileSystem {
 
     override def seek(to: Long): Long = throw new IOException("bad file descriptor")
   }
-
 }

@@ -59,11 +59,9 @@ trait RedstoneAware extends TileEntity {
 
   override def updateEntity() {
     super.updateEntity()
-    if (isServer) {
-      if (shouldUpdateInput) {
-        shouldUpdateInput = false
-        EnumFacing.values().foreach(updateRedstoneInput)
-      }
+    if (shouldUpdateInput) {
+      shouldUpdateInput = false
+      EnumFacing.values().foreach(updateRedstoneInput)
     }
   }
 

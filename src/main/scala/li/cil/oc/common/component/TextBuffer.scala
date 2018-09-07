@@ -1,43 +1,25 @@
 package li.cil.oc.common.component
 
-import com.google.common.base.Strings
 import li.cil.oc.Constants
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api
 import li.cil.oc.api.driver.DeviceInfo
-import li.cil.oc.api.internal.TextBuffer
+import li.cil.oc.api.internal.TextBuffer.ColorDepth
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network._
-import li.cil.oc.api.prefab
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
-import li.cil.oc.client.renderer.TextBufferRenderCache
-import li.cil.oc.client.renderer.font.TextBufferRenderData
-import li.cil.oc.client.{ComponentTracker => ClientComponentTracker}
-import li.cil.oc.client.{PacketSender => ClientPacketSender}
 import li.cil.oc.common._
 import li.cil.oc.common.item.data.NodeData
 import li.cil.oc.server.component.Keyboard
-import li.cil.oc.server.{ComponentTracker => ServerComponentTracker}
-import li.cil.oc.server.{PacketSender => ServerPacketSender}
 import li.cil.oc.util
-import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.PackedColor
-import li.cil.oc.util.SideTracker
-import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumHand
-import net.minecraftforge.event.world.ChunkEvent
-import net.minecraftforge.event.world.WorldEvent
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.relauncher.Side
-import net.minecraftforge.fml.relauncher.SideOnly
 
 import scala.collection.convert.WrapAsJava._
 import scala.collection.convert.WrapAsScala._
@@ -64,22 +46,12 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   private var relativeLitArea = -1.0
 
-  private var _pendingCommands: Option[PacketBuilder] = None
-
   private val syncInterval = 100
 
   private var syncCooldown = syncInterval
 
-  private def pendingCommands = _pendingCommands.getOrElse {
-    val pb = new CompressedPacketBuilder(PacketType.TextBufferMulti)
-    pb.writeUTF(node.address)
-    _pendingCommands = Some(pb)
-    pb
-  }
-
   val proxy: TextBuffer.Proxy =
-    if (SideTracker.isClient) new TextBuffer.ClientProxy(this)
-    else new TextBuffer.ServerProxy(this)
+    new TextBuffer.ServerProxy(this)
 
   val data = new util.TextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
 
@@ -161,12 +133,7 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
   @Callback(doc = """function():table -- The list of keyboards attached to the screen.""")
   def getKeyboards(context: Context, args: Arguments): Array[AnyRef] = {
     context.pause(0.25)
-    host match {
-      case screen: tileentity.Screen =>
-        Array(screen.screens.map(_.node).flatMap(_.neighbors.filter(_.host.isInstanceOf[Keyboard]).map(_.address)).toArray)
-      case _ =>
-        Array(node.neighbors.filter(_.host.isInstanceOf[Keyboard]).map(_.address).toArray)
-    }
+    Array(node.neighbors.filter(_.host.isInstanceOf[Keyboard]).map(_.address).toArray)
   }
 
   @Callback(direct = true, doc = """function():boolean -- Returns whether the screen is in high precision mode (sub-pixel mouse event positions).""")
@@ -253,7 +220,7 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   override def setMaximumColorDepth(depth: api.internal.TextBuffer.ColorDepth): Unit = maxDepth = depth
 
-  override def getMaximumColorDepth: TextBuffer.ColorDepth = maxDepth
+  override def getMaximumColorDepth: ColorDepth = maxDepth
 
   override def setColorDepth(depth: api.internal.TextBuffer.ColorDepth): Boolean = {
     if (depth.ordinal > maxDepth.ordinal)
@@ -263,7 +230,7 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
     data.format = PackedColor.Depth.format(depth)
   }
 
-  override def getColorDepth: TextBuffer.ColorDepth = data.format.depth
+  override def getColorDepth: ColorDepth = data.format.depth
 
   override def setPaletteColor(index: Int, color: Int): Unit = data.format match {
     case palette: PackedColor.MutablePaletteFormat =>
@@ -435,7 +402,6 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
   // ----------------------------------------------------------------------- //
 
-  private def bufferPath = node.address + "_buffer"
   private final val IsOnTag = Settings.namespace + "isOn"
   private final val MaxWidthTag = Settings.namespace + "maxWidth"
   private final val MaxHeightTag = Settings.namespace + "maxHeight"
@@ -448,9 +414,6 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
 
     if (nbt.hasKey(NodeData.BufferTag)) {
       data.load(nbt.getCompoundTag(NodeData.BufferTag))
-    }
-    else if (!Strings.isNullOrEmpty(node.address)) {
-      data.load(SaveHandler.loadNBT(nbt, bufferPath))
     }
 
     if (nbt.hasKey(IsOnTag)) {
@@ -492,7 +455,6 @@ class TextBuffer(val host: EnvironmentHost) extends AbstractManagedEnvironment w
       }
     }
 
-    SaveHandler.scheduleSave(host, nbt, bufferPath, data.save _)
     nbt.setBoolean(IsOnTag, isDisplaying)
     nbt.setInteger(MaxWidthTag, maxResolution._1)
     nbt.setInteger(MaxHeightTag, maxResolution._2)
@@ -686,12 +648,7 @@ object TextBuffer {
     }
 
     private def sendToKeyboards(name: String, values: AnyRef*) {
-      owner.host match {
-        case screen: tileentity.Screen =>
-          screen.screens.foreach(_.node.sendToNeighbors(name, values: _*))
-        case _ =>
-          owner.node.sendToNeighbors(name, values: _*)
-      }
+      owner.node.sendToNeighbors(name, values: _*)
     }
   }
 }

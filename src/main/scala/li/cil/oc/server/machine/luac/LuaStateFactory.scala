@@ -15,29 +15,29 @@ import li.cil.oc.api.machine.Architecture
 import li.cil.oc.server.machine.Machine
 import li.cil.oc.util.ExtendedLuaState._
 import li.cil.repack.com.naef.jnlua
-import li.cil.repack.com.naef.jnlua.NativeSupport.Loader
+import li.cil.repack.com.naef.jnlua.{LuaState, LuaStateFiveThree}
 import net.minecraft.item.ItemStack
 import org.apache.commons.lang3.SystemUtils
 
 import scala.util.Random
 
 object LuaStateFactory {
-  def isAvailable = {
+  def isAvailable: Boolean = {
     // Force initialization of both.
     val lua52 = Lua52.isAvailable
     val lua53 = Lua53.isAvailable
     lua52 || lua53
   }
 
-  def include52 = {
+  def include52: Boolean = {
     Lua52.isAvailable && !Settings.get.forceLuaJ
   }
 
-  def include53 = {
+  def include53: Boolean = {
     Lua53.isAvailable && Settings.get.enableLua53
   }
 
-  def default53 = {
+  def default53: Boolean = {
     include53 && Settings.get.defaultLua53
   }
 
@@ -45,9 +45,8 @@ object LuaStateFactory {
     if (default53) {
       val lua53: Class[_ <: Architecture] = classOf[NativeLua53Architecture]
       Option(api.Driver.driverFor(stack)).foreach{
-        case driver: api.driver.item.MutableProcessor => {
+        case driver: api.driver.item.MutableProcessor =>
           driver.setArchitecture(stack, lua53)
-        }
         case _ =>
       }
     }
@@ -57,7 +56,7 @@ object LuaStateFactory {
   object Lua52 extends LuaStateFactory {
     override def version: String = "lua52"
 
-    override protected def create(maxMemory: Option[Int]) = maxMemory.fold(new jnlua.LuaState())(new jnlua.LuaState(_))
+    override protected def create(maxMemory: Option[Int]): LuaState = maxMemory.fold(new jnlua.LuaState())(new jnlua.LuaState(_))
 
     override protected def openLibs(state: jnlua.LuaState): Unit = {
       state.openLib(jnlua.LuaState.Library.BASE)
@@ -75,7 +74,7 @@ object LuaStateFactory {
   object Lua53 extends LuaStateFactory {
     override def version: String = "lua53"
 
-    override protected def create(maxMemory: Option[Int]) = maxMemory.fold(new jnlua.LuaStateFiveThree())(new jnlua.LuaStateFiveThree(_))
+    override protected def create(maxMemory: Option[Int]): LuaStateFiveThree = maxMemory.fold(new jnlua.LuaStateFiveThree())(new jnlua.LuaStateFiveThree(_))
 
     override protected def openLibs(state: jnlua.LuaState): Unit = {
       state.openLib(jnlua.LuaState.Library.BASE)
@@ -137,10 +136,8 @@ abstract class LuaStateFactory {
   // that way, it will fail to access native methods in its static
   // initializer, because the native lib will not have been completely
   // loaded at the time the initializer runs.
-  private def prepareLoad(lib: String): Unit = jnlua.NativeSupport.getInstance().setLoader(new Loader {
-    def load(): Unit = {
-      System.load(lib)
-    }
+  private def prepareLoad(lib: String): Unit = jnlua.NativeSupport.getInstance().setLoader(() => {
+    System.load(lib)
   })
 
   protected def create(maxMemory: Option[Int] = None): jnlua.LuaState
@@ -149,9 +146,9 @@ abstract class LuaStateFactory {
 
   // ----------------------------------------------------------------------- //
 
-  def isAvailable = haveNativeLibrary
+  def isAvailable: Boolean = haveNativeLibrary
 
-  val is64Bit = Architecture.IS_OS_X64
+  val is64Bit: Boolean = Architecture.IS_OS_X64
 
   // Since we use native libraries we have to do some work. This includes
   // figuring out what we're running on, so that we can load the proper shared
@@ -238,7 +235,7 @@ abstract class LuaStateFactory {
           tmpLibFile.delete()
         }
         catch {
-          case t: Throwable => // Ignore.
+          case _: Throwable => // Ignore.
         }
         if (tmpLibFile.exists()) {
           OpenComputers.log.warn(s"Could not update native library '${tmpLibFile.getName}'!")
@@ -273,7 +270,7 @@ abstract class LuaStateFactory {
       // will fail. We still want to try each time, since the files may have
       // been updated.
       // Alternatively, the file could not be opened for reading/writing.
-      case t: Throwable => // Nothing.
+      case _: Throwable => // Nothing.
     }
     // Try to load the lib.
     currentLib = tmpLibFile.getAbsolutePath
@@ -405,17 +402,16 @@ abstract class LuaStateFactory {
 
   // Inspired by org.apache.commons.lang3.SystemUtils
   object Architecture {
-    val OS_ARCH = try System.getProperty("os.arch") catch {
-      case ex: SecurityException => null
+    val OS_ARCH: String = try System.getProperty("os.arch") catch {
+      case _: SecurityException => null
     }
 
-    val IS_OS_ARM = isOSArchMatch("arm")
+    val IS_OS_ARM: Boolean = isOSArchMatch("arm")
 
-    val IS_OS_X86 = isOSArchMatch("x86") || isOSArchMatch("i386")
+    val IS_OS_X86: Boolean = isOSArchMatch("x86") || isOSArchMatch("i386")
 
-    val IS_OS_X64 = isOSArchMatch("x86_64") || isOSArchMatch("amd64")
+    val IS_OS_X64: Boolean = isOSArchMatch("x86_64") || isOSArchMatch("amd64")
 
     private def isOSArchMatch(archPrefix: String): Boolean = OS_ARCH != null && OS_ARCH.startsWith(archPrefix)
   }
-
 }

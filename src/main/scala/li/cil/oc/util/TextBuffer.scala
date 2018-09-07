@@ -3,7 +3,6 @@ package li.cil.oc.util
 import li.cil.oc.Settings
 import li.cil.oc.api
 import net.minecraft.nbt._
-import net.minecraftforge.common.util.Constants.NBT
 
 /**
  * This stores chars in a 2D-Array and provides some manipulation functions.
@@ -24,27 +23,27 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
 
   private var packed = PackedColor.pack(_foreground, _background, _format)
 
-  def foreground = _foreground
+  def foreground: PackedColor.Color = _foreground
 
-  def foreground_=(value: PackedColor.Color) = {
+  def foreground_=(value: PackedColor.Color): TextBuffer = {
     format.validate(value)
     _foreground = value
     packed = PackedColor.pack(_foreground, _background, _format)
     this
   }
 
-  def background = _background
+  def background: PackedColor.Color = _background
 
-  def background_=(value: PackedColor.Color) = {
+  def background_=(value: PackedColor.Color): TextBuffer = {
     format.validate(value)
     _background = value
     packed = PackedColor.pack(_foreground, _background, _format)
     this
   }
 
-  def format = _format
+  def format: PackedColor.ColorFormat = _format
 
-  def format_=(value: PackedColor.ColorFormat) = {
+  def format_=(value: PackedColor.ColorFormat): Boolean = {
     if (format.depth != value.depth) {
       for (row <- 0 until height) {
         val rowColor = color(row)
@@ -62,12 +61,12 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
     else false
   }
 
-  var color = Array.fill(height, width)(packed)
+  var color: Array[Array[Short]] = Array.fill(height, width)(packed)
 
-  var buffer = Array.fill(height, width)(' ')
+  var buffer: Array[Array[Char]] = Array.fill(height, width)(' ')
 
   /** The current buffer size in columns by rows. */
-  def size = (width, height)
+  def size: (Int, Int) = (width, height)
 
   /**
    * Set the new buffer size, returns true if the size changed.
@@ -96,7 +95,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
   }
 
   /** Get the char at the specified index. */
-  def get(col: Int, row: Int) = {
+  def get(col: Int, row: Int): Char = {
     if (col < 0 || col >= width || row < 0 || row >= height)
       throw new IndexOutOfBoundsException()
     else buffer(row)(col)
@@ -145,7 +144,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
       val line = buffer(y)
       val lineColor = color(y)
       var bx = math.max(col, 0)
-      for (x <- bx until math.min(col + w, width) if bx < line.length) {
+      for (_ <- bx until math.min(col + w, width) if bx < line.length) {
         changed = changed || (line(bx) != c) || (lineColor(bx) != packed)
         setChar(line, lineColor, bx, c)
         bx += math.max(1, FontUtils.wcwidth(c))
@@ -272,7 +271,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
     nbt.setTag("color", new NBTTagIntArray(color.flatten.map(_.toInt)))
   }
 
-  override def toString = {
+  override def toString: String = {
     val b = StringBuilder.newBuilder
     if (buffer.length > 0) {
       b.appendAll(buffer(0))

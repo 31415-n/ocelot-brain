@@ -17,8 +17,6 @@ import java.util.concurrent._
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.Network
@@ -27,19 +25,16 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network._
-import li.cil.oc.api.prefab
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.util.ThreadPoolFactory
-import net.minecraft.server.MinecraftServer
-import net.minecraftforge.fml.common.FMLCommonHandler
 
 import scala.collection.convert.WrapAsJava._
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
 
 class InternetCard extends AbstractManagedEnvironment with DeviceInfo {
-  override val node = Network.newNode(this, Visibility.Network).
+  override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("internet", Visibility.Neighbors).
     create()
 
@@ -121,7 +116,7 @@ class InternetCard extends AbstractManagedEnvironment with DeviceInfo {
     }
   }
 
-  override def onDisconnect(node: Node) = this.synchronized {
+  override def onDisconnect(node: Node): Unit = this.synchronized {
     super.onDisconnect(node)
     if (owner.isDefined && (node == this.node || node.host.isInstanceOf[Context] && (node.host.asInstanceOf[Context] == owner.get))) {
       owner = None
@@ -132,7 +127,7 @@ class InternetCard extends AbstractManagedEnvironment with DeviceInfo {
     }
   }
 
-  override def onMessage(message: Message) = this.synchronized {
+  override def onMessage(message: Message): Unit = this.synchronized {
     super.onMessage(message)
     message.data match {
       case Array() if (message.name == "computer.stopped" || message.name == "computer.started") && owner.isDefined && message.source.address == owner.get.node.address =>
@@ -470,10 +465,9 @@ object InternetCard {
 
     // This one doesn't (see comment in TCP socket), but I like to keep it consistent.
     private class RequestSender(val url: URL, val post: Option[String], val headers: Map[String, String]) extends Callable[InputStream] {
-      override def call() = try {
+      override def call(): InputStream = try {
         checkLists(InetAddress.getByName(url.getHost), url.getHost)
-        val proxy = Option(FMLCommonHandler.instance.getMinecraftServerInstance.getServerProxy).getOrElse(java.net.Proxy.NO_PROXY)
-        url.openConnection(proxy) match {
+        url.openConnection() match {
           case http: HttpURLConnection => try {
             http.setDoInput(true)
             headers.foreach(Function.tupled(http.setRequestProperty))
@@ -502,7 +496,7 @@ object InternetCard {
               http.disconnect()
               throw t
           }
-          case other => throw new IOException("unexpected connection type")
+          case _ => throw new IOException("unexpected connection type")
         }
       }
       catch {
@@ -512,7 +506,5 @@ object InternetCard {
           throw new IOException(Option(e.getMessage).getOrElse(e.toString))
       }
     }
-
   }
-
 }

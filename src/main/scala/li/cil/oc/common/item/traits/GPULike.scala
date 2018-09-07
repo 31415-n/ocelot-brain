@@ -1,5 +1,5 @@
 package li.cil.oc.common.item.traits
 
-trait GPULike extends Delegate {
+trait GPULike {
   def gpuTier: Int
 }

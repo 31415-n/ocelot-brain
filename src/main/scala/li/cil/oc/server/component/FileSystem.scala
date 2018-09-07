@@ -20,8 +20,6 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network._
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.api.prefab.AbstractValue
-import li.cil.oc.common.SaveHandler
-import li.cil.oc.server.{PacketSender => ServerPacketSender}
 import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}
 
@@ -89,25 +87,21 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
 
   @Callback(direct = true, doc = """function(path:string):boolean -- Returns whether an object exists at the specified absolute path in the file system.""")
   def exists(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
-    diskActivity()
     result(fileSystem.exists(clean(args.checkString(0))))
   }
 
   @Callback(direct = true, doc = """function(path:string):number -- Returns the size of the object at the specified absolute path in the file system.""")
   def size(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
-    diskActivity()
     result(fileSystem.size(clean(args.checkString(0))))
   }
 
   @Callback(direct = true, doc = """function(path:string):boolean -- Returns whether the object at the specified absolute path in the file system is a directory.""")
   def isDirectory(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
-    diskActivity()
     result(fileSystem.isDirectory(clean(args.checkString(0))))
   }
 
   @Callback(direct = true, doc = """function(path:string):number -- Returns the (real world) timestamp of when the object at the specified absolute path in the file system was modified.""")
   def lastModified(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
-    diskActivity()
     result(fileSystem.lastModified(clean(args.checkString(0))))
   }
 
@@ -115,7 +109,6 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
   def list(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
     Option(fileSystem.list(clean(args.checkString(0)))) match {
       case Some(list) =>
-        diskActivity()
         Array(list)
       case _ => null
     }
@@ -126,7 +119,6 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     def recurse(path: String): Boolean = !fileSystem.exists(path) && (fileSystem.makeDirectory(path) ||
       (recurse(path.split("/").dropRight(1).mkString("/")) && fileSystem.makeDirectory(path)))
     val success = recurse(clean(args.checkString(0)))
-    diskActivity()
     result(success)
   }
 
@@ -135,14 +127,12 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     def recurse(parent: String): Boolean = (!fileSystem.isDirectory(parent) ||
       fileSystem.list(parent).forall(child => recurse(parent + "/" + child))) && fileSystem.delete(parent)
     val success = recurse(clean(args.checkString(0)))
-    diskActivity()
     result(success)
   }
 
   @Callback(doc = """function(from:string, to:string):boolean -- Renames/moves an object from the first specified absolute path in the file system to the second.""")
   def rename(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
     val success = fileSystem.rename(clean(args.checkString(0)), clean(args.checkString(1)))
-    diskActivity()
     result(success)
   }
 
@@ -163,7 +153,6 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     if (handle > 0) {
       owners.getOrElseUpdate(context.node.address, mutable.Set.empty[Int]) += handle
     }
-    diskActivity()
     result(new HandleValue(node.address, handle))
   }
 
@@ -187,7 +176,6 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
               Array.copy(buffer, 0, bytes, 0, read)
               bytes
             }
-          diskActivity()
           result(bytes)
         }
         else {
@@ -226,7 +214,6 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
     Option(fileSystem.getHandle(handle)) match {
       case Some(file) =>
         file.write(value)
-        diskActivity()
         result(true)
       case _ => throw new IOException("bad file descriptor")
     }
@@ -317,18 +304,16 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
       label.save(nbt)
     }
 
-    if (!SaveHandler.savingForClients) {
-      val ownersNbt = new NBTTagList()
-      for ((address, handles) <- owners) {
-        val ownerNbt = new NBTTagCompound()
-        ownerNbt.setString("address", address)
-        ownerNbt.setTag("handles", new NBTTagIntArray(handles.toArray))
-        ownersNbt.appendTag(ownerNbt)
-      }
-      nbt.setTag("owners", ownersNbt)
-
-      nbt.setNewCompoundTag("fs", fileSystem.save)
+    val ownersNbt = new NBTTagList()
+    for ((address, handles) <- owners) {
+      val ownerNbt = new NBTTagCompound()
+      ownerNbt.setString("address", address)
+      ownerNbt.setTag("handles", new NBTTagIntArray(handles.toArray))
+      ownersNbt.appendTag(ownerNbt)
     }
+    nbt.setTag("owners", ownersNbt)
+
+    nbt.setNewCompoundTag("fs", fileSystem.save)
   }
 
   // ----------------------------------------------------------------------- //
@@ -350,13 +335,6 @@ class FileSystem(val fileSystem: IFileSystem, var label: Label, val host: Option
   private def checkOwner(owner: String, handle: Int): Unit =
     if (!owners.contains(owner) || !owners(owner).contains(handle))
       throw new IOException("bad file descriptor")
-
-  private def diskActivity() {
-    (sound, host) match {
-      case (Some(s), Some(h)) => ServerPacketSender.sendFileSystemActivity(node, h, s)
-      case _ =>
-    }
-  }
 }
 
 final class HandleValue extends AbstractValue {

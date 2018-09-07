@@ -20,7 +20,7 @@ object GameTimeFormatter {
                  val hour: Int, val minute: Int, val second: Int)
 
   // See http://www.cplusplus.com/reference/ctime/strftime/
-  private val specifiers: Map[Char, (DateTime) => String] = Map(
+  private val specifiers: Map[Char, DateTime => String] = Map(
     'a' -> (t => shortWeekDays(t.weekDay - 1)),
     'A' -> (t => weekDays(t.weekDay - 1)),
     'b' -> (t => shortMonths(t.month - 1)),
@@ -60,7 +60,7 @@ object GameTimeFormatter {
     '%' -> (t => "%")
   )
 
-  def parse(time: Double) = {
+  def parse(time: Double): DateTime = {
     val calendar = new GregorianCalendar(TimeZone.getTimeZone("UTC"))
     calendar.setTimeInMillis((time * 1000).toLong)
 
@@ -75,7 +75,7 @@ object GameTimeFormatter {
       calendar.get(Calendar.SECOND))
   }
 
-  def format(format: String, time: DateTime) = {
+  def format(format: String, time: DateTime): String = {
     val result = new mutable.StringBuilder()
     val iterator = format.iterator
     while (iterator.hasNext) {

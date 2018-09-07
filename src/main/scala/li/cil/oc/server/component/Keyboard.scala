@@ -10,10 +10,7 @@ import li.cil.oc.api
 import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.internal.Keyboard.UsabilityChecker
-import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.api.network.Message
-import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab
+import li.cil.oc.api.network.{Component, EnvironmentHost, Message, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import net.minecraft.entity.player.EntityPlayer
 
@@ -24,7 +21,7 @@ import scala.collection.mutable
 // TODO key up after load for anything that was pressed
 
 class Keyboard(val host: EnvironmentHost) extends AbstractManagedEnvironment with api.internal.Keyboard with DeviceInfo {
-  override val node = Network.newNode(this, Visibility.Network).
+  override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("keyboard").
     create()
 
@@ -32,7 +29,7 @@ class Keyboard(val host: EnvironmentHost) extends AbstractManagedEnvironment wit
 
   var usableOverride: Option[api.internal.Keyboard.UsabilityChecker] = None
 
-  override def setUsableOverride(callback: UsabilityChecker) = usableOverride = Option(callback)
+  override def setUsableOverride(callback: UsabilityChecker): Unit = usableOverride = Option(callback)
 
   // ----------------------------------------------------------------------- //
 
@@ -64,7 +61,7 @@ class Keyboard(val host: EnvironmentHost) extends AbstractManagedEnvironment wit
 
   // ----------------------------------------------------------------------- //
 
-  override def onMessage(message: Message) = {
+  override def onMessage(message: Message): Unit = {
     message.data match {
       case Array(p: EntityPlayer, char: Character, code: Integer) if message.name == "keyboard.keyDown" =>
         if (isUsableByPlayer(p)) {
@@ -105,11 +102,11 @@ class Keyboard(val host: EnvironmentHost) extends AbstractManagedEnvironment wit
 
   // ----------------------------------------------------------------------- //
 
-  def isUsableByPlayer(p: EntityPlayer) = usableOverride match {
+  def isUsableByPlayer(p: EntityPlayer): Boolean = usableOverride match {
     case Some(callback) => callback.isUsableByPlayer(this, p)
-    case _ => p.getDistanceSq(host.xPosition, host.yPosition, host.zPosition) <= 64
+    case _ => true
   }
 
-  protected def signal(args: AnyRef*) =
+  protected def signal(args: AnyRef*): Unit =
     node.sendToReachable("computer.checked_signal", args: _*)
 }

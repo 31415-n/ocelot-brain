@@ -19,23 +19,18 @@ import li.cil.oc.api.fs.Label
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab
+import li.cil.oc.api.network.{Component, EnvironmentHost, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
-import li.cil.oc.server.{PacketSender => ServerPacketSender}
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.common.DimensionManager
 
 import scala.collection.convert.WrapAsJava._
 
 class Drive(val capacity: Int, val platterCount: Int, val label: Label, host: Option[EnvironmentHost], val sound: Option[String], val speed: Int) extends AbstractManagedEnvironment with DeviceInfo {
-  override val node = Network.newNode(this, Visibility.Network).
+  override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("drive", Visibility.Neighbors).
-    withConnector().
     create()
 
-  private def savePath = new io.File(DimensionManager.getCurrentSaveRootDirectory, Settings.savePath + node.address + ".bin")
+  private def savePath = new io.File(Settings.saveRootDirectory, Settings.savePath + node.address + ".bin")
 
   private final val sectorSize = 512
 
@@ -94,7 +89,6 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, host: Op
   def readSector(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
     context.consumeCallBudget(readSectorCosts(speed))
     val sector = moveToSector(context, checkSector(args, 0))
-    diskActivity()
     val sectorData = new Array[Byte](sectorSize)
     Array.copy(data, sectorOffset(sector), sectorData, 0, sectorSize)
     result(sectorData)
@@ -105,7 +99,6 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, host: Op
     context.consumeCallBudget(writeSectorCosts(speed))
     val sectorData = args.checkByteArray(1)
     val sector = moveToSector(context, checkSector(args, 0))
-    diskActivity()
     Array.copy(sectorData, 0, data, sectorOffset(sector), math.min(sectorSize, sectorData.length))
     null
   }
@@ -115,7 +108,6 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, host: Op
     context.consumeCallBudget(readByteCosts(speed))
     val offset = args.checkInteger(0) - 1
     moveToSector(context, checkSector(offset))
-    diskActivity()
     result(data(offset))
   }
 
@@ -125,7 +117,6 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, host: Op
     val offset = args.checkInteger(0) - 1
     val value = args.checkInteger(1).toByte
     moveToSector(context, checkSector(offset))
-    diskActivity()
     data(offset) = value
     null
   }
@@ -134,7 +125,7 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, host: Op
 
   private final val HeadPosTag = "headPos"
 
-  override def load(nbt: NBTTagCompound) = this.synchronized {
+  override def load(nbt: NBTTagCompound): Unit = this.synchronized {
     super.load(nbt)
 
     if (node.address != null) try {
@@ -161,7 +152,7 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, host: Op
     }
   }
 
-  override def save(nbt: NBTTagCompound) = this.synchronized {
+  override def save(nbt: NBTTagCompound): Unit = this.synchronized {
     super.save(nbt)
 
     if (node.address != null) try {
@@ -211,11 +202,4 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, host: Op
   private def sectorOffset(sector: Int) = sector * sectorSize
 
   private def offsetSector(offset: Int) = offset / sectorSize
-
-  private def diskActivity() {
-    (sound, host) match {
-      case (Some(s), Some(h)) => ServerPacketSender.sendFileSystemActivity(node, h, s)
-      case _ =>
-    }
-  }
 }

@@ -7,8 +7,7 @@ import net.minecraft.util.EnumFacing
 
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
-import scala.language.implicitConversions
-import scala.language.reflectiveCalls
+import scala.language.{implicitConversions, reflectiveCalls}
 import scala.reflect.ClassTag
 
 object ExtendedNBT {
@@ -73,6 +72,7 @@ object ExtendedNBT {
       // Ignore, can be stuff like the 'n' introduced by Lua's `pack`.
       case (k: Number, v) => k -> v
     }.sortBy(_._1.intValue()).map(_._2)
+
     def asList(value: Option[Any]): IndexedSeq[_] = value match {
       case Some(v: Array[_]) => v
       case Some(v: Map[_, _]) => mapToList(v.toArray)
@@ -81,64 +81,59 @@ object ExtendedNBT {
       case Some(v: String) => v.getBytes(Charsets.UTF_8)
       case _ => throw new IllegalArgumentException("Illegal or missing value.")
     }
+
     def asMap[K](value: Option[Any]): Map[K, _] = value match {
       case Some(v: Map[K, _]@unchecked) => v
       case Some(v: mutable.Map[K, _]@unchecked) => v.toMap
       case Some(v: java.util.Map[K, _]@unchecked) => mapAsScalaMap(v).toMap
       case _ => throw new IllegalArgumentException("Illegal value.")
     }
+
     val typeAndValue = asMap[String](Option(map))
     val nbtType = typeAndValue.get("type")
     val nbtValue = typeAndValue.get("value")
     nbtType match {
-      case Some(n: Number) => n.intValue() match {
-        case NBT.TAG_BYTE => new NBTTagByte(nbtValue match {
+      case Some(n: Number) =>
+        val t = n.intValue()
+        if (t == NBT.TAG_BYTE) new NBTTagByte(nbtValue match {
           case Some(v: Number) => v.byteValue()
           case _ => throw new IllegalArgumentException("Illegal or missing value.")
         })
-
-        case NBT.TAG_SHORT => new NBTTagShort(nbtValue match {
+        else if (t == NBT.TAG_SHORT) new NBTTagShort(nbtValue match {
           case Some(v: Number) => v.shortValue()
           case _ => throw new IllegalArgumentException("Illegal or missing value.")
         })
-
-        case NBT.TAG_INT => new NBTTagInt(nbtValue match {
+        else if (t == NBT.TAG_INT) new NBTTagInt(nbtValue match {
           case Some(v: Number) => v.intValue()
           case _ => throw new IllegalArgumentException("Illegal or missing value.")
         })
-
-        case NBT.TAG_LONG => new NBTTagLong(nbtValue match {
+        else if (t == NBT.TAG_LONG) new NBTTagLong(nbtValue match {
           case Some(v: Number) => v.longValue()
           case _ => throw new IllegalArgumentException("Illegal or missing value.")
         })
-
-        case NBT.TAG_FLOAT => new NBTTagFloat(nbtValue match {
+        else if (t == NBT.TAG_FLOAT) new NBTTagFloat(nbtValue match {
           case Some(v: Number) => v.floatValue()
           case _ => throw new IllegalArgumentException("Illegal or missing value.")
         })
-
-        case NBT.TAG_DOUBLE => new NBTTagDouble(nbtValue match {
+        else if (t == NBT.TAG_DOUBLE) new NBTTagDouble(nbtValue match {
           case Some(v: Number) => v.doubleValue()
           case _ => throw new IllegalArgumentException("Illegal or missing value.")
         })
-
-        case NBT.TAG_BYTE_ARRAY => new NBTTagByteArray(asList(nbtValue).map {
+        else if (t == NBT.TAG_BYTE_ARRAY) new NBTTagByteArray(asList(nbtValue).map {
           case n: Number => n.byteValue()
           case _ => throw new IllegalArgumentException("Illegal value.")
         }.toArray)
-
-        case NBT.TAG_STRING => new NBTTagString(nbtValue match {
+        else if (t == NBT.TAG_STRING) new NBTTagString(nbtValue match {
           case Some(v: String) => v
           case Some(v: Array[Byte]) => new String(v, Charsets.UTF_8)
           case _ => throw new IllegalArgumentException("Illegal or missing value.")
         })
-
-        case NBT.TAG_LIST =>
+        else if (t == NBT.TAG_LIST) {
           val list = new NBTTagList()
           asList(nbtValue).map(v => asMap(Option(v))).foreach(v => list.appendTag(typedMapToNbt(v)))
           list
-
-        case NBT.TAG_COMPOUND =>
+        }
+        else if (t == NBT.TAG_COMPOUND) {
           val nbt = new NBTTagCompound()
           val values = asMap[String](nbtValue)
           for ((name, entry) <- values) {
@@ -147,15 +142,14 @@ object ExtendedNBT {
             }
           }
           nbt
-
-        case NBT.TAG_INT_ARRAY =>
+        }
+        else if (t == NBT.TAG_INT_ARRAY) {
           new NBTTagIntArray(asList(nbtValue).map {
             case n: Number => n.intValue()
             case _ => throw new IllegalArgumentException()
           }.toArray)
-
-        case _ => throw new IllegalArgumentException(s"Unsupported NBT type '$n'.")
-      }
+        }
+        else throw new IllegalArgumentException(s"Unsupported NBT type '$n'.")
       case Some(t) => throw new IllegalArgumentException(s"Illegal NBT type '$t'.")
       case _ => throw new IllegalArgumentException(s"Missing NBT type.")
     }
@@ -279,4 +273,5 @@ object ExtendedNBT {
 
     def toArray[Tag: ClassTag]: Array[Tag] = map((t: Tag) => t).toArray
   }
+
 }

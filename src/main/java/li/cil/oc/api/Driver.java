@@ -6,12 +6,10 @@ import li.cil.oc.api.driver.InventoryProvider;
 import li.cil.oc.api.driver.DriverItem;
 import li.cil.oc.api.driver.DriverBlock;
 import li.cil.oc.api.network.EnvironmentHost;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.items.IItemHandler;
 
 import java.util.Collection;
 import java.util.Set;
@@ -197,26 +195,6 @@ public final class Driver {
     public static Set<Class<?>> environmentsFor(ItemStack stack) {
         if (API.driver != null)
             return API.driver.environmentsFor(stack);
-        return null;
-    }
-
-    /**
-     * Get an IItemHandler implementation providing access to an item inventory.
-     * <p/>
-     * This will use the registered {@link InventoryProvider}s to find an
-     * IItemHandler implementation providing access to the specified stack.
-     * If none can be found, returns <tt>null</tt>.
-     * <p/>
-     * Note that the specified <tt>player</tt> may be null, but will usually
-     * be the <em>fake player</em> of the agent making use of this API.
-     *
-     * @param stack  the item stack to get the inventory access for.
-     * @param player the player holding the item. May be <tt>null</tt>.
-     * @return the IItemHandler implementation interfacing the stack, or <tt>null</tt>.
-     */
-    public static IItemHandler itemHandlerFor(ItemStack stack, EntityPlayer player) {
-        if (API.driver != null)
-            return API.driver.itemHandlerFor(stack, player);
         return null;
     }
 

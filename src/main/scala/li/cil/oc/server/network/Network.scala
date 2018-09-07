@@ -339,6 +339,10 @@ object Network extends api.detail.NetworkAPI {
     case _ =>
   }
 
+  override def joinOrCreateNetwork(environment: Environment): Unit = {
+    joinNewNetwork(environment.node())
+  }
+
   def getNetworkNode(tileEntity: TileEntity, side: EnumFacing): Option[ImmutableNode] = {
     if (tileEntity != null) {
       tileEntity match {
@@ -352,34 +356,20 @@ object Network extends api.detail.NetworkAPI {
     None
   }
 
-  private def canConnectFromSideIM(tileEntity: TileEntity, side: EnumFacing) =
-    tileEntity match {
-      case im: tileentity.traits.ImmibisMicroblock => im.ImmibisMicroblocks_isSideOpen(side.ordinal)
-      case _ => true
-    }
-
   // ----------------------------------------------------------------------- //
 
   override def joinWirelessNetwork(endpoint: WirelessEndpoint) {
     WirelessNetwork.add(endpoint)
   }
 
-  override def updateWirelessNetwork(endpoint: WirelessEndpoint) {
-    WirelessNetwork.update(endpoint)
-  }
-
   override def leaveWirelessNetwork(endpoint: WirelessEndpoint) {
     WirelessNetwork.remove(endpoint)
-  }
-
-  override def leaveWirelessNetwork(endpoint: WirelessEndpoint, dimension: Int) {
-    WirelessNetwork.remove(endpoint, dimension)
   }
 
   // ----------------------------------------------------------------------- //
 
   override def sendWirelessPacket(source: WirelessEndpoint, strength: Double, packet: network.Packet) {
-    for (endpoint <- WirelessNetwork.computeReachableFrom(source, strength)) {
+    for (endpoint <- WirelessNetwork.endpoints) {
       endpoint.receivePacket(packet, source)
     }
   }

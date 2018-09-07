@@ -4,25 +4,23 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.server.component
 import net.minecraft.nbt.NBTTagCompound
 
-class MotionSensor extends traits.Environment with traits.Tickable {
+class MotionSensor extends traits.Environment {
   val motionSensor = new component.MotionSensor(this)
 
   def node: Node = motionSensor.node
 
   override def updateEntity() {
     super.updateEntity()
-    if (isServer) {
-      motionSensor.update()
-    }
+    motionSensor.update()
   }
 
-  override def readFromNBTForServer(nbt: NBTTagCompound) {
-    super.readFromNBTForServer(nbt)
+  override def readFromNBT(nbt: NBTTagCompound) {
+    super.readFromNBT(nbt)
     motionSensor.load(nbt)
   }
 
-  override def writeToNBTForServer(nbt: NBTTagCompound) {
-    super.writeToNBTForServer(nbt)
+  override def writeToNBT(nbt: NBTTagCompound) {
+    super.writeToNBT(nbt)
     motionSensor.save(nbt)
   }
 }

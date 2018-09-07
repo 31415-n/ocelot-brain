@@ -14,15 +14,14 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.server.component
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraftforge.common.DimensionManager
 
 import scala.util.Try
 
 object FileSystem extends api.detail.FileSystemAPI {
-  lazy val isCaseInsensitive = Settings.get.forceCaseInsensitive || (try {
+  lazy val isCaseInsensitive: Boolean = Settings.get.forceCaseInsensitive || (try {
     val uuid = UUID.randomUUID().toString
-    val lowerCase = new io.File(DimensionManager.getCurrentSaveRootDirectory, uuid + "oc_rox")
-    val upperCase = new io.File(DimensionManager.getCurrentSaveRootDirectory, uuid + "OC_ROX")
+    val lowerCase = new io.File(Settings.saveRootDirectory, uuid + "oc_rox")
+    val upperCase = new io.File(Settings.saveRootDirectory, uuid + "OC_ROX")
     // This should NEVER happen but could also lead to VERY weird bugs, so we
     // make sure the files don't exist.
     lowerCase.exists() && lowerCase.delete()
@@ -46,9 +45,9 @@ object FileSystem extends api.detail.FileSystemAPI {
   // accordingly before the path is passed to the file system.
   private val invalidChars = """\:*?"<>|""".toSet
 
-  def isValidFilename(name: String) = !name.exists(invalidChars.contains)
+  def isValidFilename(name: String): Boolean = !name.exists(invalidChars.contains)
 
-  def validatePath(path: String) = {
+  def validatePath(path: String): String = {
     if (!isValidFilename(path)) {
       throw new java.io.IOException("path contains invalid characters")
     }
@@ -97,8 +96,8 @@ object FileSystem extends api.detail.FileSystemAPI {
     }
   }
 
-  override def fromSaveDirectory(root: String, capacity: Long, buffered: Boolean) = {
-    val path = new io.File(DimensionManager.getCurrentSaveRootDirectory, Settings.savePath + root)
+  override def fromSaveDirectory(root: String, capacity: Long, buffered: Boolean): Capacity = {
+    val path = new io.File(Settings.saveRootDirectory, Settings.savePath + root)
     if (!path.isDirectory) {
       path.delete()
     }
@@ -112,37 +111,37 @@ object FileSystem extends api.detail.FileSystemAPI {
 
   def fromMemory(capacity: Long): api.fs.FileSystem = new RamFileSystem(capacity)
 
-  override def asReadOnly(fileSystem: api.fs.FileSystem) =
+  override def asReadOnly(fileSystem: api.fs.FileSystem): api.fs.FileSystem =
     if (fileSystem.isReadOnly) fileSystem
     else new ReadOnlyWrapper(fileSystem)
 
-  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: Label, host: EnvironmentHost, accessSound: String, speed: Int) =
+  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: Label, host: EnvironmentHost, accessSound: String, speed: Int): component.FileSystem =
     Option(fileSystem).flatMap(fs => Some(new component.FileSystem(fs, label, Option(host), Option(accessSound), (speed - 1) max 0 min 5))).orNull
 
-  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: String, host: EnvironmentHost, accessSound: String, speed: Int) =
+  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: String, host: EnvironmentHost, accessSound: String, speed: Int): component.FileSystem =
     asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), host, accessSound, speed)
 
-  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: Label, host: EnvironmentHost, sound: String) =
+  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: Label, host: EnvironmentHost, sound: String): component.FileSystem =
     asManagedEnvironment(fileSystem, label, host, sound, 1)
 
-  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: String, host: EnvironmentHost, sound: String) =
+  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: String, host: EnvironmentHost, sound: String): component.FileSystem =
     asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), host, sound, 1)
 
-  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: Label) =
+  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: Label): component.FileSystem =
     asManagedEnvironment(fileSystem, label, null, null, 1)
 
-  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: String) =
+  def asManagedEnvironment(fileSystem: api.fs.FileSystem, label: String): component.FileSystem =
     asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), null, null, 1)
 
-  def asManagedEnvironment(fileSystem: api.fs.FileSystem) =
+  def asManagedEnvironment(fileSystem: api.fs.FileSystem): component.FileSystem =
     asManagedEnvironment(fileSystem, null: Label, null, null, 1)
 
   abstract class ItemLabel(val stack: ItemStack) extends Label
 
   private class ReadOnlyLabel(val label: String) extends Label {
-    def setLabel(value: String) = throw new IllegalArgumentException("label is read only")
+    def setLabel(value: String): Unit = throw new IllegalArgumentException("label is read only")
 
-    def getLabel = label
+    def getLabel: String = label
 
     private final val LabelTag = Settings.namespace + "fs.label"
 
@@ -173,7 +172,7 @@ object FileSystem extends api.detail.FileSystemAPI {
     extends VirtualFileSystem
     with Buffered
     with Capacity {
-    protected override def segments(path: String) = {
+    protected override def segments(path: String): Array[String] = {
       val parts = super.segments(path)
       if (isCaseInsensitive) toCaseInsensitive(parts) else parts
     }
@@ -194,5 +193,4 @@ object FileSystem extends api.detail.FileSystemAPI {
       })
     }
   }
-
 }

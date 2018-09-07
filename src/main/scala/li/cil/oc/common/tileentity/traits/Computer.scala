@@ -26,8 +26,6 @@ trait Computer extends Environment with ComponentInventory with RedstoneAware
 
   // ----------------------------------------------------------------------- //
 
-  def canInteract(player: String): Boolean = machine.canInteract(player)
-
   def isRunning: Boolean = machine.isRunning
 
   override def getCurrentState: util.EnumSet[api.util.StateAware.State] = {
@@ -96,14 +94,8 @@ trait Computer extends Environment with ComponentInventory with RedstoneAware
 
   // ----------------------------------------------------------------------- //
 
-  override def markDirty() {
-    super.markDirty()
-    machine.onHostChanged()
-    isOutputEnabled = hasRedstoneCard
-  }
-
   override def isUsableByPlayer(player: EntityPlayer): Boolean =
-    canInteract(player.getName)
+    machine.canInteract(player.getName)
 
   override protected def onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
     super.onRedstoneInputChanged(args)

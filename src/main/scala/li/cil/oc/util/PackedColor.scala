@@ -8,13 +8,13 @@ import net.minecraft.nbt.NBTTagCompound
 object PackedColor {
 
   object Depth {
-    def bits(depth: api.internal.TextBuffer.ColorDepth) = depth match {
+    def bits(depth: api.internal.TextBuffer.ColorDepth): Int = depth match {
       case api.internal.TextBuffer.ColorDepth.OneBit => 1
       case api.internal.TextBuffer.ColorDepth.FourBit => 4
       case api.internal.TextBuffer.ColorDepth.EightBit => 8
     }
 
-    def format(depth: api.internal.TextBuffer.ColorDepth) = depth match {
+    def format(depth: api.internal.TextBuffer.ColorDepth): ColorFormat = depth match {
       case api.internal.TextBuffer.ColorDepth.OneBit => SingleBitFormat
       case api.internal.TextBuffer.ColorDepth.FourBit => new MutablePaletteFormat
       case api.internal.TextBuffer.ColorDepth.EightBit => new HybridFormat
@@ -55,9 +55,9 @@ object PackedColor {
   class SingleBitFormat(val color: Int) extends ColorFormat {
     override def depth = api.internal.TextBuffer.ColorDepth.OneBit
 
-    override def inflate(value: Int) = if (value == 0) 0x000000 else color
+    override def inflate(value: Int): Int = if (value == 0) 0x000000 else color
 
-    override def deflate(value: Color) = {
+    override def deflate(value: Color): Byte = {
       (if (value.value == 0) 0 else 1).toByte
     }
   }
@@ -73,7 +73,7 @@ object PackedColor {
       }
     }
 
-    override def deflate(value: Color) =
+    override def deflate(value: Color): Byte =
       if (value.isPalette) (math.max(0, value.value) % palette.length).toByte
       else palette.map(delta(value.value, _)).zipWithIndex.minBy(_._1)._2.toByte
 
@@ -81,7 +81,7 @@ object PackedColor {
 
     protected def palette: Array[Int]
 
-    protected def delta(colorA: Int, colorB: Int) = {
+    protected def delta(colorA: Int, colorB: Int): Double = {
       val (rA, gA, bA) = extract(colorA)
       val (rB, gB, bB) = extract(colorB)
       val dr = rA - rB
@@ -96,7 +96,7 @@ object PackedColor {
 
     def apply(index: Int) = palette(index)
 
-    def update(index: Int, value: Int) = palette(index) = value
+    def update(index: Int, value: Int): Unit = palette(index) = value
 
     protected val palette = Array(
       0xFFFFFF, 0xFFCC33, 0xCC66CC, 0x6699FF,
@@ -128,7 +128,7 @@ object PackedColor {
 
     override def depth = api.internal.TextBuffer.ColorDepth.EightBit
 
-    override def inflate(value: Int) =
+    override def inflate(value: Int): Int =
       if (isFromPalette(value)) super.inflate(value)
       else {
         val index = value - palette.length
@@ -141,7 +141,7 @@ object PackedColor {
         (r << rShift32) | (g << gShift32) | (b << bShift32)
       }
 
-    override def deflate(value: Color) = {
+    override def deflate(value: Color): Byte = {
       val paletteIndex = super.deflate(value)
       if (value.isPalette) paletteIndex
       else {
@@ -159,7 +159,7 @@ object PackedColor {
       }
     }
 
-    override def isFromPalette(value: Int) = value >= 0 && value < palette.length
+    override def isFromPalette(value: Int): Boolean = value >= 0 && value < palette.length
   }
 
   case class Color(value: Int, isPalette: Boolean = false)
@@ -168,17 +168,17 @@ object PackedColor {
   val ForegroundShift = 8
   val BackgroundMask = 0x000000FF
 
-  def pack(foreground: Color, background: Color, format: ColorFormat) = {
+  def pack(foreground: Color, background: Color, format: ColorFormat): Short = {
     (((format.deflate(foreground) & 0xFF) << ForegroundShift) | (format.deflate(background) & 0xFF)).toShort
   }
 
-  def extractForeground(color: Short) = (color & 0xFFFF) >>> ForegroundShift
+  def extractForeground(color: Short): Int = (color & 0xFFFF) >>> ForegroundShift
 
-  def extractBackground(color: Short) = color & BackgroundMask
+  def extractBackground(color: Short): Int = color & BackgroundMask
 
-  def unpackForeground(color: Short, format: ColorFormat) =
+  def unpackForeground(color: Short, format: ColorFormat): Int =
     format.inflate(extractForeground(color))
 
-  def unpackBackground(color: Short, format: ColorFormat) =
+  def unpackBackground(color: Short, format: ColorFormat): Int =
     format.inflate(extractBackground(color))
 }

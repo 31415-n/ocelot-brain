@@ -5,12 +5,11 @@ import java.util
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.machine.Value
-import li.cil.repack.com.naef.jnlua.JavaFunction
 import li.cil.repack.com.naef.jnlua.LuaState
 import li.cil.repack.com.naef.jnlua.LuaType
 
 import scala.collection.convert.WrapAsScala._
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 import scala.language.implicitConversions
 import scala.math.ScalaNumber
 import scala.runtime.BoxedUnit
@@ -20,9 +19,7 @@ object ExtendedLuaState {
   implicit def extendLuaState(state: LuaState): ExtendedLuaState = new ExtendedLuaState(state)
 
   class ExtendedLuaState(val lua: LuaState) {
-    def pushScalaFunction(f: (LuaState) => Int) = lua.pushJavaFunction(new JavaFunction {
-      override def invoke(state: LuaState) = f(state)
-    })
+    def pushScalaFunction(f: LuaState => Int): Unit = lua.pushJavaFunction((state: LuaState) => f(state))
 
     def pushValue(value: Any, memo: util.IdentityHashMap[Any, Int] = new util.IdentityHashMap()) {
       val recursive = memo.size > 0
@@ -115,8 +112,7 @@ object ExtendedLuaState {
       case _ => null
     }
 
-    def toSimpleJavaObjects(start: Int) =
+    def toSimpleJavaObjects(start: Int): immutable.IndexedSeq[AnyRef] =
       for (index <- start to lua.getTop) yield toSimpleJavaObject(index)
   }
-
 }

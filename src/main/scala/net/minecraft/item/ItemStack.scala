@@ -53,4 +53,6 @@ class ItemStack(private var item: Item, private var amount: Int = 1, private var
 
   def copy(): ItemStack =
     new ItemStack(item, amount, damage)
+
+  def getMaxStackSize = 64
 }

@@ -14,17 +14,11 @@ object OpenComputers {
 
   var proxy: Proxy = _
 
-  def preInit(): Unit = {
+  def init(): Unit = {
     proxy.preInit()
     OpenComputers.log.info("Done with pre init phase.")
-  }
-
-  def init(): Unit = {
     proxy.init()
     OpenComputers.log.info("Done with init phase.")
-  }
-
-  def postInit(): Unit = {
     proxy.postInit()
     OpenComputers.log.info("Done with post init phase.")
   }

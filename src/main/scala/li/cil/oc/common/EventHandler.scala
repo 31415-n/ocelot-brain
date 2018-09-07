@@ -2,11 +2,9 @@ package li.cil.oc.common
 
 import li.cil.oc._
 import li.cil.oc.api.Network
+import li.cil.oc.api.network.Environment
 import li.cil.oc.server.component.Keyboard
 import li.cil.oc.server.machine.Machine
-import li.cil.oc.util.ExtendedWorld._
-import li.cil.oc.util._
-import net.minecraft.tileentity.TileEntity
 
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
@@ -29,9 +27,9 @@ object EventHandler {
 
   def unscheduleClose(machine: Machine): Unit = machines -= machine
 
-  def scheduleServer(tileEntity: TileEntity) {
+  def scheduleServer(environment: Environment) {
     pendingServer.synchronized {
-      pendingServer += (() => Network.joinOrCreateNetwork(tileEntity))
+      pendingServer += (() => Network.joinOrCreateNetwork(environment))
     }
   }
 
@@ -53,7 +51,7 @@ object EventHandler {
     }
   }
 
-  def onServerTick(): machines.type = {
+  def onServerTick(): Unit = {
     pendingServer.synchronized {
       val adds = pendingServer.toArray
       pendingServer.clear()
@@ -86,7 +84,7 @@ object EventHandler {
     val closed = mutable.ArrayBuffer.empty[Machine]
     machines.foreach(machine => if (machine.tryClose()) {
       closed += machine
-      if (machine.host.world == null || !machine.host.world.blockExists(BlockPosition(machine.host))) {
+      if (machine.host.world == null) {
         if (machine.node != null) machine.node.remove()
       }
     })

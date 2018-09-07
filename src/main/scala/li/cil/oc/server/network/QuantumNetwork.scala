@@ -16,12 +16,12 @@ object QuantumNetwork {
     tunnels.get(card.tunnel).foreach(_.remove(card))
   }
 
-  def getEndpoints(tunnel: String) = tunnels.get(tunnel).fold(Iterable.empty[QuantumNode])(_.keys)
+  def getEndpoints(tunnel: String): Iterable[QuantumNode] =
+    tunnels.get(tunnel).fold(Iterable.empty[QuantumNode])(_.keys)
 
   trait QuantumNode {
     def tunnel: String
 
     def receivePacket(packet: Packet): Unit
   }
-
 }

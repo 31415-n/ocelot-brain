@@ -11,30 +11,20 @@ import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.api.network.Visibility
+import li.cil.oc.api.network.{Component, EnvironmentHost, Visibility}
 import li.cil.oc.api.prefab
-import li.cil.oc.util.SideTracker
-import net.minecraft.entity.EntityLivingBase
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.potion.Potion
-import net.minecraft.util.math.{AxisAlignedBB, Vec3d}
 
 import scala.collection.convert.WrapAsJava._
-import scala.collection.convert.WrapAsScala._
-import scala.collection.mutable
 
 class MotionSensor(val host: EnvironmentHost) extends prefab.AbstractManagedEnvironment with DeviceInfo {
-  override val node = api.Network.newNode(this, Visibility.Network).
+  override val node: Component = api.Network.newNode(this, Visibility.Network).
     withComponent("motion_sensor").
-    withConnector().
     create()
 
   private val radius = 8
 
   private var sensitivity = 0.4
-
-  private val trackedEntities = mutable.Map.empty[EntityLivingBase, (Double, Double, Double)]
 
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Generic,
@@ -48,79 +38,9 @@ class MotionSensor(val host: EnvironmentHost) extends prefab.AbstractManagedEnvi
 
   // ----------------------------------------------------------------------- //
 
-  private def world = host.world
-
-  private def x = host.xPosition
-
-  private def y = host.yPosition
-
-  private def z = host.zPosition
-
-  private def isServer: Boolean = if (world != null) !world.isRemote else SideTracker.isServer
+  private def isServer: Boolean = true
 
   override def canUpdate: Boolean = isServer
-
-  override def update() {
-    super.update()
-    if (world.getTotalWorldTime % 10 == 0) {
-      // Get a list of all living entities we could possibly detect, using a rough
-      // bounding box check, then refining it using the actual distance and an
-      // actual visibility check.
-      val entities = world.getEntitiesWithinAABB(classOf[EntityLivingBase], sensorBounds)
-        .map(_.asInstanceOf[EntityLivingBase])
-        .filter(entity => entity.isEntityAlive && isInRange(entity) && isVisible(entity))
-        .toSet
-      // Get rid of all tracked entities that are no longer visible.
-      trackedEntities.retain((key, _) => entities.contains(key))
-      // Check for which entities we should generate a signal.
-      for (entity <- entities) {
-        trackedEntities.get(entity) match {
-          case Some((prevX, prevY, prevZ)) =>
-            // Known entity, check if it moved enough to trigger.
-            if (entity.getDistanceSq(prevX, prevY, prevZ) > sensitivity * sensitivity * 2) {
-              sendSignal(entity)
-            }
-          case _ =>
-            // New, unknown entity, always trigger.
-            sendSignal(entity)
-        }
-        // Update tracked position.
-        trackedEntities += entity ->(entity.posX, entity.posY, entity.posZ)
-      }
-    }
-  }
-
-  private def sensorBounds = new AxisAlignedBB(
-    x + 0.5 - radius, y + 0.5 - radius, z + 0.5 - radius,
-    x + 0.5 + radius, y + 0.5 + radius, z + 0.5 + radius)
-
-  private def isInRange(entity: EntityLivingBase) = entity.getDistanceSq(x + 0.5, y + 0.5, z + 0.5) <= radius * radius
-
-  private def isVisible(entity: EntityLivingBase) =
-    entity.getActivePotionEffect(Potion.getPotionFromResourceLocation("invisibility")) == null &&
-      // Note: it only working in lit conditions works and is neat, but this
-      // is pseudo-infrared driven (it only works for *living* entities, after
-      // all), so I think it makes more sense for it to work in the dark, too.
-      /* entity.getBrightness(0) > 0.2 && */ {
-      val origin = new Vec3d(x, y, z)
-      val target = new Vec3d(entity.posX, entity.posY, entity.posZ)
-      val path = target.subtract(origin).normalize()
-      val moved_origin = origin.addVector(
-        path.x * 0.75,
-        path.y * 0.75,
-        path.z * 0.75
-      )
-      world.rayTraceBlocks(moved_origin, target) == null
-    }
-
-  private def sendSignal(entity: EntityLivingBase) {
-    if (Settings.get.inputUsername) {
-      node.sendToReachable("computer.signal", "motion", Double.box(entity.posX - (x + 0.5)), Double.box(entity.posY - (y + 0.5)), Double.box(entity.posZ - (z + 0.5)), entity.getName)
-    }
-    else {
-      node.sendToReachable("computer.signal", "motion", Double.box(entity.posX - (x + 0.5)), Double.box(entity.posY - (y + 0.5)), Double.box(entity.posZ - (z + 0.5)))
-    }
-  }
 
   // ----------------------------------------------------------------------- //
 

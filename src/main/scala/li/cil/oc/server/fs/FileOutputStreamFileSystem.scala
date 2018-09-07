@@ -7,22 +7,22 @@ import li.cil.oc.api.fs.Mode
 import net.minecraft.nbt.NBTTagCompound
 
 trait FileOutputStreamFileSystem extends FileInputStreamFileSystem with OutputStreamFileSystem {
-  override def spaceTotal = -1
+  override def spaceTotal: Long = -1
 
-  override def spaceUsed = -1
+  override def spaceUsed: Long = -1
 
   // ----------------------------------------------------------------------- //
 
-  override def delete(path: String) = {
+  override def delete(path: String): Boolean = {
     val file = new io.File(root, FileSystem.validatePath(path))
     file == root || file.delete()
   }
 
-  override def makeDirectory(path: String) = new io.File(root, FileSystem.validatePath(path)).mkdir()
+  override def makeDirectory(path: String): Boolean = new io.File(root, FileSystem.validatePath(path)).mkdir()
 
-  override def rename(from: String, to: String) = new io.File(root, FileSystem.validatePath(from)).renameTo(new io.File(root, FileSystem.validatePath(to)))
+  override def rename(from: String, to: String): Boolean = new io.File(root, FileSystem.validatePath(from)).renameTo(new io.File(root, FileSystem.validatePath(to)))
 
-  override def setLastModified(path: String, time: Long) = new io.File(root, FileSystem.validatePath(path)).setLastModified(time)
+  override def setLastModified(path: String, time: Long): Boolean = new io.File(root, FileSystem.validatePath(path)).setLastModified(time)
 
   // ----------------------------------------------------------------------- //
 
@@ -47,21 +47,20 @@ trait FileOutputStreamFileSystem extends FileInputStreamFileSystem with OutputSt
       file.setLength(0)
     }
 
-    override def position() = file.getFilePointer
+    override def position(): Long = file.getFilePointer
 
-    override def length() = file.length()
+    override def length(): Long = file.length()
 
     override def close() {
       super.close()
       file.close()
     }
 
-    override def seek(to: Long) = {
+    override def seek(to: Long): Long = {
       file.seek(to)
       to
     }
 
-    override def write(value: Array[Byte]) = file.write(value)
+    override def write(value: Array[Byte]): Unit = file.write(value)
   }
-
 }

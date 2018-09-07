@@ -41,7 +41,7 @@ class ComponentAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     lua.pushScalaFunction(lua => components.synchronized {
       val address = lua.checkString(1)
       components.get(address) match {
-        case name: String =>
+        case _: String =>
           lua.pushInteger(owner.machine.host.componentSlot(address))
           1
         case _ =>
@@ -91,7 +91,7 @@ class ComponentAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     lua.setGlobal("component")
   }
 
-  private def withComponent(address: String, f: (Component) => Int) = Option(node.network.node(address)) match {
+  private def withComponent(address: String, f: Component => Int) = Option(node.network.node(address)) match {
     case Some(component: Component) if component.canBeSeenFrom(node) || component == node =>
       f(component)
     case _ =>

@@ -2,12 +2,13 @@ package li.cil.oc.util
 
 import java.io.{BufferedReader, InputStreamReader}
 import java.nio.charset.StandardCharsets
-import scala.collection.mutable.BitSet
 
 import li.cil.oc.OpenComputers
 
+import scala.collection.mutable
+
 object FontUtils {
-  private val defined_double_wide: BitSet = BitSet()
+  private val defined_double_wide: mutable.BitSet = mutable.BitSet()
   
   // font.hex actually has some codepoints larger than 0x10000
   // but, UnicodeAPI.scala is using java's Integer.ToChar which only supports the utf-16 range
@@ -172,7 +173,7 @@ object FontUtils {
           }
         }
         if (out_of_range_glyph > 1) {
-          OpenComputers.log.warn(f"${out_of_range_glyph} total invalid glyph char codes detected in font.hex")
+          OpenComputers.log.warn(f"$out_of_range_glyph total invalid glyph char codes detected in font.hex")
         }
       } finally {
         try {

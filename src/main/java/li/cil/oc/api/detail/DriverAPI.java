@@ -8,10 +8,6 @@ import li.cil.oc.api.driver.DriverBlock;
 import li.cil.oc.api.network.EnvironmentHost;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -81,23 +77,6 @@ public interface DriverAPI {
     void add(InventoryProvider provider);
 
     /**
-     * Looks up a driver for the block at the specified position in the
-     * specified world.
-     * <p/>
-     * Note that several drivers for a single block can exist. Because of this
-     * block drivers are always encapsulated in a 'compound' driver, which is
-     * what will be returned here. In other words, you should will <em>not</em>
-     * get actual instances of drivers registered via {@link #add(DriverBlock)}.
-     *
-     * @param world the world containing the block.
-     * @param pos   the position of the block.
-     * @param side  the side of the block.
-     * @return a driver for the block, or <tt>null</tt> if there is none.
-     */
-    @Nullable
-    DriverBlock driverFor(World world, BlockPos pos, EnumFacing side);
-
-    /**
      * Looks up a driver for the specified item stack.
      * <p/>
      * Note that unlike for blocks, there can always only be one item driver
@@ -152,22 +131,6 @@ public interface DriverAPI {
      * @return the type of environment associated with the stack, or an empty Set.
      */
     Set<Class<?>> environmentsFor(ItemStack stack);
-
-    /**
-     * Get an IItemHandler implementation providing access to an item inventory.
-     * <p/>
-     * This will use the registered {@link InventoryProvider}s to find an
-     * IItemHandler implementation providing access to the specified stack.
-     * If none can be found, returns <tt>null</tt>.
-     * <p/>
-     * Note that the specified <tt>player</tt> may be null, but will usually
-     * be the <em>fake player</em> of the agent making use of this API.
-     *
-     * @param stack  the item stack to get the inventory access for.
-     * @param player the player holding the item. May be <tt>null</tt>.
-     * @return the IItemHandler implementation interfacing the stack, or <tt>null</tt>.
-     */
-    IItemHandler itemHandlerFor(ItemStack stack, EntityPlayer player);
 
     /**
      * Get a list of all registered item drivers.

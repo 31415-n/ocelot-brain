@@ -1,6 +1,8 @@
 package li.cil.oc.server.network
 
-import li.cil.oc.api.machine.Context
+import java.util
+
+import li.cil.oc.api.machine.{Callback, Context}
 import li.cil.oc.api.network
 import li.cil.oc.api.network._
 import li.cil.oc.api.network.{Node => ImmutableNode}
@@ -19,7 +21,7 @@ import scala.collection.convert.WrapAsJava._
 import scala.collection.convert.WrapAsScala._
 
 trait Component extends network.Component with Node {
-  def visibility = _visibility
+  def visibility: Visibility = _visibility
 
   private lazy val callbacks = Callbacks(host)
 
@@ -45,13 +47,13 @@ trait Component extends network.Component with Node {
         }
       }
     case _ => callbacks.map {
-      case (method, callback) => method -> Some(host)
+      case (method, _) => method -> Some(host)
     }
   }
 
   private var _visibility = Visibility.None
 
-  def setVisibility(value: Visibility) = {
+  def setVisibility(value: Visibility): Unit = {
     if (value.ordinal() > reachability.ordinal()) {
       throw new IllegalArgumentException("Trying to set computer visibility to '" + value + "' on a '" + name +
         "' node with reachability '" + reachability + "'. It will be limited to the node's reachability.")
@@ -80,29 +82,29 @@ trait Component extends network.Component with Node {
     }
   }
 
-  def canBeSeenFrom(other: ImmutableNode) = visibility match {
+  def canBeSeenFrom(other: ImmutableNode): Boolean = visibility match {
     case Visibility.None => false
     case Visibility.Network => canBeReachedFrom(other)
     case Visibility.Neighbors => isNeighborOf(other)
   }
 
-  private def addTo(nodes: Iterable[ImmutableNode]) = nodes.foreach(_.host match {
+  private def addTo(nodes: Iterable[ImmutableNode]): Unit = nodes.foreach(_.host match {
     case machine: Machine => machine.addComponent(this)
     case _ =>
   })
 
-  private def removeFrom(nodes: Iterable[ImmutableNode]) = nodes.foreach(_.host match {
+  private def removeFrom(nodes: Iterable[ImmutableNode]): Unit = nodes.foreach(_.host match {
     case machine: Machine => machine.removeComponent(this)
     case _ =>
   })
 
   // ----------------------------------------------------------------------- //
 
-  override def methods = callbacks.keySet
+  override def methods: util.Set[String] = callbacks.keySet
 
-  override def annotation(method: String) =
+  override def annotation(method: String): Callback =
     callbacks.get(method) match {
-      case Some(callback) => callbacks(method).annotation
+      case Some(_) => callbacks(method).annotation
       case _ => throw new NoSuchMethodException()
     }
 
@@ -130,5 +132,5 @@ trait Component extends network.Component with Node {
     nbt.setInteger(NodeData.VisibilityTag, _visibility.ordinal())
   }
 
-  override def toString = super.toString + s"@$name"
+  override def toString: String = super.toString + s"@$name"
 }

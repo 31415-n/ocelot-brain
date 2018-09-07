@@ -123,24 +123,21 @@ trait Hub extends traits.Environment with SidedEnvironment {
 
   override def writeToNBT(nbt: NBTTagCompound): Unit = queue.synchronized {
     super.writeToNBT(nbt)
-    // Side check for Waila (and other mods that may call this client side).
-    if (isServer) {
-      nbt.setNewTagList(PlugsTag, plugs.map(plug => {
-        val plugNbt = new NBTTagCompound()
-        if (plug.node != null)
-          plug.node.save(plugNbt)
-        plugNbt
-      }))
-      nbt.setNewTagList(QueueTag, queue.map {
-        case (sourceSide, packet) =>
-          val tag = new NBTTagCompound()
-          tag.setDirection(SideTag, sourceSide)
-          packet.save(tag)
-          tag
-      })
-      if (relayCooldown > 0) {
-        nbt.setInteger(RelayCooldownTag, relayCooldown)
-      }
+    nbt.setNewTagList(PlugsTag, plugs.map(plug => {
+      val plugNbt = new NBTTagCompound()
+      if (plug.node != null)
+        plug.node.save(plugNbt)
+      plugNbt
+    }))
+    nbt.setNewTagList(QueueTag, queue.map {
+      case (sourceSide, packet) =>
+        val tag = new NBTTagCompound()
+        tag.setDirection(SideTag, sourceSide)
+        packet.save(tag)
+        tag
+    })
+    if (relayCooldown > 0) {
+      nbt.setInteger(RelayCooldownTag, relayCooldown)
     }
   }
 

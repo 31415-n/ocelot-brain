@@ -2,7 +2,7 @@ package net.minecraft.nbt;
 
 public class NBTReadLimiter {
 
-    public static final NBTReadLimiter a = new NBTReadLimiterUnlimited(0L);
+    public static final NBTReadLimiter INFINITE = new NBTReadLimiterUnlimited(0L);
     private final long b;
     private long c;
 

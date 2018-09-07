@@ -139,6 +139,15 @@ class Settings(val config: Config) {
       OpenComputers.log.warn("Bad number of max open ports, ignoring.")
       Array(16, 1, 16)
   }
+  val geolyzerRange: Int = config.getInt("misc.geolyzerRange")
+  val allowItemStackInspection: Boolean = config.getBoolean("misc.allowItemStackInspection")
+  val maxWirelessRange: Array[Double] = Array(config.getDoubleList("misc.maxWirelessRange"): _*) match {
+    case Array(tier1, tier2) =>
+      Array((tier1: Double) max 0.0, (tier2: Double) max 0.0)
+    case _ =>
+      OpenComputers.log.warn("Bad number of wireless card max ranges, ignoring.")
+      Array(16.0, 400.0)
+  }
 
   val rTreeMaxEntries = 10
 
