@@ -39,7 +39,8 @@ public final class Network {
      * @param environment the tile entity to initialize.
      */
     public static void joinOrCreateNetwork(Environment environment) {
-       joinNewNetwork(environment.node());
+        if (API.network != null)
+            API.network.joinOrCreateNetwork(environment);
     }
 
     /**
