@@ -50,9 +50,7 @@ object ModOpenComputers extends ModProxy {
     api.Driver.add(DriverKeyboard)
     api.Driver.add(DriverRedstoneCard)
     api.Driver.add(DriverWirelessNetworkCard)
-
     api.Driver.add(DriverContainerFloppy)
-
     api.Driver.add(DriverGeolyzer)
     api.Driver.add(DriverMotionSensor)
     api.Driver.add(DriverScreen)
@@ -66,7 +64,6 @@ object ModOpenComputers extends ModProxy {
     api.Driver.add(DriverNetworkCard.Provider)
     api.Driver.add(DriverRedstoneCard.Provider)
     api.Driver.add(DriverWirelessNetworkCard.Provider)
-
     api.Driver.add(DriverGeolyzer.Provider)
     api.Driver.add(DriverMotionSensor.Provider)
     api.Driver.add(DriverScreen.Provider)

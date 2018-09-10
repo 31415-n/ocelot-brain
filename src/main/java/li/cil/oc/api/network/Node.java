@@ -1,7 +1,6 @@
 package li.cil.oc.api.network;
 
 import li.cil.oc.api.Persistable;
-import li.cil.oc.api.driver.DriverBlock;
 import li.cil.oc.api.driver.DriverItem;
 
 /**
@@ -20,8 +19,6 @@ import li.cil.oc.api.driver.DriverItem;
  * handled manually.
  * <p/>
  * Items have to be handled by a corresponding {@link DriverItem}.
- * Existing blocks may be interfaced with the adapter block if a
- * {@link DriverBlock} exists that supports the block.
  * <p/>
  * <em>Important</em>: like the <tt>Network</tt> interface you must not create
  * your own implementations of this interface. Use the factory methods in the
