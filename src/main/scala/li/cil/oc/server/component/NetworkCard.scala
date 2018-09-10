@@ -7,7 +7,6 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api
 import li.cil.oc.api.Network
-import li.cil.oc.api.component.RackBusConnectable
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -24,7 +23,7 @@ import scala.collection.convert.WrapAsJava._
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
 
-class NetworkCard(val host: EnvironmentHost) extends AbstractManagedEnvironment with RackBusConnectable with DeviceInfo {
+class NetworkCard(val host: EnvironmentHost) extends AbstractManagedEnvironment with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("modem", Visibility.Neighbors).
     create()
@@ -168,7 +167,7 @@ class NetworkCard(val host: EnvironmentHost) extends AbstractManagedEnvironment 
     }
   }
 
-  override def receivePacket(packet: Packet): Unit = {
+  def receivePacket(packet: Packet): Unit = {
     receivePacket(packet, 0)
   }
 

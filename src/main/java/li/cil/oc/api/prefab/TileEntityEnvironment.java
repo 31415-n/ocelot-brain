@@ -94,22 +94,11 @@ public abstract class TileEntityEnvironment extends TileEntity implements Enviro
 
     // ----------------------------------------------------------------------- //
 
-    @Override
     public void onLoad() {
         Network.joinOrCreateNetwork(this);
     }
 
-    @Override
-    public void onChunkUnload() {
-        super.onChunkUnload();
-        // Make sure to remove the node from its network when its environment,
-        // meaning this tile entity, gets unloaded.
-        if (node != null) node.remove();
-    }
-
-    @Override
     public void invalidate() {
-        super.invalidate();
         // Make sure to remove the node from its network when its environment,
         // meaning this tile entity, gets unloaded.
         if (node != null) node.remove();
@@ -117,9 +106,7 @@ public abstract class TileEntityEnvironment extends TileEntity implements Enviro
 
     // ----------------------------------------------------------------------- //
 
-    @Override
     public void readFromNBT(final NBTTagCompound nbt) {
-        super.readFromNBT(nbt);
         // The host check may be superfluous for you. It's just there to allow
         // some special cases, where getNode() returns some node managed by
         // some other instance (for example when you have multiple internal
@@ -133,9 +120,7 @@ public abstract class TileEntityEnvironment extends TileEntity implements Enviro
         }
     }
 
-    @Override
     public NBTTagCompound writeToNBT(final NBTTagCompound nbt) {
-        super.writeToNBT(nbt);
         // See readFromNBT() regarding host check.
         if (node != null && node.host() == this) {
             final NBTTagCompound nodeNbt = new NBTTagCompound();

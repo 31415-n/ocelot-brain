@@ -2,16 +2,11 @@ package li.cil.oc.server.network
 
 import java.lang
 
-import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.oc.api.detail.Builder
 import li.cil.oc.api.network
-import li.cil.oc.api.network._
-import li.cil.oc.api.network.{Node => ImmutableNode}
-import li.cil.oc.common.tileentity
+import li.cil.oc.api.network.{Node => ImmutableNode, _}
 import li.cil.oc.server.network.{Node => MutableNode}
-import li.cil.oc.util.SideTracker
 import net.minecraft.nbt._
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
@@ -102,6 +97,7 @@ private class Network private(private val data: mutable.Map[String, Network.Vert
       "Both of the nodes must be in this network.")
 
     def oldNodeA = node(nodeA)
+
     def oldNodeB = node(nodeB)
 
     oldNodeA.edges.find(_.isBetween(oldNodeA, oldNodeB)) match {
@@ -410,28 +406,24 @@ object Network extends api.detail.NetworkAPI {
     new Packet(source, destination, port, data, ttl)
   }
 
-  var isServer: () => Boolean = SideTracker.isServer
-
   class NodeBuilder(val _host: Environment, val _reachability: Visibility) extends api.detail.Builder.NodeBuilder {
     def withComponent(name: String, visibility: Visibility) = new Network.ComponentBuilder(_host, _reachability, name, visibility)
 
     def withComponent(name: String): Builder.ComponentBuilder = withComponent(name, _reachability)
 
-    def create(): MutableNode with NodeVarargPart = if (isServer()) new MutableNode with NodeVarargPart {
+    def create(): MutableNode with NodeVarargPart = new MutableNode with NodeVarargPart {
       val host: Environment = _host
       val reachability: Visibility = _reachability
     }
-    else null
   }
 
   class ComponentBuilder(val _host: Environment, val _reachability: Visibility, val _name: String, val _visibility: Visibility) extends api.detail.Builder.ComponentBuilder {
-    def create(): Component with NodeVarargPart = if (isServer()) new Component with NodeVarargPart {
+    def create(): Component with NodeVarargPart = new Component with NodeVarargPart {
       val host: Environment = _host
       val reachability: Visibility = _reachability
       val name: String = _name
       setVisibility(_visibility)
     }
-    else null
   }
 
   // ----------------------------------------------------------------------- //
@@ -566,4 +558,5 @@ object Network extends api.detail.NetworkAPI {
     def sendToVisible(source: ImmutableNode, name: String, data: AnyRef*): Unit =
       network.sendToVisible(source, name, data: _*)
   }
+
 }

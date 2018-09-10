@@ -110,25 +110,6 @@ public final class Driver {
     }
 
     /**
-     * Looks up a driver for the block at the specified position in the
-     * specified world.
-     * <p/>
-     * Note that several drivers for a single block can exist. Because of this
-     * block drivers are always encapsulated in a 'compound' driver, which is
-     * what will be returned here. In other words, you will <em>not</em>
-     * get actual instances of drivers registered via {@link #add(DriverBlock)}.
-     *
-     * @param world the world containing the block.
-     * @param pos   the position of the block.
-     * @return a driver for the block, or <tt>null</tt> if there is none.
-     */
-    public static DriverBlock driverFor(World world, BlockPos pos, EnumFacing side) {
-        if (API.driver != null)
-            return API.driver.driverFor(world, pos, side);
-        return null;
-    }
-
-    /**
      * Looks up a driver for the specified item stack.
      * <p/>
      * Note that unlike for blocks, there can always only be one item driver

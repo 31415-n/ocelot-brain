@@ -1,12 +1,10 @@
 package li.cil.oc.api.prefab;
 
-import li.cil.oc.api.Network;
 import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.SidedEnvironment;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ITickable;
 
 /**
  * TileEntities can implement the {@link li.cil.oc.api.network.SidedEnvironment}
@@ -19,7 +17,7 @@ import net.minecraft.util.ITickable;
  * network as an index structure to find other nodes connected to them.
  */
 @SuppressWarnings("UnusedDeclaration")
-public abstract class TileEntitySidedEnvironment extends TileEntity implements SidedEnvironment, ITickable {
+public abstract class TileEntitySidedEnvironment extends TileEntity implements SidedEnvironment {
     // See constructor.
     protected Node[] nodes = new Node[6];
 
@@ -78,34 +76,7 @@ public abstract class TileEntitySidedEnvironment extends TileEntity implements S
 
     // ----------------------------------------------------------------------- //
 
-    @Override
-    public void update() {
-        // On the first update, try to add our node to nearby networks. We do
-        // this in the update logic, not in validate() because we need to access
-        // neighboring tile entities, which isn't possible in validate().
-        // We could alternatively check node != null && node.network() == null,
-        // but this has somewhat better performance, and makes it clearer.
-        if (!addedToNetwork) {
-            addedToNetwork = true;
-            // Note that joinOrCreateNetwork will try to connect each of our
-            // sided nodes to their respective neighbor (sided) node.
-            Network.joinOrCreateNetwork(this);
-        }
-    }
-
-    @Override
-    public void onChunkUnload() {
-        super.onChunkUnload();
-        // Make sure to remove the node from its network when its environment,
-        // meaning this tile entity, gets unloaded.
-        for (Node node : nodes) {
-            if (node != null) node.remove();
-        }
-    }
-
-    @Override
     public void invalidate() {
-        super.invalidate();
         // Make sure to remove the node from its network when its environment,
         // meaning this tile entity, gets unloaded.
         for (Node node : nodes) {
@@ -115,9 +86,7 @@ public abstract class TileEntitySidedEnvironment extends TileEntity implements S
 
     // ----------------------------------------------------------------------- //
 
-    @Override
     public void readFromNBT(final NBTTagCompound nbt) {
-        super.readFromNBT(nbt);
         int index = 0;
         for (Node node : nodes) {
             // The host check may be superfluous for you. It's just there to allow
@@ -135,9 +104,7 @@ public abstract class TileEntitySidedEnvironment extends TileEntity implements S
         }
     }
 
-    @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
-        super.writeToNBT(nbt);
         int index = 0;
         for (Node node : nodes) {
             // See readFromNBT() regarding host check.

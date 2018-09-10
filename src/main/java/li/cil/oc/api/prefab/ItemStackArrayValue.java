@@ -71,13 +71,13 @@ public class ItemStackArrayValue extends AbstractValue {
 
 	@Override
 	public void load(NBTTagCompound nbt) {
-		if (nbt.hasKey(ARRAY_KEY, TAGLIST_ID)){
+		if (nbt.hasKeyOfType(ARRAY_KEY, TAGLIST_ID)){
 			NBTTagList tagList = nbt.getTagList(ARRAY_KEY,COMPOUND_ID);
 			this.array = new ItemStack[tagList.tagCount()];
 			for (int i = 0; i < tagList.tagCount(); ++i){
 				NBTTagCompound el = tagList.getCompoundTagAt(i);
 				if (el.hasNoTags())
-					this.array[i] = ItemStack.EMPTY;
+					this.array[i] = ItemStack.EMPTY();
 				else
 					this.array[i] = new ItemStack(el);
 			}

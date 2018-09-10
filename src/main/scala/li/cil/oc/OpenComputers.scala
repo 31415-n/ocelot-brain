@@ -12,7 +12,7 @@ object OpenComputers {
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
 
-  var proxy: Proxy = _
+  var proxy: Proxy = new Proxy()
 
   def init(): Unit = {
     proxy.preInit()

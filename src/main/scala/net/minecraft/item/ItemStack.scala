@@ -37,6 +37,7 @@ class ItemStack(private var item: Item, private var amount: Int = 1, private var
   def getItemDamage: Int = damage
 
   def writeToNBT(nbt: NBTTagCompound): Unit = { }
+  def serializeNBT(): NBTTagCompound = { null }
 
   def getCount: Int = amount
   def setCount(count: Int): Unit = amount = count
