@@ -11,8 +11,11 @@ object Ocelot extends App {
   val computer = new Case(Tier.Three)
   api.Network.joinOrCreateNetwork(computer)
 
-  computer.setInventorySlotContents(4, Items.get(Constants.ItemName.CPUTier3).createItemStack(1))
+  computer.setInventorySlotContents(0, Items.get(Constants.ItemName.CPUTier3).createItemStack(1))
+  computer.setInventorySlotContents(1, Items.get(Constants.ItemName.RAMTier6).createItemStack(1))
 
   computer.machine.start()
   println(computer.machine.lastError())
+
+  computer.machine.stop()
 }
