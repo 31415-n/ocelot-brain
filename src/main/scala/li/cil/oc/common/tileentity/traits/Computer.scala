@@ -94,9 +94,6 @@ trait Computer extends Environment with ComponentInventory with RedstoneAware
 
   // ----------------------------------------------------------------------- //
 
-  override def isUsableByPlayer(player: EntityPlayer): Boolean =
-    machine.canInteract(player.getName)
-
   override protected def onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
     super.onRedstoneInputChanged(args)
     machine.node.sendToNeighbors("redstone.changed", args)

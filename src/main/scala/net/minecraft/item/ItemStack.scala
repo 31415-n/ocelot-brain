@@ -56,4 +56,13 @@ class ItemStack(private var item: Item, private var amount: Int = 1, private var
     new ItemStack(item, amount, damage)
 
   def getMaxStackSize = 64
+
+  override def equals(obj: scala.Any): Boolean = {
+    obj match {
+      case other: ItemStack =>
+        if (amount == 0 && other.amount == 0) true
+        else (amount == other.amount) && (item == other.item)
+      case _ => false
+    }
+  }
 }

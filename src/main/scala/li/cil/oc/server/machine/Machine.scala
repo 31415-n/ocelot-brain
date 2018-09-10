@@ -187,17 +187,17 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
       verifyComponents()
       if (architecture == null || maxComponents == 0) {
         beep("-")
-        crash("gui.Error.NoCPU")
+        crash("Error.NoCPU")
         false
       }
       else if (componentCount > maxComponents) {
         beep("-..")
-        crash("gui.Error.ComponentOverflow")
+        crash("Error.ComponentOverflow")
         false
       }
       else if (!hasMemory) {
         beep("-.")
-        crash("gui.Error.NoRAM")
+        crash("Error.NoRAM")
         false
       }
       else if (!init()) {
@@ -449,7 +449,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     // avoid confusion on the user's side due to components not showing up.
     if (componentCount > maxComponents) {
       beep("-..")
-      crash("gui.Error.ComponentOverflow")
+      crash("Error.ComponentOverflow")
     }
 
     // Update world time for time() and uptime().
@@ -518,10 +518,10 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
         }
         catch {
           case e: java.lang.Error if e.getMessage == "not enough memory" =>
-            crash("gui.Error.OutOfMemory")
+            crash("Error.OutOfMemory")
           case e: Throwable =>
             OpenComputers.log.warn("Faulty architecture implementation for synchronized calls.", e)
-            crash("gui.Error.InternalError")
+            crash("Error.InternalError")
         }
         finally {
           inSynchronizedCall = false
@@ -947,7 +947,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with mac
     catch {
       case e: Throwable =>
         OpenComputers.log.warn("Architecture's runThreaded threw an error. This should never happen!", e)
-        crash("gui.Error.InternalError")
+        crash("Error.InternalError")
     }
 
     // Keep track of time spent executing the computer.

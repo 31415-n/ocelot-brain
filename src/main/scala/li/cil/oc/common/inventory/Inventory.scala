@@ -31,7 +31,7 @@ trait Inventory extends SimpleInventory {
       if (!oldStack.isEmpty) {
         onItemRemoved(slot, oldStack)
       }
-      if (!stack.isEmpty && stack.getCount >= getInventoryStackRequired) {
+      if (!stack.isEmpty) {
         if (stack.getCount > getInventoryStackLimit) {
           stack.setCount(getInventoryStackLimit)
         }
@@ -43,10 +43,6 @@ trait Inventory extends SimpleInventory {
       }
     }
   }
-
-  override def getName: String = Settings.namespace + "container." + inventoryName
-
-  protected def inventoryName: String = getClass.getSimpleName.toLowerCase
 
   def isEmpty: Boolean = items.forall(_.isEmpty)
 

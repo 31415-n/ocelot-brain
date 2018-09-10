@@ -1,16 +1,10 @@
 package net.minecraft.inventory;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nullable;
 
 public interface IInventory {
-
-    boolean hasCustomName();
-
-    String getName();
-
     /**
      * Returns the number of slots in the inventory.
      */
@@ -35,36 +29,27 @@ public interface IInventory {
     ItemStack removeStackFromSlot(int index);
 
     /**
-     * Sets the given item stack to the specified slot in the inventory (can be crafting or armor sections).
+     * Sets the given item stack to the specified slot in the inventory.
      */
     void setInventorySlotContents(int index, ItemStack stack);
 
     /**
-     * Returns the maximum stack size for a inventory slot. Seems to always be 64, possibly will be extended.
+     * Returns the maximum stack size for a inventory slot.
      */
     int getInventoryStackLimit();
 
     /**
-     * Do not make give this method the name canInteractWith because it clashes with Container
-     */
-    boolean isUsableByPlayer(EntityPlayer player);
-
-    void openInventory(EntityPlayer player);
-
-    void closeInventory(EntityPlayer player);
-
-    /**
-     * Returns true if automation is allowed to insert the given stack (ignoring stack size) into the given slot.
+     * Returns true if it is allowed to insert the given stack (ignoring stack size) into the given slot.
      */
     boolean isItemValidForSlot(int index, ItemStack stack);
 
-    int getField(int id);
-
-    void setField(int id, int value);
-
-    int getFieldCount();
-
+    /**
+     * Removes all items from the inventory.
+     */
     void clear();
 
+    /**
+     * Returns true if the nventory is empty.
+     */
     boolean isEmpty();
 }

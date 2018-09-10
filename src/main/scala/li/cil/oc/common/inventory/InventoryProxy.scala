@@ -1,6 +1,5 @@
 package li.cil.oc.common.inventory
 
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 
@@ -14,12 +13,6 @@ trait InventoryProxy extends IInventory {
   override def getSizeInventory: Int = inventory.getSizeInventory
 
   override def getInventoryStackLimit: Int = inventory.getInventoryStackLimit
-
-  override def getName: String = inventory.getName
-
-  override def hasCustomName: Boolean = inventory.hasCustomName
-
-  override def isUsableByPlayer(player: EntityPlayer): Boolean = inventory.isUsableByPlayer(player)
 
   override def isItemValidForSlot(slot: Int, stack: ItemStack): Boolean = {
     val offsetSlot = slot + offset
@@ -49,17 +42,7 @@ trait InventoryProxy extends IInventory {
     if (isValidSlot(offsetSlot)) inventory.setInventorySlotContents(offsetSlot, stack)
   }
 
-  override def openInventory(player: EntityPlayer): Unit = inventory.openInventory(player)
-
-  override def closeInventory(player: EntityPlayer): Unit = inventory.closeInventory(player)
-
-  override def setField(id: Int, value: Int): Unit = inventory.setField(id, value)
-
   override def clear(): Unit = inventory.clear()
-
-  override def getFieldCount: Int = inventory.getFieldCount
-
-  override def getField(id: Int): Int = inventory.getField(id)
 
   private def isValidSlot(slot: Int) = slot >= offset && slot < getSizeInventory + offset
 }

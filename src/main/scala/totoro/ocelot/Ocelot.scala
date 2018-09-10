@@ -9,9 +9,9 @@ object Ocelot extends App {
   OpenComputers.init()
 
   val computer = new Case(Tier.Three)
-  computer.setInventorySlotContents(4, Items.get(Constants.ItemName.CPUTier3).createItemStack(1))
-
   api.Network.joinOrCreateNetwork(computer)
+
+  computer.setInventorySlotContents(4, Items.get(Constants.ItemName.CPUTier3).createItemStack(1))
 
   computer.machine.start()
   println(computer.machine.lastError())

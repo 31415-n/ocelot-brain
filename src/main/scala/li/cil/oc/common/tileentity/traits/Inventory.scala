@@ -1,7 +1,6 @@
 package li.cil.oc.common.tileentity.traits
 
 import li.cil.oc.common.inventory
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
@@ -21,8 +20,4 @@ trait Inventory extends TileEntity with inventory.Inventory {
     super.writeToNBT(nbt)
     save(nbt)
   }
-
-  // ----------------------------------------------------------------------- //
-
-  override def isUsableByPlayer(player: EntityPlayer) = true
 }

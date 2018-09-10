@@ -1,8 +1,7 @@
 package li.cil.oc
 
 import java.io._
-import java.net.Inet4Address
-import java.net.InetAddress
+import java.net.{Inet4Address, InetAddress}
 import java.util.UUID
 
 import com.google.common.net.InetAddresses
@@ -11,8 +10,7 @@ import com.typesafe.config._
 import org.apache.commons.lang3.StringEscapeUtils
 
 import scala.collection.convert.WrapAsScala._
-import scala.io.Codec
-import scala.io.Source
+import scala.io.{Codec, Source}
 import scala.util.matching.Regex
 
 class Settings(val config: Config) {
@@ -226,24 +224,26 @@ object Settings {
           settings = new Settings(defaults.getConfig("opencomputers"))
           defaults
       }
-    try {
-      val renderSettings = ConfigRenderOptions.defaults.setJson(false).setOriginComments(false)
-      val nl = sys.props("line.separator")
-      val nle = StringEscapeUtils.escapeJava(nl)
-      file.getParentFile.mkdirs()
-      val out = new PrintWriter(file)
-      out.write(config.root.render(renderSettings).lines.
-        // Indent two spaces instead of four.
-        map(line => """^(\s*)""".r.replaceAllIn(line, m => Regex.quoteReplacement(m.group(1).replace("  ", " ")))).
-        // Finalize the string.
-        filter(_ != "").mkString(nl).
-        // Newline after values.
-        replaceAll(s"((?:\\s*#.*$nle)(?:\\s*[^#\\s].*$nle)+)", "$1" + nl))
-      out.close()
-    }
-    catch {
-      case e: Throwable =>
-        OpenComputers.log.warn("Failed saving config.", e)
+    if (file.exists()) {
+      try {
+        val renderSettings = ConfigRenderOptions.defaults.setJson(false).setOriginComments(false)
+        val nl = sys.props("line.separator")
+        val nle = StringEscapeUtils.escapeJava(nl)
+        file.getParentFile.mkdirs()
+        val out = new PrintWriter(file)
+        out.write(config.root.render(renderSettings).lines.
+          // Indent two spaces instead of four.
+          map(line => """^(\s*)""".r.replaceAllIn(line, m => Regex.quoteReplacement(m.group(1).replace("  ", " ")))).
+          // Finalize the string.
+          filter(_ != "").mkString(nl).
+          // Newline after values.
+          replaceAll(s"((?:\\s*#.*$nle)(?:\\s*[^#\\s].*$nle)+)", "$1" + nl))
+        out.close()
+      }
+      catch {
+        case e: Throwable =>
+          OpenComputers.log.warn("Failed saving config.", e)
+      }
     }
   }
 
@@ -256,12 +256,13 @@ object Settings {
         val mask = 0xFFFFFFFF << (32 - prefix.toInt)
         val min = addr & mask
         val max = min | ~mask
-        (inetAddress: InetAddress, host: String) => inetAddress match {
-          case v4: Inet4Address =>
-            val numeric = InetAddresses.coerceToInteger(v4)
-            min <= numeric && numeric <= max
-          case _ => true // Can't check IPv6 addresses so we pass them.
-        }
+        (inetAddress: InetAddress, host: String) =>
+          inetAddress match {
+            case v4: Inet4Address =>
+              val numeric = InetAddresses.coerceToInteger(v4)
+              min <= numeric && numeric <= max
+            case _ => true // Can't check IPv6 addresses so we pass them.
+          }
       case _ =>
         val address = InetAddress.getByName(value)
         (inetAddress: InetAddress, host: String) => host == value || inetAddress == address
@@ -273,4 +274,5 @@ object Settings {
 
     def apply(inetAddress: InetAddress, host: String) = validator(inetAddress, host)
   }
+
 }
