@@ -33,3 +33,11 @@ target/
 
 # Local proxy settings
 cacerts
+
+# Temp files
+/*.dll
+/*.so
+/*.dylib
+
+# Log files
+*.log
