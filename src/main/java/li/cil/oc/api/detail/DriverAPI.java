@@ -10,20 +10,6 @@ import java.util.Set;
 
 public interface DriverAPI {
     /**
-     * Registers a new side-aware block driver.
-     * <p/>
-     * Whenever the neighboring blocks of an Adapter block change, it checks if
-     * there exists a driver for the changed block, and if it is configured to
-     * interface that block type connects it to the component network.
-     * <p/>
-     * This must be called in the init phase, <em>not</em> the pre- or post-init
-     * phases.
-     *
-     * @param driver the driver to register.
-     */
-    void add(DriverBlock driver);
-
-    /**
      * Registers a new driver for an item component.
      * <p/>
      * Item components can inserted into a computers component slots. They have

@@ -30,8 +30,6 @@ import scala.math.ScalaNumber
  * the computer, but may also provide context-free functions.
  */
 private[oc] object Registry extends api.detail.DriverAPI {
-  val sidedBlocks: ArrayBuffer[DriverBlock] = mutable.ArrayBuffer.empty[DriverBlock]
-
   val items: ArrayBuffer[DriverItem] = mutable.ArrayBuffer.empty[DriverItem]
 
   val converters: ArrayBuffer[Converter] = mutable.ArrayBuffer.empty[api.driver.Converter]
@@ -44,14 +42,6 @@ private[oc] object Registry extends api.detail.DriverAPI {
 
   /** Used to keep track of whether we're past the init phase. */
   var locked = false
-
-  override def add(driver: DriverBlock) {
-    if (locked) throw new IllegalStateException("Please register all drivers in the init phase.")
-    if (!sidedBlocks.contains(driver)) {
-      OpenComputers.log.debug(s"Registering block driver ${driver.getClass.getName}.")
-      sidedBlocks += driver
-    }
-  }
 
   override def add(driver: DriverItem) {
     if (locked) throw new IllegalStateException("Please register all drivers in the init phase.")

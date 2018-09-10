@@ -21,27 +21,9 @@ import java.util.Set;
  * at that time. Only start calling these methods in the init phase or later.
  *
  * @see Network
- * @see DriverBlock
  * @see DriverItem
  */
 public final class Driver {
-    /**
-     * Registers a new side-aware block driver.
-     * <p/>
-     * Whenever the neighboring blocks of an Adapter block change, it checks if
-     * there exists a driver for the changed block, and if it is configured to
-     * interface that block type connects it to the component network.
-     * <p/>
-     * This must be called in the init phase, <em>not</em> the pre- or post-init
-     * phases.
-     *
-     * @param driver the driver to register.
-     */
-    public static void add(final DriverBlock driver) {
-        if (API.driver != null)
-            API.driver.add(driver);
-    }
-
     /**
      * Registers a new item driver.
      * <p/>

@@ -36,7 +36,6 @@ public class API {
     public static FileSystemAPI fileSystem = null;
     public static ItemAPI items = null;
     public static MachineAPI machine = null;
-    public static NanomachinesAPI nanomachines = null;
     public static NetworkAPI network = null;
 
     // ----------------------------------------------------------------------- //
