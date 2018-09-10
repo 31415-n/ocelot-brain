@@ -3,11 +3,8 @@ package li.cil.oc.server.machine
 import java.lang.reflect.Method
 
 import li.cil.oc.OpenComputers
-import li.cil.oc.api.machine.Arguments
-import li.cil.oc.api.machine.Context
-import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
+import li.cil.oc.api.machine.{Arguments, Context}
+import org.objectweb.asm.{ClassWriter, Opcodes, Type}
 
 import scala.collection.mutable
 

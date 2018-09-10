@@ -1,11 +1,9 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.Constants
-import li.cil.oc.api
-import li.cil.oc.api.network.EnvironmentHost
+import li.cil.oc.{Constants, api}
 import li.cil.oc.api.driver.item.Container
-import li.cil.oc.common.Slot
-import li.cil.oc.common.Tier
+import li.cil.oc.api.network.EnvironmentHost
+import li.cil.oc.common.{Slot, Tier}
 import net.minecraft.item.ItemStack
 
 object DriverContainerFloppy extends Item with Container {

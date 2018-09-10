@@ -1,7 +1,7 @@
 package li.cil.oc.util
 
-import java.util.concurrent.{Executors, ScheduledExecutorService, ThreadFactory}
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, ScheduledExecutorService, ThreadFactory}
 
 import li.cil.oc.Settings
 

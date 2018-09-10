@@ -2,11 +2,9 @@ package li.cil.oc.server.component
 
 import java.util
 
-import li.cil.oc.Constants
-import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
-import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.api
+import li.cil.oc.{Constants, api}
 import li.cil.oc.api.driver.DeviceInfo
+import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
 import li.cil.oc.api.network.{Component, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 

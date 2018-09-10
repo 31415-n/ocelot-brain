@@ -2,11 +2,11 @@ package li.cil.oc.server.network
 
 import java.lang
 
-import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.oc.api.detail.Builder
 import li.cil.oc.api.network
 import li.cil.oc.api.network.{Node => ImmutableNode, _}
 import li.cil.oc.server.network.{Node => MutableNode}
+import li.cil.oc.{OpenComputers, Settings, api}
 import net.minecraft.nbt._
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing

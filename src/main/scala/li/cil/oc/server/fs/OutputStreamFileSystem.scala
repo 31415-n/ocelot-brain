@@ -1,7 +1,6 @@
 package li.cil.oc.server.fs
 
-import java.io.FileNotFoundException
-import java.io.IOException
+import java.io.{FileNotFoundException, IOException}
 
 import li.cil.oc.api
 import li.cil.oc.api.fs.Mode

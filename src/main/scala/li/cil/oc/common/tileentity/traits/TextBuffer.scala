@@ -1,8 +1,6 @@
 package li.cil.oc.common.tileentity.traits
 
-import li.cil.oc.Constants
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{Constants, Settings, api}
 import li.cil.oc.api.internal
 import li.cil.oc.api.network.Node
 import net.minecraft.nbt.NBTTagCompound

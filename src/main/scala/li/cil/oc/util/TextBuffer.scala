@@ -1,7 +1,6 @@
 package li.cil.oc.util
 
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{Settings, api}
 import net.minecraft.nbt._
 
 /**

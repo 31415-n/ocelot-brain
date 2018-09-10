@@ -2,8 +2,7 @@ package li.cil.oc.common.tileentity
 
 import java.util.UUID
 
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{Settings, api}
 import li.cil.oc.api.Driver
 import li.cil.oc.api.fs.Label
 import li.cil.oc.api.network.{Node, Visibility}

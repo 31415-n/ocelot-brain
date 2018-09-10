@@ -1,22 +1,15 @@
 package li.cil.oc.common.component
 
-import li.cil.oc.Constants
-import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
-import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.Settings
-import li.cil.oc.api
 import li.cil.oc.api.driver.DeviceInfo
+import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
 import li.cil.oc.api.internal.TextBuffer.ColorDepth
-import li.cil.oc.api.machine.Arguments
-import li.cil.oc.api.machine.Callback
-import li.cil.oc.api.machine.Context
-import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.api.network._
+import li.cil.oc.api.machine.{Arguments, Callback, Context}
+import li.cil.oc.api.network.{EnvironmentHost, _}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common._
 import li.cil.oc.common.item.data.NodeData
 import li.cil.oc.server.component.Keyboard
-import li.cil.oc.util
+import li.cil.oc.{Constants, Settings, api, util}
 import li.cil.oc.util.PackedColor
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound

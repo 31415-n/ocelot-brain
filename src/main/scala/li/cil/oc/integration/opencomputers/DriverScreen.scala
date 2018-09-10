@@ -1,14 +1,11 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.{Constants, api}
 import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.common.Slot
-import li.cil.oc.common.component
 import li.cil.oc.common.component.TextBuffer
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.{Slot, component, tileentity}
 import net.minecraft.item.ItemStack
 
 object DriverScreen extends Item with HostAware {

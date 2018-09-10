@@ -2,15 +2,10 @@ package li.cil.oc.common.init
 
 import java.util.concurrent.Callable
 
-import li.cil.oc.Constants
-import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
-import li.cil.oc.api.detail.ItemAPI
-import li.cil.oc.api.detail.ItemInfo
+import li.cil.oc.{Constants, OpenComputers, Settings}
+import li.cil.oc.api.detail.{ItemAPI, ItemInfo}
 import li.cil.oc.api.fs.FileSystem
-import li.cil.oc.common.Loot
-import li.cil.oc.common.Tier
-import li.cil.oc.common.item
+import li.cil.oc.common.{Loot, Tier, item}
 import net.minecraft.item.{EnumDyeColor, Item, ItemStack}
 import net.minecraft.nbt.NBTTagCompound
 

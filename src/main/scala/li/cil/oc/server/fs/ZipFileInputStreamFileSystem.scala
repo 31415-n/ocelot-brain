@@ -3,13 +3,11 @@ package li.cil.oc.server.fs
 import java.io
 import java.io.ByteArrayInputStream
 import java.util.concurrent.Callable
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
+import java.util.zip.{ZipEntry, ZipFile}
 
 import com.google.common.cache.CacheBuilder
 import li.cil.oc.OpenComputers
-import li.cil.oc.server.fs.ZipFileInputStreamFileSystem.ArchiveDirectory
-import li.cil.oc.server.fs.ZipFileInputStreamFileSystem.ArchiveFile
+import li.cil.oc.server.fs.ZipFileInputStreamFileSystem.{ArchiveDirectory, ArchiveFile}
 
 import scala.collection.mutable
 import scala.language.postfixOps

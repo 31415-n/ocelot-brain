@@ -1,15 +1,10 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc
-import li.cil.oc.Constants
-import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{Constants, OpenComputers, Settings, api}
 import li.cil.oc.api.network.{EnvironmentHost, ManagedEnvironment}
-import li.cil.oc.common.Loot
-import li.cil.oc.common.Slot
-import li.cil.oc.common.item.FloppyDisk
-import li.cil.oc.common.item.HardDiskDrive
+import li.cil.oc.common.{Loot, Slot}
+import li.cil.oc.common.item.{FloppyDisk, HardDiskDrive}
 import li.cil.oc.common.item.data.DriveData
 import li.cil.oc.server.component.Drive
 import li.cil.oc.server.fs.FileSystem.ItemLabel

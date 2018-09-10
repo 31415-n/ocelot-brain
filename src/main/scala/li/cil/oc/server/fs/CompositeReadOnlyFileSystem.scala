@@ -4,8 +4,7 @@ import java.io.FileNotFoundException
 import java.util.concurrent.Callable
 
 import li.cil.oc.api
-import li.cil.oc.api.fs.Handle
-import li.cil.oc.api.fs.Mode
+import li.cil.oc.api.fs.{Handle, Mode}
 import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.nbt.NBTTagCompound
 

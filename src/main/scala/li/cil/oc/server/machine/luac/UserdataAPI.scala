@@ -1,9 +1,6 @@
 package li.cil.oc.server.machine.luac
 
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.DataInputStream
-import java.io.DataOutputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream}
 
 import li.cil.oc.OpenComputers
 import li.cil.oc.api.Persistable

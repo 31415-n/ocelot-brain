@@ -2,8 +2,7 @@ package li.cil.oc.server.machine.luaj
 
 import li.cil.oc.util.FontUtils
 import li.cil.oc.util.ScalaClosure._
-import li.cil.repack.org.luaj.vm2.LuaValue
-import li.cil.repack.org.luaj.vm2.Varargs
+import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
 
 class UnicodeAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
   override def initialize() {

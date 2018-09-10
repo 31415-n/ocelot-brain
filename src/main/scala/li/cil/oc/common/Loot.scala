@@ -3,15 +3,11 @@ package li.cil.oc.common
 import java.util.Random
 import java.util.concurrent.Callable
 
-import li.cil.oc.Constants
-import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{Constants, OpenComputers, Settings, api}
 import li.cil.oc.api.fs.FileSystem
 import li.cil.oc.common.init.Items
 import li.cil.oc.util.Color
-import net.minecraft.item.EnumDyeColor
-import net.minecraft.item.ItemStack
+import net.minecraft.item.{EnumDyeColor, ItemStack}
 import net.minecraft.nbt.{NBT, NBTTagCompound}
 
 import scala.collection.mutable

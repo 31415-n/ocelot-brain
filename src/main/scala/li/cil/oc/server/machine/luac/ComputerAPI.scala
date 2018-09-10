@@ -1,8 +1,7 @@
 package li.cil.oc.server.machine.luac
 
 import li.cil.oc.api
-import li.cil.oc.api.driver.item.MutableProcessor
-import li.cil.oc.api.driver.item.Processor
+import li.cil.oc.api.driver.item.{MutableProcessor, Processor}
 import li.cil.oc.util.ExtendedLuaState.extendLuaState
 
 import scala.collection.convert.WrapAsScala._

@@ -1,8 +1,6 @@
 package li.cil.oc.util
 
-import java.util.Calendar
-import java.util.GregorianCalendar
-import java.util.TimeZone
+import java.util.{Calendar, GregorianCalendar, TimeZone}
 
 import scala.collection.mutable
 

@@ -6,9 +6,7 @@ import li.cil.oc._
 import li.cil.oc.common.init.Items
 import li.cil.oc.integration.Mods
 import li.cil.oc.server._
-import li.cil.oc.server.machine.luac.LuaStateFactory
-import li.cil.oc.server.machine.luac.NativeLua52Architecture
-import li.cil.oc.server.machine.luac.NativeLua53Architecture
+import li.cil.oc.server.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import li.cil.oc.server.machine.luaj.LuaJLuaArchitecture
 
 import scala.collection.convert.WrapAsScala._

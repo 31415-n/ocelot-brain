@@ -1,16 +1,12 @@
 package li.cil.oc.server.machine.luac
 
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.channels.Channels
 import java.util.regex.Pattern
 
 import com.google.common.base.Strings
 import com.google.common.io.PatternFilenameFilter
-import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.oc.api.machine.Architecture
 import li.cil.oc.server.machine.Machine
 import li.cil.oc.util.ExtendedLuaState._

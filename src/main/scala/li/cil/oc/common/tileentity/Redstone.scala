@@ -1,10 +1,7 @@
 package li.cil.oc.common.tileentity
 
-import li.cil.oc.Settings
-import li.cil.oc.api
-import li.cil.oc.api.network.Component
-import li.cil.oc.api.network.Node
-import li.cil.oc.api.network.Visibility
+import li.cil.oc.{Settings, api}
+import li.cil.oc.api.network.{Component, Node, Visibility}
 import li.cil.oc.common.tileentity.traits.{RedstoneAware, RedstoneChangedEventArgs}
 import li.cil.oc.server.component
 import li.cil.oc.server.component.RedstoneVanilla

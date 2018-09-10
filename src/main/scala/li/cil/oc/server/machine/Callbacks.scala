@@ -1,20 +1,15 @@
 package li.cil.oc.server.machine
 
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier
+import java.lang.reflect.{Method, Modifier}
 
 import li.cil.oc.OpenComputers
-import li.cil.oc.api.driver.MethodWhitelist
-import li.cil.oc.api.driver.NamedBlock
+import li.cil.oc.api.driver.{MethodWhitelist, NamedBlock}
 import li.cil.oc.api.machine
-import li.cil.oc.api.machine.Arguments
-import li.cil.oc.api.machine.Context
-import li.cil.oc.api.network.FilteredEnvironment
-import li.cil.oc.api.network.ManagedPeripheral
+import li.cil.oc.api.machine.{Arguments, Context}
+import li.cil.oc.api.network.{FilteredEnvironment, ManagedPeripheral}
 import li.cil.oc.server.driver.CompoundBlockEnvironment
 
-import scala.collection.immutable
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 
 object Callbacks {
   private val cache = mutable.Map.empty[Class[_], immutable.Map[String, Callback]]

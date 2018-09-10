@@ -1,8 +1,7 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.api
-import li.cil.oc.integration.ModProxy
-import li.cil.oc.integration.Mods
+import li.cil.oc.integration.{ModProxy, Mods}
 
 object ModOpenComputers extends ModProxy {
   override def getMod: Mods.SimpleMod = Mods.OpenComputers

@@ -3,30 +3,15 @@ package li.cil.oc.server.machine
 import java.util
 import java.util.concurrent.TimeUnit
 
-import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
-import li.cil.oc.api.Driver
-import li.cil.oc.api.Network
+import li.cil.oc.{OpenComputers, Settings}
 import li.cil.oc.api.detail.MachineAPI
 import li.cil.oc.api.driver.DeviceInfo
-import li.cil.oc.api.driver.item.CallBudget
-import li.cil.oc.api.driver.item.Processor
-import li.cil.oc.api.machine
-import li.cil.oc.api.machine.Architecture
-import li.cil.oc.api.machine.Arguments
-import li.cil.oc.api.machine.Callback
-import li.cil.oc.api.machine.Context
-import li.cil.oc.api.machine.ExecutionResult
-import li.cil.oc.api.machine.LimitReachedException
-import li.cil.oc.api.machine.MachineHost
-import li.cil.oc.api.machine.Value
-import li.cil.oc.api.network.Component
-import li.cil.oc.api.network.Message
-import li.cil.oc.api.network.Node
-import li.cil.oc.api.network.Visibility
+import li.cil.oc.api.driver.item.{CallBudget, Processor}
+import li.cil.oc.api.{Driver, Network, machine}
+import li.cil.oc.api.machine._
+import li.cil.oc.api.network.{Component, Message, Node, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
-import li.cil.oc.common.EventHandler
-import li.cil.oc.common.Slot
+import li.cil.oc.common.{EventHandler, Slot}
 import li.cil.oc.server.component.FileSystem
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.fs.FileSystem

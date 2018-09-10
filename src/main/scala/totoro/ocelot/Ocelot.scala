@@ -1,9 +1,9 @@
 package totoro.ocelot
 
-import li.cil.oc.{Constants, OpenComputers, api}
-import li.cil.oc.common.init.Items
 import li.cil.oc.common.Tier
+import li.cil.oc.common.init.Items
 import li.cil.oc.common.tileentity.Case
+import li.cil.oc.{Constants, OpenComputers, api}
 
 object Ocelot extends App {
   OpenComputers.init()

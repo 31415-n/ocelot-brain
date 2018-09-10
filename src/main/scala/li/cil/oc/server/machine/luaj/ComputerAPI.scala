@@ -1,11 +1,9 @@
 package li.cil.oc.server.machine.luaj
 
 import li.cil.oc.api
-import li.cil.oc.api.driver.item.MutableProcessor
-import li.cil.oc.api.driver.item.Processor
+import li.cil.oc.api.driver.item.{MutableProcessor, Processor}
 import li.cil.oc.util.ScalaClosure._
-import li.cil.repack.org.luaj.vm2.LuaValue
-import li.cil.repack.org.luaj.vm2.Varargs
+import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
 
 import scala.collection.convert.WrapAsScala._
 

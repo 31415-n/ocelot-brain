@@ -1,8 +1,6 @@
 package li.cil.oc.common.component
 
-import li.cil.oc.api.machine.Arguments
-import li.cil.oc.api.machine.Callback
-import li.cil.oc.api.machine.Context
+import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.common.tileentity
 
 class Screen(val screen: tileentity.Screen) extends TextBuffer(screen) {

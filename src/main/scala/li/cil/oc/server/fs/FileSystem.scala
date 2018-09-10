@@ -1,14 +1,10 @@
 package li.cil.oc.server.fs
 
 import java.io
-import java.net.MalformedURLException
-import java.net.URISyntaxException
-import java.net.URL
+import java.net.{MalformedURLException, URISyntaxException, URL}
 import java.util.UUID
 
-import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.oc.api.fs.Label
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.server.component

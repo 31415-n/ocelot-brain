@@ -1,8 +1,6 @@
 package li.cil.oc.server.component.traits
 
-import li.cil.oc.api.machine.Arguments
-import li.cil.oc.api.machine.Callback
-import li.cil.oc.api.machine.Context
+import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.server.component._
 
 trait InventoryTransfer {

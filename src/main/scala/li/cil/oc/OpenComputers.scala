@@ -1,8 +1,7 @@
 package li.cil.oc
 
 import li.cil.oc.common.Proxy
-import org.apache.logging.log4j.LogManager
-import org.apache.logging.log4j.Logger
+import org.apache.logging.log4j.{LogManager, Logger}
 
 object OpenComputers {
   final val ID = "opencomputers"

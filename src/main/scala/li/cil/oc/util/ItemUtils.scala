@@ -1,14 +1,11 @@
 package li.cil.oc.util
 
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
-import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.{Constants, api}
 import li.cil.oc.common.Tier
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.CompressedStreamTools
-import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.{CompressedStreamTools, NBTTagCompound}
 
 object ItemUtils {
   def caseTier(stack: ItemStack): Int = {

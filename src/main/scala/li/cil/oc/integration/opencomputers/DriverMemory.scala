@@ -1,11 +1,7 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.Constants
-import li.cil.oc.Settings
-import li.cil.oc.api
-import li.cil.oc.common.Slot
-import li.cil.oc.common.Tier
-import li.cil.oc.common.item
+import li.cil.oc.{Constants, Settings, api}
+import li.cil.oc.common.{Slot, Tier, item}
 import li.cil.oc.server.component
 import net.minecraft.item.ItemStack
 
