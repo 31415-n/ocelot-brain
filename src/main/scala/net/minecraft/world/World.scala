@@ -7,7 +7,7 @@ import scala.util.Random
   */
 
 class World {
-  def getWorldTime: Long = System.currentTimeMillis()
+  def getWorldTime: Long = getTotalWorldTime / 50 % 24000
   def getTotalWorldTime: Long = System.currentTimeMillis()
   def isPaused = false
   def rand: Random.type = Random

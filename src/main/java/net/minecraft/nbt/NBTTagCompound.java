@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("unchecked")
 public class NBTTagCompound extends NBTBase {
 
     private static final Logger b = LogManager.getLogger();

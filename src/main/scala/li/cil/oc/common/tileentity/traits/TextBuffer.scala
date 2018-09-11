@@ -1,14 +1,14 @@
 package li.cil.oc.common.tileentity.traits
 
-import li.cil.oc.{Constants, Settings, api}
+import li.cil.oc.{Settings, api}
 import li.cil.oc.api.internal
 import li.cil.oc.api.network.Node
+import li.cil.oc.integration.opencomputers.DriverScreen
 import net.minecraft.nbt.NBTTagCompound
 
 trait TextBuffer extends Environment {
   lazy val buffer: internal.TextBuffer = {
-    val screenItem = api.Items.get(Constants.BlockName.ScreenTier1).createItemStack(1)
-    val buffer = api.Driver.driverFor(screenItem, getClass).createEnvironment(screenItem, this).asInstanceOf[api.internal.TextBuffer]
+    val buffer = DriverScreen.createEnvironment(null, this).asInstanceOf[api.internal.TextBuffer]
     val (maxWidth, maxHeight) = Settings.screenResolutionsByTier(tier)
     buffer.setMaximumResolution(maxWidth, maxHeight)
     buffer.setMaximumColorDepth(Settings.screenDepthsByTier(tier))

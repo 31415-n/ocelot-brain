@@ -13,12 +13,19 @@ object Ocelot extends App {
 
   computer.setInventorySlotContents(0, Items.get(Constants.ItemName.CPUTier3).createItemStack(1))
   computer.setInventorySlotContents(1, Items.get(Constants.ItemName.RAMTier6).createItemStack(1))
+  computer.setInventorySlotContents(2, Items.get(Constants.ItemName.GraphicsCardTier3).createItemStack(1))
 
   val screen = new Screen(Tier.Three)
-  computer.node.network().connect(computer.node, screen.node)
+  computer.node.connect(screen.node)
 
   computer.machine.start()
   println(computer.machine.lastError())
+
+  while (true) {
+    computer.updateEntity()
+    screen.updateEntity()
+    Thread.sleep(50)
+  }
 
   computer.machine.stop()
   println(computer.machine.lastError())
