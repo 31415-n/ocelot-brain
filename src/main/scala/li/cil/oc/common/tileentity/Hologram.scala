@@ -8,7 +8,7 @@ import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
 import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.api.network._
 import net.minecraft.nbt.NBTTagCompound
-import totoro.ocelot.math.Vec3d
+import totoro.ocelot.brain.math.Vec3d
 
 import scala.collection.convert.WrapAsJava._
 
