@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.network
 
+import totoro.ocelot.brain.environment.Environment
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network.Visibility.Visibility
 import totoro.ocelot.brain.{Ocelot, Settings}

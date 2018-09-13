@@ -1,4 +1,6 @@
-package totoro.ocelot.brain.network
+package totoro.ocelot.brain.environment
+
+import totoro.ocelot.brain.network.{Component, Message, Network, Node}
 
 /**
   * The environment of a node.

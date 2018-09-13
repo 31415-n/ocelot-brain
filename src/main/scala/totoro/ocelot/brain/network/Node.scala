@@ -2,6 +2,7 @@ package totoro.ocelot.brain.network
 
 import com.google.common.base.Strings
 import totoro.ocelot.brain.Ocelot
+import totoro.ocelot.brain.environment.Environment
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
 /**

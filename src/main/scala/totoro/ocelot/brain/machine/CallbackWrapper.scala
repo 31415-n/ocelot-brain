@@ -7,10 +7,6 @@ import totoro.ocelot.brain.Ocelot
 
 import scala.collection.mutable
 
-trait CallbackCall {
-  def call(instance: AnyRef, context: Context, args: Arguments): Array[AnyRef]
-}
-
 object CallbackWrapper {
   private final val ObjectNameASM = classOf[AnyRef].getName.replace('.', '/')
   private final val CallbackCallDesc = Type.getMethodDescriptor(classOf[CallbackCall].getMethod("call", classOf[AnyRef], classOf[Context], classOf[Arguments]))
