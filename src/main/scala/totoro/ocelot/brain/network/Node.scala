@@ -235,9 +235,14 @@ trait Node {
 
   // ----------------------------------------------------------------------- //
 
+  final val NodeTag = "node"
+  final val AddressTag = "address"
+  final val BufferTag = "buffer"
+  final val VisibilityTag = "visibility"
+
   def load(nbt: NBTTagCompound): Unit = {
-    if (nbt.hasKey("address")) {
-      val newAddress = nbt.getString("address")
+    if (nbt.hasKey(AddressTag)) {
+      val newAddress = nbt.getString(AddressTag)
       if (!Strings.isNullOrEmpty(newAddress) && newAddress != address)
         network.remap(this, newAddress)
     }
@@ -245,7 +250,7 @@ trait Node {
 
   def save(nbt: NBTTagCompound): Unit = {
     if (address != null) {
-      nbt.setString("address", address)
+      nbt.setString(AddressTag, address)
     }
   }
 
