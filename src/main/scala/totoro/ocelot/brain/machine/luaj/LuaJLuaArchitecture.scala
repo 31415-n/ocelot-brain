@@ -13,7 +13,6 @@ import totoro.ocelot.brain.util.ScalaClosure
 import totoro.ocelot.brain.util.ScalaClosure._
 import totoro.ocelot.brain.{Ocelot, Settings}
 
-@Architecture.name("LuaJ")
 class LuaJLuaArchitecture(val machine: Machine) extends Architecture {
   private[machine] var lua: Globals = _
 

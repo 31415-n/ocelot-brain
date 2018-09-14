@@ -1,18 +1,16 @@
 package totoro.ocelot.brain.machine
 
-import java.util
 import java.util.concurrent.ScheduledExecutorService
 
 import totoro.ocelot.brain.entity.MachineHost
 import totoro.ocelot.brain.{Settings, machine}
 import totoro.ocelot.brain.util.ThreadPoolFactory
 
-import scala.collection.convert.WrapAsJava._
 import scala.collection.mutable
 
 object MachineAPI {
   // Keep registration order, to allow deterministic iteration of the architectures.
-  val checked: mutable.LinkedHashSet[Class[_ <: Architecture]] = mutable.LinkedHashSet.empty[Class[_ <: Architecture]]
+  val checked: mutable.HashMap[Class[_ <: Architecture], String] = mutable.HashMap.empty
 
   /**
     * Register an architecture that can be used to create new machines.
@@ -23,14 +21,14 @@ object MachineAPI {
     * @param architecture the architecture to register.
     * @throws IllegalArgumentException if the specified architecture is invalid.
     */
-  def add(architecture: Class[_ <: Architecture]) {
+  def add(architecture: Class[_ <: Architecture], name: String) {
     if (!checked.contains(architecture)) {
       try
         architecture.getConstructor(classOf[Machine])
       catch {
         case t: Throwable => throw new IllegalArgumentException("Architecture does not have required constructor.", t)
       }
-      checked += architecture
+      checked(architecture) = name
     }
   }
 
@@ -43,7 +41,7 @@ object MachineAPI {
     * a custom architecture also registers it, you may not see it in this list
     * until it also created a new machine using that architecture.
     */
-  def architectures: util.List[Class[_ <: Architecture]] = checked.toSeq
+  def architectures: Iterable[Class[_ <: Architecture]] = checked.keys
 
   /**
     * Get the name of the specified architecture.
@@ -52,10 +50,7 @@ object MachineAPI {
     * @return the name of the specified architecture.
     */
   def getArchitectureName(architecture: Class[_ <: Architecture]): String =
-    architecture.getAnnotation(classOf[Architecture.name]) match {
-      case annotation: Architecture.name => annotation.value
-      case _ => architecture.getSimpleName
-    }
+    checked.getOrElse(architecture, architecture.getSimpleName)
 
   /**
     * Creates a new machine for the specified host.

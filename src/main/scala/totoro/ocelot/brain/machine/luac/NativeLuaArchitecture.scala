@@ -11,12 +11,10 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 import totoro.ocelot.brain.machine._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
-@Architecture.name("Lua 5.2")
 class NativeLua52Architecture(machine: Machine) extends NativeLuaArchitecture(machine) {
   override def factory: LuaStateFactory.Lua52.type = LuaStateFactory.Lua52
 }
 
-@Architecture.name("Lua 5.3")
 class NativeLua53Architecture(machine: Machine) extends NativeLuaArchitecture(machine) {
   override def factory: LuaStateFactory.Lua53.type = LuaStateFactory.Lua53
 }

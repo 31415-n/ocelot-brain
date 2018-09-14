@@ -3,29 +3,6 @@ package totoro.ocelot.brain.machine
 import totoro.ocelot.brain.entity.Entity
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
-object Architecture {
-
-  /**
-    * Architectures can be annotated with this to provide a nice display name.
-    *
-    * This is used when the name of an architecture has to be displayed to the
-    * user, such as when cycling architectures on a CPU.
-    */
-  class name(val value: String) extends scala.annotation.StaticAnnotation
-
-  /**
-    * Architectures flagged with this annotation can potentially run without
-    * any additional memory installed in the computer.
-    *
-    * Use this to allow assembly of devices such as microcontrollers without
-    * any memory being installed in them while your architecture is being
-    * used by the CPU being installed. Note to actually make the machine
-    * start up you only need to always return `true` from
-    * `recomputeMemory`.
-    */
-  class noMemoryRequirements extends scala.annotation.StaticAnnotation
-}
-
 /**
   * This interface abstracts away any language specific details for the Machine.
   *
