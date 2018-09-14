@@ -151,7 +151,7 @@ object FileSystemAPI extends {
     * @param capacity the capacity of the file system.
     * @return a file system residing in memory.
     */
-  def fromMemory(capacity: Long) = new RamFileSystem(capacity)
+  def fromMemory(capacity: Long): FileSystemTrait = new RamFileSystem(capacity)
 
   /**
     * Wrap a file system retrieved via one of the `from???` methods to

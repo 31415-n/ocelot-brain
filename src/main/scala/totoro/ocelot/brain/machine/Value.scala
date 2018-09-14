@@ -30,7 +30,7 @@ trait Value extends Persistable {
     * @param arguments the arguments passed to the method.
     * @return the current value at the specified index, or `null`.
     */
-  def apply(context: Context, arguments: Arguments): Any
+  def apply(context: Context, arguments: Arguments): AnyRef
 
   /**
     * This is called when the code running on a machine tries to assign a new

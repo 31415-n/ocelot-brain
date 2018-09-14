@@ -27,7 +27,6 @@ object MachineAPI {
     if (!checked.contains(architecture)) {
       try
         architecture.getConstructor(classOf[Machine])
-
       catch {
         case t: Throwable => throw new IllegalArgumentException("Architecture does not have required constructor.", t)
       }
