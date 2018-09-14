@@ -1,10 +1,10 @@
 package totoro.ocelot.brain.environment
 
 import java.io.{FileNotFoundException, IOException}
-import java.util
 
 import totoro.ocelot.brain.environment.fs.{FileSystemTrait, HandleValue, Label, Mode}
 import totoro.ocelot.brain.environment.traits.DeviceInfo
+import totoro.ocelot.brain.environment.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}
@@ -39,7 +39,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
       ((2000 / seekCosts(speed)).toInt / 100).toString + "/" + ((2000 / writeCosts(speed)).toInt / 100).toString)
   )
 
-  override def getDeviceInfo: util.Map[String, String] = deviceInfo
+  override def getDeviceInfo: Map[String, String] = deviceInfo
 
   // ----------------------------------------------------------------------- //
 

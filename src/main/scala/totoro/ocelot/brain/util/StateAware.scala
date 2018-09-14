@@ -1,7 +1,5 @@
 package totoro.ocelot.brain.util
 
-import java.util
-
 object StateAware {
 
   /**
@@ -36,5 +34,5 @@ trait StateAware {
     *
     * @return the current state.
     */
-  def getCurrentState: util.EnumSet[StateAware.State.Value]
+  def getCurrentState: Set[StateAware.State.Value]
 }

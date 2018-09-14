@@ -6,7 +6,7 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
   * Basic implementation for the [[Value]] trait.
   */
 class AbstractValue extends Value {
-  override def apply(context: Context, arguments: Arguments): Any = null
+  override def apply(context: Context, arguments: Arguments): AnyRef = null
 
   override def unapply(context: Context, arguments: Arguments): Unit = {
   }

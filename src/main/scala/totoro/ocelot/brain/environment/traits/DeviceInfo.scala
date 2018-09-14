@@ -1,7 +1,5 @@
 package totoro.ocelot.brain.environment.traits
 
-import java.util
-
 import totoro.ocelot.brain.environment.Environment
 
 /**
@@ -100,5 +98,5 @@ trait DeviceInfo {
     *
     * @return the table of information on this device, or `null`.
     */
-  def getDeviceInfo: util.Map[String, String]
+  def getDeviceInfo: Map[String, String]
 }

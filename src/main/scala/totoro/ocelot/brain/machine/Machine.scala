@@ -136,7 +136,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Con
 
   // ----------------------------------------------------------------------- //
 
-  override def getDeviceInfo: util.Map[String, String] = host match {
+  override def getDeviceInfo: Map[String, String] = host match {
     case deviceInfo: DeviceInfo => deviceInfo.getDeviceInfo
     case _ => null
   }
