@@ -3,18 +3,24 @@ package totoro.ocelot.brain.machine
 import java.util
 import java.util.concurrent.TimeUnit
 
-import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.environment.{AbstractManagedEnvironment, DeviceInfo, FileSystem}
 import totoro.ocelot.brain.entity.MachineHost
 import totoro.ocelot.brain.environment.fs.FileSystemAPI
-import totoro.ocelot.brain.network.{Component, Network, Visibility}
+import totoro.ocelot.brain.environment.traits.{CallBudget, Processor}
+import totoro.ocelot.brain.environment.{AbstractManagedEnvironment, DeviceInfo, FileSystem}
+import totoro.ocelot.brain.nbt._
+import totoro.ocelot.brain.nbt.ExtendedNBT._
+import totoro.ocelot.brain.network._
+import totoro.ocelot.brain.user.User
+import totoro.ocelot.brain.util.ResultWrapper.result
+import totoro.ocelot.brain.{Ocelot, Settings}
+import totoro.ocelot.brain.machine
 
 import scala.Array.canBuildFrom
 import scala.collection.convert.WrapAsJava._
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
 
-class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Runnable with DeviceInfo {
+class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Context with Runnable with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("computer", Visibility.Neighbors).
     create
@@ -26,7 +32,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
 
   var architecture: Architecture = _
 
-  private[machine] val state = mutable.Stack(Machine.State.Stopped)
+  private[machine] val state = mutable.Stack(MachineAPI.State.Stopped)
 
   private val _components = mutable.Map.empty[String, String]
 
@@ -34,7 +40,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
 
   private val _users = mutable.Set.empty[String]
 
-  private val signals = mutable.Queue.empty[Machine.Signal]
+  private val signals = mutable.Queue.empty[MachineAPI.Signal]
 
   var maxComponents = 0
 
@@ -67,39 +73,32 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
 
   // ----------------------------------------------------------------------- //
 
-  override def onHostChanged(): Unit = {
+  def onHostChanged(): Unit = {
     val components = host.internalComponents
-    maxComponents = components.foldLeft(0)((sum, item) => sum + (Option(item) match {
-      case Some(stack) => Option(Driver.driverFor(stack, host.getClass)) match {
-        case Some(driver: Processor) => driver.supportedComponents(stack)
-        case _ => 0
-      }
+    maxComponents = components.foldLeft(0)((sum, entity) => sum + (entity match {
+      case processor: Processor => processor.supportedComponents
       case _ => 0
     }))
-    val callBudgets = components.map(stack => (stack, Option(Driver.driverFor(stack, host.getClass)))).collect({
-      case (stack, Some(driver: CallBudget)) => driver.getCallBudget(stack)
+    val callBudgets = components.collect({
+      case entity: CallBudget => entity.callBudget
     })
     maxCallBudget = if (callBudgets.isEmpty) 1.0 else callBudgets.sum / callBudgets.size
     var newArchitecture: Architecture = null
     components.find {
-      case stack: ItemStack => Option(Driver.driverFor(stack, host.getClass)) match {
-        case Some(driver: Processor) if driver.slot(stack) == Slot.CPU =>
-          Option(driver.architecture(stack)) match {
-            case Some(clazz) =>
-              if (architecture == null || architecture.getClass != clazz) try {
-                newArchitecture = clazz.getConstructor(classOf[machine.Machine]).newInstance(this)
-              }
-              catch {
-                case t: Throwable => OpenComputers.log.warn("Failed instantiating a CPU architecture.", t)
-              }
-              else {
-                newArchitecture = architecture
-              }
-              true
-            case _ => false
-          }
-        case _ => false
-      }
+      case processor: Processor =>
+        Option(processor.architecture) match {
+          case Some(clazz) =>
+            if (architecture == null || architecture.getClass != clazz) try {
+              newArchitecture = clazz.getConstructor(classOf[machine.Machine]).newInstance(this)
+            } catch {
+              case t: Throwable => Ocelot.log.warn("Failed instantiating a CPU architecture.", t)
+            }
+            else {
+              newArchitecture = architecture
+            }
+            true
+          case _ => false
+        }
       case _ => false
     }
     // This needs to operate synchronized against the worker thread, to avoid the
@@ -111,19 +110,19 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     hasMemory = Option(architecture).fold(false)(_.recomputeMemory(components))
   }
 
-  override def components: util.Map[String, String] = scala.collection.convert.WrapAsJava.mapAsJavaMap(_components)
+  def components: util.Map[String, String] = scala.collection.convert.WrapAsJava.mapAsJavaMap(_components)
 
   def componentCount: Int = (_components.foldLeft(0.0)((acc, entry) => entry match {
     case (_, name) => acc + (if (name != "filesystem") 1.0 else 0.25)
   }) + addedComponents.foldLeft(0.0)((acc, component) => acc + (if (component.name != "filesystem") 1 else 0.25)) - 1).toInt // -1 = this computer
 
-  override def tmpAddress: String = tmp.fold(null: String)(_.node.address)
+  def tmpAddress: String = tmp.fold(null: String)(_.node.address)
 
   def lastError: String = message.orNull
 
-  override def users: Array[String] = _users.synchronized(_users.toArray)
+  def users: Array[String] = _users.synchronized(_users.toArray)
 
-  override def upTime(): Double = {
+  def upTime(): Double = {
     // Convert from old saves (set to -timeStarted on load).
     if (uptime < 0) {
       uptime = worldTime + uptime
@@ -134,7 +133,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     uptime / 20.0
   }
 
-  override def cpuTime: Double = (cpuTotal + (System.nanoTime() - cpuStart)) * 10e-10
+  def cpuTime: Double = (cpuTotal + (System.nanoTime() - cpuStart)) * 10e-10
 
   // ----------------------------------------------------------------------- //
 
@@ -145,15 +144,15 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
 
   // ----------------------------------------------------------------------- //
 
-  override def canInteract(player: String): Boolean = !Settings.get.canComputersBeOwned ||
+  def canInteract(player: String): Boolean = !Settings.get.canComputersBeOwned ||
     _users.synchronized(_users.isEmpty || _users.contains(player))
 
-  override def isRunning: Boolean = state.synchronized(state.top != Machine.State.Stopped && state.top != Machine.State.Stopping)
+  def isRunning: Boolean = state.synchronized(state.top != MachineAPI.State.Stopped && state.top != MachineAPI.State.Stopping)
 
-  override def isPaused: Boolean = state.synchronized(state.top == Machine.State.Paused && remainingPause > 0)
+  def isPaused: Boolean = state.synchronized(state.top == MachineAPI.State.Paused && remainingPause > 0)
 
   override def start(): Boolean = state.synchronized(state.top match {
-    case Machine.State.Stopped if node.network != null =>
+    case MachineAPI.State.Stopped if node.network != null =>
       onHostChanged()
       processAddedComponents()
       verifyComponents()
@@ -177,35 +176,36 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
         false
       }
       else {
-        switchTo(Machine.State.Starting)
+        switchTo(MachineAPI.State.Starting)
         uptime = 0
         node.sendToReachable("computer.started")
         true
       }
-    case Machine.State.Paused if remainingPause > 0 =>
+    case MachineAPI.State.Paused if remainingPause > 0 =>
       remainingPause = 0
       true
-    case Machine.State.Stopping =>
-      switchTo(Machine.State.Restarting)
-      EventHandler.unscheduleClose(this)
+    case MachineAPI.State.Stopping =>
+      switchTo(MachineAPI.State.Restarting)
       true
     case _ =>
       false
   })
 
-  override def pause(seconds: Double): Boolean = {
+  def pause(seconds: Double): Boolean = {
     val ticksToPause = math.max((seconds * 20).toInt, 0)
-    def shouldPause(state: Machine.State.Value) = state match {
-      case Machine.State.Stopping | Machine.State.Stopped => false
-      case Machine.State.Paused if ticksToPause <= remainingPause => false
+
+    def shouldPause(state: MachineAPI.State.Value) = state match {
+      case MachineAPI.State.Stopping | MachineAPI.State.Stopped => false
+      case MachineAPI.State.Paused if ticksToPause <= remainingPause => false
       case _ => true
     }
+
     if (shouldPause(state.synchronized(state.top))) {
       // Check again when we get the lock, might have changed since.
       Machine.this.synchronized(state.synchronized(if (shouldPause(state.top)) {
-        if (state.top != Machine.State.Paused) {
-          assert(!state.contains(Machine.State.Paused))
-          state.push(Machine.State.Paused)
+        if (state.top != MachineAPI.State.Paused) {
+          assert(!state.contains(MachineAPI.State.Paused))
+          state.push(MachineAPI.State.Paused)
         }
         remainingPause = ticksToPause
         return true
@@ -215,15 +215,15 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
   }
 
   override def stop(): Boolean = state.synchronized(state.headOption match {
-    case Some(Machine.State.Stopped | Machine.State.Stopping) =>
+    case Some(MachineAPI.State.Stopped | MachineAPI.State.Stopping) =>
       false
     case _ =>
-      state.push(Machine.State.Stopping)
-      EventHandler.scheduleClose(this)
+      state.push(MachineAPI.State.Stopping)
+      tryClose()
       true
   })
 
-  override def consumeCallBudget(callCost: Double): Unit = {
+  def consumeCallBudget(callCost: Double): Unit = {
     if (architecture.isInitialized && !inSynchronizedCall) {
       val clampedCost = math.max(0.001, callCost)
       if (clampedCost > callBudget) {
@@ -233,20 +233,20 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     }
   }
 
-  override def beep(frequency: Short, duration: Short): Unit = {
+  def beep(frequency: Short, duration: Short): Unit = {
   }
 
-  override def beep(pattern: String) {
+  def beep(pattern: String) {
   }
 
-  override def crash(message: String): Boolean = {
+  def crash(message: String): Boolean = {
     this.message = Option(message)
     state.synchronized {
       val result = stop()
-      if (state.top == Machine.State.Stopping) {
+      if (state.top == MachineAPI.State.Stopping) {
         // When crashing, make sure there's no "Running" left in the stack.
         state.clear()
-        state.push(Machine.State.Stopping)
+        state.push(MachineAPI.State.Stopping)
       }
       result
     }
@@ -254,14 +254,14 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
 
   override def signal(name: String, args: AnyRef*): Boolean = {
     state.synchronized(state.top match {
-      case Machine.State.Stopped | Machine.State.Stopping => return false
+      case MachineAPI.State.Stopped | MachineAPI.State.Stopping => return false
       case _ => signals.synchronized {
         if (signals.size >= 256) return false
         else if (args == null) {
-          signals.enqueue(new Machine.Signal(name, Array.empty))
+          signals.enqueue(new MachineAPI.Signal(name, Array.empty))
         }
         else {
-          signals.enqueue(new Machine.Signal(name, args.map {
+          signals.enqueue(new MachineAPI.Signal(name, args.map {
             case null | Unit | None => null
             case arg: java.lang.Boolean => arg
             case arg: java.lang.Character => Double.box(arg.toDouble)
@@ -274,7 +274,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
             case arg: java.util.Map[_, _] if arg.isEmpty || arg.head._1.isInstanceOf[String] && arg.head._2.isInstanceOf[String] => arg.toMap
             case arg: NBTTagCompound => arg
             case arg =>
-              OpenComputers.log.warn("Trying to push signal with an unsupported argument of type " + arg.getClass.getName)
+              Ocelot.log.warn("Trying to push signal with an unsupported argument of type " + arg.getClass.getName)
               null
           }.toArray[AnyRef]))
         }
@@ -285,17 +285,17 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     true
   }
 
-  override def popSignal(): Machine.Signal = signals.synchronized(if (signals.isEmpty) null else signals.dequeue().convert())
+  def popSignal(): MachineAPI.Signal = signals.synchronized(if (signals.isEmpty) null else signals.dequeue().convert())
 
-  override def methods(value: scala.AnyRef): util.Map[String, Callback] = Callbacks(value).map(entry => {
+  def methods(value: scala.AnyRef): util.Map[String, Callback] = Callbacks(value).map(entry => {
     val (name, callback) = entry
     name -> callback.annotation
   })
 
-  override def invoke(address: String, method: String, args: Array[AnyRef]): Array[AnyRef] = {
+  def invoke(address: String, method: String, args: Array[AnyRef]): Array[AnyRef] = {
     if (node != null && node.network != null) {
       Option(node.network.node(address)) match {
-        case Some(component: li.cil.oc.server.network.Component) if component.canBeSeenFrom(node) || component == node =>
+        case Some(component: Component) if component.canBeSeenFrom(node) || component == node =>
           val annotation = component.annotation(method)
           if (annotation.direct) {
             consumeCallBudget(1.0 / annotation.limit)
@@ -311,20 +311,20 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     }
   }
 
-  override def invoke(value: Value, method: String, args: Array[AnyRef]): Array[AnyRef] = {
+  def invoke(value: Value, method: String, args: Array[AnyRef]): Array[AnyRef] = {
     Callbacks(value).get(method) match {
       case Some(callback) =>
         val annotation = callback.annotation
         if (annotation.direct) {
           consumeCallBudget(1.0 / annotation.limit)
         }
-        val arguments = new ArgumentsImpl(Seq(args: _*))
+        val arguments = new Arguments(Seq(args: _*))
         Registry.convert(callback(value, this, arguments))
       case _ => throw new NoSuchMethodException()
     }
   }
 
-  override def addUser(name: String) {
+  def addUser(name: String) {
     if (_users.size >= Settings.get.maxUsers)
       throw new Exception("too many users")
 
@@ -339,7 +339,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     }
   }
 
-  override def removeUser(name: String): Boolean = _users.synchronized {
+  def removeUser(name: String): Boolean = _users.synchronized {
     val success = _users.remove(name)
     if (success) {
       usersChanged = true
@@ -398,15 +398,15 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
 
   @Callback(doc = """function():table -- Returns a map of program name to disk label for known programs.""")
   def getProgramLocations(context: Context, args: Arguments): Array[AnyRef] =
-    result(ProgramLocations.getMappings(Machine.getArchitectureName(architecture.getClass)))
+    result(ProgramLocations.getMappings(MachineAPI.getArchitectureName(architecture.getClass)))
 
   // ----------------------------------------------------------------------- //
 
-  def isExecuting: Boolean = state.synchronized(state.contains(Machine.State.Running))
+  def isExecuting: Boolean = state.synchronized(state.contains(MachineAPI.State.Running))
 
   override val canUpdate = true
 
-  override def update(): Unit = if (state.synchronized(state.top != Machine.State.Stopped)) {
+  override def update(): Unit = if (state.synchronized(state.top != MachineAPI.State.Stopped)) {
     // Add components that were added since the last update to the actual list
     // of components if we can see them. We use this delayed approach to avoid
     // issues with components that have a visibility lower than their
@@ -439,11 +439,11 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     // guaranteed that the executor thread isn't running anymore.
     state.synchronized(state.top) match {
       // Booting up.
-      case Machine.State.Starting =>
+      case MachineAPI.State.Starting =>
         verifyComponents()
-        switchTo(Machine.State.Yielded)
+        switchTo(MachineAPI.State.Yielded)
       // Computer is rebooting.
-      case Machine.State.Restarting =>
+      case MachineAPI.State.Restarting =>
         close()
         if (Settings.get.eraseTmpOnReboot) {
           tmp.foreach(_.node.remove()) // To force deleting contents.
@@ -452,10 +452,10 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
         node.sendToReachable("computer.stopped")
         start()
       // Resume from pauses based on sleep or signal underflow.
-      case Machine.State.Sleeping if remainIdle <= 0 || signals.nonEmpty =>
-        switchTo(Machine.State.Yielded)
+      case MachineAPI.State.Sleeping if remainIdle <= 0 || signals.nonEmpty =>
+        switchTo(MachineAPI.State.Yielded)
       // Resume in case we paused  because the game was paused.
-      case Machine.State.Paused =>
+      case MachineAPI.State.Paused =>
         if (remainingPause > 0) {
           remainingPause -= 1
         }
@@ -465,26 +465,26 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
           switchTo(state.top) // Trigger execution if necessary.
         }
       // Perform a synchronized call (message sending).
-      case Machine.State.SynchronizedCall =>
+      case MachineAPI.State.SynchronizedCall =>
         // We switch into running state, since we'll behave as though the call
         // were performed from our executor thread.
-        switchTo(Machine.State.Running)
+        switchTo(MachineAPI.State.Running)
         try {
           inSynchronizedCall = true
           architecture.runSynchronized()
           inSynchronizedCall = false
           // Check if the callback called pause() or stop().
           state.top match {
-            case Machine.State.Running =>
-              switchTo(Machine.State.SynchronizedReturn)
-            case Machine.State.Paused =>
+            case MachineAPI.State.Running =>
+              switchTo(MachineAPI.State.SynchronizedReturn)
+            case MachineAPI.State.Paused =>
               state.pop() // Paused
               state.pop() // Running, no switchTo to avoid new future.
-              state.push(Machine.State.SynchronizedReturn)
-              state.push(Machine.State.Paused)
-            case Machine.State.Stopping =>
+              state.push(MachineAPI.State.SynchronizedReturn)
+              state.push(MachineAPI.State.Paused)
+            case MachineAPI.State.Stopping =>
               state.clear()
-              state.push(Machine.State.Stopping)
+              state.push(MachineAPI.State.Stopping)
             case _ => throw new AssertionError()
           }
         }
@@ -492,7 +492,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
           case e: java.lang.Error if e.getMessage == "not enough memory" =>
             crash("Error.OutOfMemory")
           case e: Throwable =>
-            OpenComputers.log.warn("Faulty architecture implementation for synchronized calls.", e)
+            Ocelot.log.warn("Faulty architecture implementation for synchronized calls.", e)
             crash("Error.InternalError")
         }
         finally {
@@ -506,7 +506,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     // might turn into a deadlock depending on where it currently is.
     state.synchronized(state.top) match {
       // Computer is shutting down.
-      case Machine.State.Stopping => Machine.this.synchronized(state.synchronized(tryClose()))
+      case MachineAPI.State.Stopping => Machine.this.synchronized(state.synchronized(tryClose()))
       case _ =>
     }
   }
@@ -517,8 +517,8 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     message.data match {
       case Array(name: String, args@_*) if message.name == "computer.signal" =>
         signal(name, Seq(message.source.address) ++ args: _*)
-      case Array(player: EntityPlayer, name: String, args@_*) if message.name == "computer.checked_signal" =>
-        if (canInteract(player.getName))
+      case Array(player: User, name: String, args@_*) if message.name == "computer.checked_signal" =>
+        if (canInteract(player.nickname))
           signal(name, Seq(message.source.address) ++ args: _*)
       case _ =>
         if (message.name == "computer.start" && !isPaused) start()
@@ -596,10 +596,10 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
         case component: Component if component.name == name => // All is well.
         case _ =>
           if (name == "filesystem") {
-            OpenComputers.log.trace(s"A component of type '$name' disappeared ($address)! This usually means that it didn't save its node.")
-            OpenComputers.log.trace("If this was a file system provided by a ComputerCraft peripheral, this is normal.")
+            Ocelot.log.trace(s"A component of type '$name' disappeared ($address)! This usually means that it didn't save its node.")
+            Ocelot.log.trace("If this was a file system provided by a ComputerCraft peripheral, this is normal.")
           }
-          else OpenComputers.log.warn(s"A component of type '$name' disappeared ($address)! This usually means that it didn't save its node.")
+          else Ocelot.log.warn(s"A component of type '$name' disappeared ($address)! This usually means that it didn't save its node.")
           signal("component_removed", address, name)
           invalid += address
       }
@@ -611,7 +611,6 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
 
   // ----------------------------------------------------------------------- //
 
-  private def tmpPath = node.address + "_tmp"
   private final val StateTag = "state"
   private final val UsersTag = "users"
   private final val MessageTag = "message"
@@ -628,13 +627,13 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
   private final val RemainingPauseTag = "remainingPause"
 
   override def load(nbt: NBTTagCompound): Unit = Machine.this.synchronized(state.synchronized {
-    assert(state.top == Machine.State.Stopped || state.top == Machine.State.Paused)
+    assert(state.top == MachineAPI.State.Stopped || state.top == MachineAPI.State.Paused)
     close()
     state.clear()
 
     super.load(nbt)
 
-    state.pushAll(nbt.getIntArray(StateTag).reverseMap(Machine.State(_)))
+    state.pushAll(nbt.getIntArray(StateTag).reverseMap(MachineAPI.State(_)))
     nbt.getTagList(UsersTag, NBT.TAG_STRING).foreach((tag: NBTTagString) => _users += tag.getString)
     if (nbt.hasKey(MessageTag)) {
       message = Some(nbt.getString(MessageTag))
@@ -653,7 +652,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
       signals ++= nbt.getTagList(SignalsTag, NBT.TAG_COMPOUND).map((signalNbt: NBTTagCompound) => {
         val argsNbt = signalNbt.getCompoundTag(ArgsTag)
         val argsLength = argsNbt.getInteger(LengthTag)
-        new Machine.Signal(signalNbt.getString(NameTag),
+        new MachineAPI.Signal(signalNbt.getString(NameTag),
           (0 until argsLength).map(ArgPrefixTag + _).map(argsNbt.getTag).map {
             case tag: NBTTagByte if tag.getByte == -1 => null
             case tag: NBTTagByte => Boolean.box(tag.getByte == 1)
@@ -677,13 +676,13 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
       remainingPause = nbt.getInteger(RemainingPauseTag)
 
       // Delay execution for a second to allow the world around us to settle.
-      if (state.top != Machine.State.Restarting) {
+      if (state.top != MachineAPI.State.Restarting) {
         pause(Settings.get.startupDelay)
       }
     }
     catch {
       case t: Throwable =>
-        OpenComputers.log.error(
+        Ocelot.log.error(
           s"""Unexpected error loading a state of computer. State: ${state.headOption.fold("no state")(_.toString)}.""", t)
         close()
     }
@@ -721,7 +720,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     }
     nbt.setTag(ComponentsTag, componentsNbt)
 
-    if (state.top != Machine.State.Stopped) try {
+    if (state.top != MachineAPI.State.Stopped) try {
       architecture.save(nbt)
 
       val signalsNbt = new NBTTagList()
@@ -758,7 +757,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     }
     catch {
       case t: Throwable =>
-        OpenComputers.log.error(
+        Ocelot.log.error(
           s"""Unexpected error saving a state of computer. State: ${state.headOption.fold("no state")(_.toString)}. """, t)
     }
   })
@@ -786,7 +785,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     }
     catch {
       case ex: Throwable =>
-        OpenComputers.log.warn("Failed initializing computer.", ex)
+        Ocelot.log.warn("Failed initializing computer.", ex)
         close()
     }
     false
@@ -805,12 +804,12 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     }
 
   private def close(): Unit =
-    if (state.synchronized(state.isEmpty || state.top != Machine.State.Stopped)) {
+    if (state.synchronized(state.isEmpty || state.top != MachineAPI.State.Stopped)) {
       // Give up the state lock, then get the more generic lock on this instance first
       // before locking on state again. Always must be in that order to avoid deadlocks.
       this.synchronized(state.synchronized {
         state.clear()
-        state.push(Machine.State.Stopped)
+        state.push(MachineAPI.State.Stopped)
         Option(architecture).foreach(_.close())
         signals.clear()
         uptime = 0
@@ -822,15 +821,15 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
 
   // ----------------------------------------------------------------------- //
 
-  private def switchTo(value: Machine.State.Value) = state.synchronized {
+  private def switchTo(value: MachineAPI.State.Value) = state.synchronized {
     val result = state.pop()
-    if (value == Machine.State.Stopping || value == Machine.State.Restarting) {
+    if (value == MachineAPI.State.Stopping || value == MachineAPI.State.Restarting) {
       state.clear()
     }
     state.push(value)
-    if (value == Machine.State.Yielded || value == Machine.State.SynchronizedReturn) {
+    if (value == MachineAPI.State.Yielded || value == MachineAPI.State.SynchronizedReturn) {
       remainIdle = 0
-      Machine.threadPool.schedule(this, Settings.get.executionDelay, TimeUnit.MILLISECONDS)
+      MachineAPI.threadPool.schedule(this, Settings.get.executionDelay, TimeUnit.MILLISECONDS)
     }
     result
   }
@@ -840,16 +839,16 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
   // This is a really high level lock that we only use for saving and loading.
   override def run(): Unit = Machine.this.synchronized {
     val isSynchronizedReturn = state.synchronized {
-      if (state.top != Machine.State.Yielded &&
-        state.top != Machine.State.SynchronizedReturn) {
+      if (state.top != MachineAPI.State.Yielded &&
+        state.top != MachineAPI.State.SynchronizedReturn) {
         return
       }
       // See if the game appears to be paused, in which case we also pause.
       if (isGamePaused) {
-        state.push(Machine.State.Paused)
+        state.push(MachineAPI.State.Paused)
         return
       }
-      switchTo(Machine.State.Running) == Machine.State.SynchronizedReturn
+      switchTo(MachineAPI.State.Running) == MachineAPI.State.SynchronizedReturn
     }
 
     cpuStart = System.nanoTime()
@@ -860,56 +859,56 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
       // Check if someone called pause() or stop() in the meantime.
       state.synchronized {
         state.top match {
-          case Machine.State.Running =>
+          case MachineAPI.State.Running =>
             result match {
               case result: ExecutionResult.Sleep =>
                 signals.synchronized {
                   // Immediately check for signals to allow processing more than one
                   // signal per game tick.
                   if (signals.isEmpty && result.ticks > 0) {
-                    switchTo(Machine.State.Sleeping)
+                    switchTo(MachineAPI.State.Sleeping)
                     remainIdle = result.ticks
                   } else {
-                    switchTo(Machine.State.Yielded)
+                    switchTo(MachineAPI.State.Yielded)
                   }
                 }
               case _: ExecutionResult.SynchronizedCall =>
-                switchTo(Machine.State.SynchronizedCall)
+                switchTo(MachineAPI.State.SynchronizedCall)
               case result: ExecutionResult.Shutdown =>
                 if (result.reboot) {
-                  switchTo(Machine.State.Restarting)
+                  switchTo(MachineAPI.State.Restarting)
                 }
                 else {
-                  switchTo(Machine.State.Stopping)
+                  switchTo(MachineAPI.State.Stopping)
                 }
               case result: ExecutionResult.Error =>
                 beep("--")
                 crash(Option(result.message).getOrElse("unknown error"))
             }
-          case Machine.State.Paused =>
+          case MachineAPI.State.Paused =>
             state.pop() // Paused
             state.pop() // Running, no switchTo to avoid new future.
             result match {
               case result: ExecutionResult.Sleep =>
                 remainIdle = result.ticks
-                state.push(Machine.State.Sleeping)
+                state.push(MachineAPI.State.Sleeping)
               case _: ExecutionResult.SynchronizedCall =>
-                state.push(Machine.State.SynchronizedCall)
+                state.push(MachineAPI.State.SynchronizedCall)
               case result: ExecutionResult.Shutdown =>
                 if (result.reboot) {
-                  state.push(Machine.State.Restarting)
+                  state.push(MachineAPI.State.Restarting)
                 }
                 else {
-                  state.push(Machine.State.Stopping)
+                  state.push(MachineAPI.State.Stopping)
                 }
               case result: ExecutionResult.Error =>
                 crash(Option(result.message).getOrElse("unknown error"))
             }
-            state.push(Machine.State.Paused)
-          case Machine.State.Stopping =>
+            state.push(MachineAPI.State.Paused)
+          case MachineAPI.State.Stopping =>
             state.clear()
-            state.push(Machine.State.Stopping)
-          case Machine.State.Restarting =>
+            state.push(MachineAPI.State.Stopping)
+          case MachineAPI.State.Restarting =>
           // Nothing to do!
           case _ => throw new AssertionError("Invalid state in executor post-processing.")
         }
@@ -918,78 +917,11 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Run
     }
     catch {
       case e: Throwable =>
-        OpenComputers.log.warn("Architecture's runThreaded threw an error. This should never happen!", e)
+        Ocelot.log.warn("Architecture's runThreaded threw an error. This should never happen!", e)
         crash("Error.InternalError")
     }
 
     // Keep track of time spent executing the computer.
     cpuTotal += System.nanoTime() - cpuStart
   }
-}
-
-object Machine extends MachineAPI {
-  // Keep registration order, to allow deterministic iteration of the architectures.
-  val checked: mutable.LinkedHashSet[Class[_ <: Architecture]] = mutable.LinkedHashSet.empty[Class[_ <: Architecture]]
-
-  override def add(architecture: Class[_ <: Architecture]) {
-    if (!checked.contains(architecture)) {
-      try {
-        architecture.getConstructor(classOf[machine.Machine])
-      }
-      catch {
-        case t: Throwable => throw new IllegalArgumentException("Architecture does not have required constructor.", t)
-      }
-      checked += architecture
-    }
-  }
-
-  override def architectures: util.List[Class[_ <: Architecture]] = checked.toSeq
-
-  def getArchitectureName(architecture: Class[_ <: Architecture]): String =
-    architecture.getAnnotation(classOf[Architecture.Name]) match {
-      case annotation: Architecture.Name => annotation.value
-      case _ => architecture.getSimpleName
-    }
-
-  override def create(host: MachineHost) = new Machine(host)
-
-  /** Possible states of the computer, and in particular its executor. */
-  private[machine] object State extends Enumeration {
-    /** The computer is not running right now and there is no Lua state. */
-    val Stopped: State.Value = Value("Stopped")
-
-    /** Booting up, doing the first run to initialize the kernel and libs. */
-    val Starting: State.Value = Value("Starting")
-
-    /** Computer is currently rebooting. */
-    val Restarting: State.Value = Value("Restarting")
-
-    /** The computer is currently shutting down. */
-    val Stopping: State.Value = Value("Stopping")
-
-    /** The computer is paused and waiting for the game to resume. */
-    val Paused: State.Value = Value("Paused")
-
-    /** The computer executor is waiting for a synchronized call to be made. */
-    val SynchronizedCall: State.Value = Value("SynchronizedCall")
-
-    /** The computer should resume with the result of a synchronized call. */
-    val SynchronizedReturn: State.Value = Value("SynchronizedReturn")
-
-    /** The computer will resume as soon as possible. */
-    val Yielded: State.Value = Value("Yielded")
-
-    /** The computer is yielding for a longer amount of time. */
-    val Sleeping: State.Value = Value("Sleeping")
-
-    /** The computer is up and running, executing Lua code. */
-    val Running: State.Value = Value("Running")
-  }
-
-  /** Signals are messages sent to the Lua state from Java asynchronously. */
-  private[machine] class Signal(val name: String, val args: Array[AnyRef]) extends machine.Signal {
-    def convert() = new Signal(name, Registry.convert(args))
-  }
-
-  private val threadPool = ThreadPoolFactory.create("Computer", Settings.get.threads)
 }

@@ -6,7 +6,7 @@ import totoro.ocelot.brain.network.{Component, Message, Network, Node}
   * The environment of a node.
   *
   * To get some more control over which sides of your entity may connect to a
-  * network, see [[SidedEnvironment]].
+  * network, see `SidedEnvironment`.
   *
   * When an entity implements this interface a good way of connecting and
   * disconnecting is the following pattern:

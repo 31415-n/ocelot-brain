@@ -76,7 +76,7 @@ trait Context {
     *
     * @return `true` if the computer switched to a running state.
     */
-  def start: Boolean
+  def start(): Boolean
 
   /**
     * Pauses the computer for the specified duration.
@@ -133,7 +133,7 @@ trait Context {
     *
     * @return `true` if the computer switched to the stopping state.
     */
-  def stop: Boolean
+  def stop(): Boolean
 
   /**
     * This method allows dynamic costs for direct calls.
@@ -179,5 +179,5 @@ trait Context {
     * @param args additional arguments to pass along with the signal.
     * @return `true` if the signal was queued; `false` otherwise.
     */
-  def signal(name: String, args: Any*): Boolean
+  def signal(name: String, args: AnyRef*): Boolean
 }

@@ -7,8 +7,6 @@ import totoro.ocelot.brain.util.Persistable
 /**
   * Interface for file system driver compatible file systems.
   *
-  * See [[FileSystemFactory]] for factory methods.
-  *
   * Note that all paths passed here are assumed to be absolute in the underlying
   * file system implementation, meaning they do not contain any "." or "..", and
   * are relative to the root of the file system. When wrapping a file system in
@@ -237,8 +235,7 @@ trait FileSystemTrait extends Persistable {
     * for floppy disks (which are removed before they are saved so they don't
     * save any open handles).
     *
-    * When the filesystem is made available as a network node created via
-    * one of the factory functions in [[FileSystemFactory]] this
+    * When the filesystem is made available as a network node this
     * will be called whenever the node is disconnected from its network. If
     * the node was used to represent an item (which will be the usual use-case,
     * I imagine) this means the item was removed from its container (e.g. hard

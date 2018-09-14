@@ -1,12 +1,14 @@
 package totoro.ocelot.brain.machine
 
-import totoro.ocelot.brain.entity.MachineHost
+import java.util
+import java.util.concurrent.ScheduledExecutorService
 
-import scala.collection.mutable
+import totoro.ocelot.brain.entity.MachineHost
+import totoro.ocelot.brain.{Settings, machine}
+import totoro.ocelot.brain.util.ThreadPoolFactory
 
 import scala.collection.convert.WrapAsJava._
-
-import java.util
+import scala.collection.mutable
 
 object MachineAPI {
   // Keep registration order, to allow deterministic iteration of the architectures.
@@ -33,14 +35,39 @@ object MachineAPI {
     }
   }
 
+  /**
+    * A list of all ''registered'' architectures.
+    *
+    * Note that registration is optional, although automatic when calling
+    * `create(MachineHost)` with a not yet
+    * registered architecture. What this means is that unless a mod providing
+    * a custom architecture also registers it, you may not see it in this list
+    * until it also created a new machine using that architecture.
+    */
   def architectures: util.List[Class[_ <: Architecture]] = checked.toSeq
 
+  /**
+    * Get the name of the specified architecture.
+    *
+    * @param architecture the architecture to get the name for.
+    * @return the name of the specified architecture.
+    */
   def getArchitectureName(architecture: Class[_ <: Architecture]): String =
-    architecture.getAnnotation(classOf[Architecture.Name]) match {
-      case annotation: Architecture.Name => annotation.value
+    architecture.getAnnotation(classOf[Architecture.name]) match {
+      case annotation: Architecture.name => annotation.value
       case _ => architecture.getSimpleName
     }
 
+  /**
+    * Creates a new machine for the specified host.
+    *
+    * You are responsible for calling update and save / load functions on the
+    * machine for it to work correctly.
+    *
+    * @param host the owner object of the machine, providing context.
+    * @return the newly created machine.
+    * @throws IllegalArgumentException if the specified architecture is invalid.
+    */
   def create(host: MachineHost) = new Machine(host)
 
   /** Possible states of the computer, and in particular its executor. */
@@ -81,5 +108,5 @@ object MachineAPI {
     def convert() = new Signal(name, Registry.convert(args))
   }
 
-  private val threadPool = ThreadPoolFactory.create("Computer", Settings.get.threads)
+  val threadPool: ScheduledExecutorService = ThreadPoolFactory.create("Computer", Settings.get.threads)
 }
