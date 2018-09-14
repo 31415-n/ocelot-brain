@@ -1,13 +1,13 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc
-import li.cil.oc.{Constants, OpenComputers, Settings, api}
 import li.cil.oc.api.network.{EnvironmentHost, ManagedEnvironment}
-import li.cil.oc.common.{Loot, Slot}
-import li.cil.oc.common.item.{FloppyDisk, HardDiskDrive}
 import li.cil.oc.common.item.data.DriveData
+import li.cil.oc.common.item.{FloppyDisk, HardDiskDrive}
+import li.cil.oc.common.{Loot, Slot}
 import li.cil.oc.server.component.Drive
 import li.cil.oc.server.fs.FileSystem.ItemLabel
+import li.cil.oc.{Constants, OpenComputers, Settings, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

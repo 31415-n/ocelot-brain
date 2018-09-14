@@ -1,11 +1,11 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.{Settings, api}
 import li.cil.oc.api.driver.DriverItem
 import li.cil.oc.api.internal
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Tier
 import li.cil.oc.server.driver.Registry
+import li.cil.oc.{Settings, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

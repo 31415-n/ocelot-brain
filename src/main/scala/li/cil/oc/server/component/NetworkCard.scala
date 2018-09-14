@@ -3,7 +3,6 @@ package li.cil.oc.server.component
 import java.util
 
 import com.google.common.base.Charsets
-import li.cil.oc.{Constants, Settings, api}
 import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
@@ -11,6 +10,7 @@ import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.api.network.{EnvironmentHost, _}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.Tier
+import li.cil.oc.{Constants, Settings, api}
 import net.minecraft.nbt._
 
 import scala.collection.convert.WrapAsJava._

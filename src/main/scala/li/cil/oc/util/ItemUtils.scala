@@ -2,8 +2,8 @@ package li.cil.oc.util
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
-import li.cil.oc.{Constants, api}
 import li.cil.oc.common.Tier
+import li.cil.oc.{Constants, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.{CompressedStreamTools, NBTTagCompound}
 

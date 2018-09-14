@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.machine.luac
 
+import li.cil.repack.com.naef.jnlua.LuaType
 import totoro.ocelot.brain.util.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.util.GameTimeFormatter
-import li.cil.repack.com.naef.jnlua.LuaType
 
 class OSAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
   override def initialize() {

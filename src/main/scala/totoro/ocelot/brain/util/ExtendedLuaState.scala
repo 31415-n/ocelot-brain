@@ -3,8 +3,8 @@ package totoro.ocelot.brain.util
 import java.util
 
 import li.cil.repack.com.naef.jnlua.{LuaState, LuaType}
-import totoro.ocelot.brain.{Ocelot, Settings}
 import totoro.ocelot.brain.machine.Value
+import totoro.ocelot.brain.{Ocelot, Settings}
 
 import scala.collection.convert.WrapAsScala._
 import scala.collection.{immutable, mutable}

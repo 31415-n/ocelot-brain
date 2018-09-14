@@ -6,10 +6,10 @@ import java.util.regex.Pattern
 
 import com.google.common.base.Strings
 import com.google.common.io.PatternFilenameFilter
-import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.oc.api.machine.Architecture
 import li.cil.oc.server.machine.Machine
 import li.cil.oc.util.ExtendedLuaState._
+import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.repack.com.naef.jnlua
 import li.cil.repack.com.naef.jnlua.{LuaState, LuaStateFiveThree}
 import net.minecraft.item.ItemStack

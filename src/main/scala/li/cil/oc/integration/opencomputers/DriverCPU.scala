@@ -2,10 +2,10 @@ package li.cil.oc.integration.opencomputers
 
 import java.util
 
-import li.cil.oc.{Constants, OpenComputers, Settings, api}
 import li.cil.oc.api.machine.Architecture
 import li.cil.oc.common.{Slot, Tier, item}
 import li.cil.oc.server.component
+import li.cil.oc.{Constants, OpenComputers, Settings, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

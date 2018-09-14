@@ -2,11 +2,11 @@ package li.cil.oc.common.tileentity.traits
 
 import java.{lang, util}
 
-import li.cil.oc.{Settings, api}
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Node
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
 import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.{Settings, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

@@ -5,15 +5,14 @@ import java.util.concurrent.TimeUnit
 
 import totoro.ocelot.brain.entity.MachineHost
 import totoro.ocelot.brain.environment.fs.FileSystemAPI
-import totoro.ocelot.brain.environment.traits.{CallBudget, Processor}
-import totoro.ocelot.brain.environment.{AbstractManagedEnvironment, DeviceInfo, FileSystem}
-import totoro.ocelot.brain.nbt._
+import totoro.ocelot.brain.environment.traits.{CallBudget, DeviceInfo, Processor}
+import totoro.ocelot.brain.environment.{AbstractManagedEnvironment, FileSystem}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
+import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.ResultWrapper.result
-import totoro.ocelot.brain.{Ocelot, Settings}
-import totoro.ocelot.brain.machine
+import totoro.ocelot.brain.{Ocelot, Settings, machine}
 
 import scala.Array.canBuildFrom
 import scala.collection.convert.WrapAsJava._

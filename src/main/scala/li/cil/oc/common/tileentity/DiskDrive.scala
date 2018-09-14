@@ -2,7 +2,6 @@ package li.cil.oc.common.tileentity
 
 import java.util
 
-import li.cil.oc.{Constants, Settings, api}
 import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
@@ -10,6 +9,7 @@ import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.api.network.{Component, Node, Visibility}
 import li.cil.oc.common.Slot
 import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.{Constants, Settings, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

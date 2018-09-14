@@ -3,8 +3,8 @@ package totoro.ocelot.brain.machine
 import java.util.concurrent.ScheduledExecutorService
 
 import totoro.ocelot.brain.entity.MachineHost
-import totoro.ocelot.brain.{Settings, machine}
 import totoro.ocelot.brain.util.ThreadPoolFactory
+import totoro.ocelot.brain.{Settings, machine}
 
 import scala.collection.mutable
 

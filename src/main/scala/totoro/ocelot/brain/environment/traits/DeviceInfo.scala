@@ -1,6 +1,8 @@
-package totoro.ocelot.brain.environment
+package totoro.ocelot.brain.environment.traits
 
 import java.util
+
+import totoro.ocelot.brain.environment.Environment
 
 /**
   * Implement this on [[Environment]]s if you wish to

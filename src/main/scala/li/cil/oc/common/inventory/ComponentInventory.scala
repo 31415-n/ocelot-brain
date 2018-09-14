@@ -1,11 +1,11 @@
 package li.cil.oc.common.inventory
 
-import li.cil.oc.{OpenComputers, api}
 import li.cil.oc.api.driver.{DriverItem => ItemDriver}
-import li.cil.oc.api.{Driver, network}
 import li.cil.oc.api.network.{EnvironmentHost, ManagedEnvironment, Node}
 import li.cil.oc.api.util.Lifecycle
+import li.cil.oc.api.{Driver, network}
 import li.cil.oc.integration.opencomputers.Item
+import li.cil.oc.{OpenComputers, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

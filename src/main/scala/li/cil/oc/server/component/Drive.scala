@@ -1,11 +1,10 @@
 package li.cil.oc.server.component
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
-import java.{io, util}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
+import java.{io, util}
 
 import com.google.common.io.Files
-import li.cil.oc.{Constants, OpenComputers, Settings}
 import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
@@ -13,6 +12,7 @@ import li.cil.oc.api.fs.Label
 import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.api.network.{Component, EnvironmentHost, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.{Constants, OpenComputers, Settings}
 import net.minecraft.nbt.NBTTagCompound
 
 import scala.collection.convert.WrapAsJava._

@@ -1,9 +1,9 @@
 package li.cil.oc.common.tileentity.traits
 
-import li.cil.oc.{Settings, api}
 import li.cil.oc.api.internal
 import li.cil.oc.api.network.Node
 import li.cil.oc.integration.opencomputers.DriverScreen
+import li.cil.oc.{Settings, api}
 import net.minecraft.nbt.NBTTagCompound
 
 trait TextBuffer extends Environment {

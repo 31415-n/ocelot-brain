@@ -2,8 +2,7 @@ package totoro.ocelot.brain.machine
 
 import java.lang.reflect.{Method, Modifier}
 
-import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.machine
+import totoro.ocelot.brain.{Ocelot, machine}
 
 import scala.collection.{immutable, mutable}
 

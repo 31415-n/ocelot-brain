@@ -3,15 +3,14 @@ package totoro.ocelot.brain.environment
 import java.io.{FileNotFoundException, IOException}
 import java.util
 
-import totoro.ocelot.brain.environment.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.environment.fs.{FileSystemTrait, HandleValue, Label, Mode}
+import totoro.ocelot.brain.environment.traits.DeviceInfo
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.{Constants, Settings}
 
-import scala.collection.convert.WrapAsJava._
 import scala.collection.mutable
 
 class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: Int)

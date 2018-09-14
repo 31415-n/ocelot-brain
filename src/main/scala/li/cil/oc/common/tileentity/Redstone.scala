@@ -1,11 +1,11 @@
 package li.cil.oc.common.tileentity
 
-import li.cil.oc.{Settings, api}
 import li.cil.oc.api.network.{Component, Node, Visibility}
 import li.cil.oc.common.tileentity.traits.{RedstoneAware, RedstoneChangedEventArgs}
 import li.cil.oc.server.component
 import li.cil.oc.server.component.RedstoneVanilla
 import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.{Settings, api}
 import net.minecraft.nbt.NBTTagCompound
 
 class Redstone extends traits.Environment with RedstoneAware {

@@ -2,11 +2,11 @@ package li.cil.oc.server.driver
 
 import java.util
 
-import li.cil.oc.{OpenComputers, api}
 import li.cil.oc.api.driver._
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.machine.Value
 import li.cil.oc.api.network.EnvironmentHost
+import li.cil.oc.{OpenComputers, api}
 import net.minecraft.item.ItemStack
 
 import scala.collection.convert.WrapAsJava._

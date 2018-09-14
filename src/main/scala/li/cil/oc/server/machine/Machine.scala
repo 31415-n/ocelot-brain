@@ -3,14 +3,13 @@ package li.cil.oc.server.machine
 import java.util
 import java.util.concurrent.TimeUnit
 
-import li.cil.oc.{OpenComputers, Settings}
 import li.cil.oc.api.detail.MachineAPI
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.item.{CallBudget, Processor}
-import li.cil.oc.api.{Driver, Network, machine}
 import li.cil.oc.api.machine._
 import li.cil.oc.api.network.{Component, Message, Node, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.api.{Driver, Network, machine}
 import li.cil.oc.common.{EventHandler, Slot}
 import li.cil.oc.server.component.FileSystem
 import li.cil.oc.server.driver.Registry
@@ -18,6 +17,7 @@ import li.cil.oc.server.fs.FileSystem
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.ResultWrapper.result
 import li.cil.oc.util.ThreadPoolFactory
+import li.cil.oc.{OpenComputers, Settings}
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt._

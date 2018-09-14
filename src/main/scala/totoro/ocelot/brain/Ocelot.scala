@@ -3,9 +3,9 @@ package totoro.ocelot.brain
 import java.io.File
 
 import org.apache.logging.log4j.{LogManager, Logger}
-import totoro.ocelot.brain.machine.{MachineAPI, Registry}
 import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
+import totoro.ocelot.brain.machine.{MachineAPI, Registry}
 
 object Ocelot {
   final val Name = "Ocelot"

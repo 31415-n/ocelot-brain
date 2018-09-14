@@ -8,7 +8,6 @@ import java.util
 import java.util.UUID
 import java.util.concurrent._
 
-import li.cil.oc.{Constants, OpenComputers, Settings}
 import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
@@ -16,6 +15,7 @@ import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.api.network._
 import li.cil.oc.api.prefab.{AbstractManagedEnvironment, AbstractValue}
 import li.cil.oc.util.ThreadPoolFactory
+import li.cil.oc.{Constants, OpenComputers, Settings}
 
 import scala.collection.convert.WrapAsJava._
 import scala.collection.convert.WrapAsScala._

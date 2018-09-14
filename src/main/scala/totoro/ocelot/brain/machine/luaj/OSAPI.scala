@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.machine.luaj
 
+import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
 import totoro.ocelot.brain.util.GameTimeFormatter
 import totoro.ocelot.brain.util.ScalaClosure._
-import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
 
 class OSAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
   override def initialize() {

@@ -2,11 +2,11 @@ package li.cil.oc.common.tileentity
 
 import java.util
 
-import li.cil.oc.{Constants, Settings}
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
 import li.cil.oc.api.{Driver, internal}
 import li.cil.oc.common.{InventorySlots, Slot, Tier}
+import li.cil.oc.{Constants, Settings}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

@@ -2,11 +2,11 @@ package li.cil.oc.server.component
 
 import java.util
 
-import li.cil.oc.{Constants, api}
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
 import li.cil.oc.api.network.{Component, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.{Constants, api}
 
 import scala.collection.convert.WrapAsJava._
 import scala.language.existentials

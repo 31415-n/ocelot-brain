@@ -2,8 +2,8 @@ package li.cil.oc.util
 
 import java.util
 
-import li.cil.oc.{OpenComputers, Settings}
 import li.cil.oc.api.machine.Value
+import li.cil.oc.{OpenComputers, Settings}
 import li.cil.repack.com.naef.jnlua.{LuaState, LuaType}
 
 import scala.collection.convert.WrapAsScala._

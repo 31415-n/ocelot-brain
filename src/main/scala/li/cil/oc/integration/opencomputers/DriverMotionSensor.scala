@@ -1,11 +1,11 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.{Constants, api}
 import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.{Slot, Tier}
 import li.cil.oc.server.component
+import li.cil.oc.{Constants, api}
 import net.minecraft.item.ItemStack
 
 object DriverMotionSensor extends Item with HostAware {

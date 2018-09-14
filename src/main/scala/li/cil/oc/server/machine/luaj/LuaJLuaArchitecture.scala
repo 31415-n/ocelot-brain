@@ -3,12 +3,12 @@ package li.cil.oc.server.machine.luaj
 import java.io.{FileNotFoundException, IOException}
 
 import com.google.common.base.Strings
-import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.oc.api.driver.item.Memory
 import li.cil.oc.api.machine.{Architecture, ExecutionResult, LimitReachedException}
 import li.cil.oc.server.machine.Machine
 import li.cil.oc.util.ScalaClosure
 import li.cil.oc.util.ScalaClosure._
+import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.repack.org.luaj.vm2._
 import li.cil.repack.org.luaj.vm2.lib.jse.JsePlatform
 import net.minecraft.item.ItemStack

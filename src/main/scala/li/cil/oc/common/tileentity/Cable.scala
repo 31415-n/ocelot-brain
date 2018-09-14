@@ -1,7 +1,7 @@
 package li.cil.oc.common.tileentity
 
-import li.cil.oc.{Constants, api}
 import li.cil.oc.api.network.{Node, Visibility}
+import li.cil.oc.{Constants, api}
 import net.minecraft.item.ItemStack
 
 class Cable extends traits.Environment {

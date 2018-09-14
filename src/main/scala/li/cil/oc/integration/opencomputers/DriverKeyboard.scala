@@ -1,10 +1,10 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.{Constants, api}
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.server.component
+import li.cil.oc.{Constants, api}
 import net.minecraft.item.ItemStack
 
 object DriverKeyboard extends Item with HostAware {

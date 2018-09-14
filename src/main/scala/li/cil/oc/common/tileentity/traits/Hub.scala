@@ -1,10 +1,10 @@
 package li.cil.oc.common.tileentity.traits
 
-import li.cil.oc.{Settings, api}
 import li.cil.oc.api.network._
 import li.cil.oc.common.tileentity.traits
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.MovingAverage
+import li.cil.oc.{Settings, api}
 import net.minecraft.nbt.{NBT, NBTTagCompound}
 import net.minecraft.util.EnumFacing
 

@@ -1,8 +1,8 @@
 package li.cil.oc.common.tileentity
 
-import li.cil.oc.{Constants, Settings, api}
 import li.cil.oc.api.network.{ManagedEnvironment, Node}
 import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.{Constants, Settings, api}
 import net.minecraft.nbt.NBTTagCompound
 
 class Keyboard extends traits.Environment {

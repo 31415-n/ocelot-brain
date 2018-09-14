@@ -3,13 +3,13 @@ package totoro.ocelot.brain.machine.luac
 import java.io.{FileNotFoundException, IOException}
 
 import com.google.common.base.Strings
-import totoro.ocelot.brain.util.ExtendedLuaState.extendLuaState
 import li.cil.repack.com.naef.jnlua._
 import totoro.ocelot.brain.entity.Entity
 import totoro.ocelot.brain.environment.traits.Memory
-import totoro.ocelot.brain.{Ocelot, Settings}
 import totoro.ocelot.brain.machine._
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.util.ExtendedLuaState.extendLuaState
+import totoro.ocelot.brain.{Ocelot, Settings}
 
 class NativeLua52Architecture(machine: Machine) extends NativeLuaArchitecture(machine) {
   override def factory: LuaStateFactory.Lua52.type = LuaStateFactory.Lua52

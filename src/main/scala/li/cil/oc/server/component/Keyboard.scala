@@ -2,13 +2,13 @@ package li.cil.oc.server.component
 
 import java.util
 
-import li.cil.oc.{Constants, Settings, api}
 import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
 import li.cil.oc.api.internal.Keyboard.UsabilityChecker
 import li.cil.oc.api.network.{Component, EnvironmentHost, Message, Visibility}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.{Constants, Settings, api}
 import net.minecraft.entity.player.EntityPlayer
 
 import scala.collection.convert.WrapAsJava._

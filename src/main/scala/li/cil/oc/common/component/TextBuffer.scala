@@ -9,8 +9,8 @@ import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common._
 import li.cil.oc.common.item.data.NodeData
 import li.cil.oc.server.component.Keyboard
-import li.cil.oc.{Constants, Settings, api, util}
 import li.cil.oc.util.PackedColor
+import li.cil.oc.{Constants, Settings, api, util}
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
 

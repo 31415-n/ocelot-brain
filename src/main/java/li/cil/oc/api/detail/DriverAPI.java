@@ -1,6 +1,9 @@
 package li.cil.oc.api.detail;
 
-import li.cil.oc.api.driver.*;
+import li.cil.oc.api.driver.Converter;
+import li.cil.oc.api.driver.DriverItem;
+import li.cil.oc.api.driver.EnvironmentProvider;
+import li.cil.oc.api.driver.InventoryProvider;
 import li.cil.oc.api.network.EnvironmentHost;
 import net.minecraft.item.ItemStack;
 

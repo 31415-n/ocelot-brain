@@ -7,15 +7,15 @@ import java.util
 import java.util.zip.{DeflaterOutputStream, InflaterOutputStream}
 
 import com.google.common.hash.Hashing
-import javax.crypto.{Cipher, KeyAgreement, Mac}
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
+import javax.crypto.{Cipher, KeyAgreement, Mac}
 import li.cil.oc.Settings
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.{DeviceAttribute, DeviceClass}
 import li.cil.oc.api.machine.{Arguments, Callback, Context}
 import li.cil.oc.api.network.{Node, Visibility}
-import li.cil.oc.api.{Network, prefab}
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.api.{Network, prefab}
 import net.minecraft.nbt.NBTTagCompound
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.output.ByteArrayOutputStream

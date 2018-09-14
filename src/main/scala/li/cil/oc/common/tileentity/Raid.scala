@@ -2,7 +2,6 @@ package li.cil.oc.common.tileentity
 
 import java.util.UUID
 
-import li.cil.oc.{Settings, api}
 import li.cil.oc.api.Driver
 import li.cil.oc.api.fs.Label
 import li.cil.oc.api.network.{Node, Visibility}
@@ -10,6 +9,7 @@ import li.cil.oc.common.Slot
 import li.cil.oc.common.item.data.NodeData
 import li.cil.oc.server.component.FileSystem
 import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.{Settings, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

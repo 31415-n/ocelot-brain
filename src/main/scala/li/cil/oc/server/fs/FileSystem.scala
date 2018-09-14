@@ -4,10 +4,10 @@ import java.io
 import java.net.{MalformedURLException, URISyntaxException, URL}
 import java.util.UUID
 
-import li.cil.oc.{OpenComputers, Settings, api}
 import li.cil.oc.api.fs.Label
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.server.component
+import li.cil.oc.{OpenComputers, Settings, api}
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 

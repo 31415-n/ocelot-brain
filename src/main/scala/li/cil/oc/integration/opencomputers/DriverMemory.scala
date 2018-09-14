@@ -1,8 +1,8 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc.{Constants, Settings, api}
 import li.cil.oc.common.{Slot, Tier, item}
 import li.cil.oc.server.component
+import li.cil.oc.{Constants, Settings, api}
 import net.minecraft.item.ItemStack
 
 object DriverMemory extends Item with api.driver.item.Memory with api.driver.item.CallBudget {

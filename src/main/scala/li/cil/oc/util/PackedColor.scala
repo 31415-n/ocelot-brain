@@ -1,7 +1,7 @@
 package li.cil.oc.util
 
-import li.cil.oc.{Settings, api}
 import li.cil.oc.api.Persistable
+import li.cil.oc.{Settings, api}
 import net.minecraft.nbt.NBTTagCompound
 
 object PackedColor {
