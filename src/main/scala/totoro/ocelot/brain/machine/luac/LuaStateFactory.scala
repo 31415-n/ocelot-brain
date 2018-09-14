@@ -260,7 +260,11 @@ abstract class LuaStateFactory {
     try {
       LuaStateFactory.synchronized {
         prepareLoad(currentLib)
-        create().close()
+        try {
+          create().close()
+        } catch {
+          case t: Throwable => Ocelot.log.trace("Something went wrong!", t)
+        }
       }
       Ocelot.log.info(s"Found a compatible native library: '${tmpLibFile.getName}'.")
       haveNativeLibrary = true

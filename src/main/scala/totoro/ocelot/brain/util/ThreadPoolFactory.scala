@@ -3,7 +3,7 @@ package totoro.ocelot.brain.util
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ScheduledExecutorService, ThreadFactory}
 
-import li.cil.oc.Settings
+import totoro.ocelot.brain.Settings
 
 object ThreadPoolFactory {
   val priority: Int = {
