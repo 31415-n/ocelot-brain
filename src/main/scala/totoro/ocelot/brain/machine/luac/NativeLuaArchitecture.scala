@@ -5,7 +5,7 @@ import java.io.{FileNotFoundException, IOException}
 import com.google.common.base.Strings
 import li.cil.repack.com.naef.jnlua._
 import totoro.ocelot.brain.entity.Entity
-import totoro.ocelot.brain.environment.traits.Memory
+import totoro.ocelot.brain.entity.traits.Memory
 import totoro.ocelot.brain.machine._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.ExtendedLuaState.extendLuaState

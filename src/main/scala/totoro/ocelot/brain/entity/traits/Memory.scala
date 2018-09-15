@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.environment.traits
+package totoro.ocelot.brain.entity.traits
 
 /**
   * Use this interface to implement item drivers extending the memory of a computer.

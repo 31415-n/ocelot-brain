@@ -6,7 +6,7 @@ import com.google.common.base.Strings
 import li.cil.repack.org.luaj.vm2._
 import li.cil.repack.org.luaj.vm2.lib.jse.JsePlatform
 import totoro.ocelot.brain.entity.Entity
-import totoro.ocelot.brain.environment.traits.Memory
+import totoro.ocelot.brain.entity.traits.Memory
 import totoro.ocelot.brain.machine.{Architecture, ExecutionResult, LimitReachedException, Machine}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.ScalaClosure

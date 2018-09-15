@@ -3,9 +3,9 @@ package totoro.ocelot.brain.machine
 import java.util
 import java.util.concurrent.TimeUnit
 
-import totoro.ocelot.brain.entity.MachineHost
+import totoro.ocelot.brain.entity.traits.{CallBudget, MachineHost, Processor}
 import totoro.ocelot.brain.environment.fs.FileSystemAPI
-import totoro.ocelot.brain.environment.traits.{CallBudget, DeviceInfo, Processor}
+import totoro.ocelot.brain.environment.traits.DeviceInfo
 import totoro.ocelot.brain.environment.{AbstractManagedEnvironment, FileSystem}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt._

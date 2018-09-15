@@ -1,6 +1,5 @@
 package totoro.ocelot.brain.environment.traits
 
-import totoro.ocelot.brain.environment.Environment
 import totoro.ocelot.brain.util.Persistable
 
 /**

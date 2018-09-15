@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.machine.luac
 
-import totoro.ocelot.brain.environment.traits.{MutableProcessor, Processor}
+import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
 import totoro.ocelot.brain.machine.MachineAPI
 import totoro.ocelot.brain.util.ExtendedLuaState.extendLuaState
 

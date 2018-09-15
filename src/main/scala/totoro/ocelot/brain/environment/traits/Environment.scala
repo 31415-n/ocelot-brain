@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.environment
+package totoro.ocelot.brain.environment.traits
 
 import totoro.ocelot.brain.network.{Component, Message, Network, Node}
 

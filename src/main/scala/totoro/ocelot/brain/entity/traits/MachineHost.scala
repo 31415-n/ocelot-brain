@@ -1,6 +1,7 @@
-package totoro.ocelot.brain.entity
+package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.environment.Environment
+import totoro.ocelot.brain.entity.Entity
+import totoro.ocelot.brain.environment.traits.Environment
 import totoro.ocelot.brain.machine.Machine
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.util.WorldAware

@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.environment.traits
+package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.machine.Architecture
 

@@ -1,13 +1,13 @@
 package totoro.ocelot.brain.environment.traits
 
-import totoro.ocelot.brain.environment.Environment
+import totoro.ocelot.brain.entity.traits.MachineHost
 
 /**
   * Implement this on [[Environment]]s if you wish to
   * expose some (typically static) information about the device represented by
   * that environment to a [[totoro.ocelot.brain.machine.Machine]] connected to it.
   *
-  * You may also implement this on a [[totoro.ocelot.brain.entity.MachineHost]]
+  * You may also implement this on a [[MachineHost]]
   * in which case the `Machine` will forward that information as
   * its own (since `MachineHost`s usually use the machine's node as
   * their own, this avoids a dummy environment used solely for device info).

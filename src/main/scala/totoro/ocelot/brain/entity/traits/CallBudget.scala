@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.environment.traits
+package totoro.ocelot.brain.entity.traits
 
 /**
   * Common functionality provided by parts that influence a machine's speed.
