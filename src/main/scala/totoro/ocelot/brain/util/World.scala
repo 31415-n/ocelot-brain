@@ -11,3 +11,7 @@ class World {
   def isPaused = false
   def rand: Random.type = Random
 }
+
+object World {
+  val Default = new World()
+}

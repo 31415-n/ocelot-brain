@@ -415,7 +415,7 @@ object Network {
 
     def withComponent(name: String): Builder.ComponentBuilder = withComponent(name, _reachability)
 
-    def create: Node = new Node {
+    def create(): Node = new Node {
       val host: Environment = _host
       val reachability: Visibility = _reachability
     }
@@ -424,7 +424,7 @@ object Network {
   class ComponentBuilder(val _host: Environment, val _reachability: Visibility, val _name: String, val _visibility: Visibility)
     extends Builder.ComponentBuilder {
 
-    def create: Component = new Component {
+    def create(): Component = new Component {
       val host: Environment = _host
       val reachability: Visibility = _reachability
       val name: String = _name

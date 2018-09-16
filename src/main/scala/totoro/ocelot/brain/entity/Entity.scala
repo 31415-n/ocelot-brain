@@ -7,6 +7,8 @@ package totoro.ocelot.brain.entity
   *
   * This may be a component, a computer case, a cable, etc.
   */
-class Entity {
-
+trait Entity {
+  def initialize(): Unit = {}
+  def update(): Unit = {}
+  def dispose(): Unit = {}
 }

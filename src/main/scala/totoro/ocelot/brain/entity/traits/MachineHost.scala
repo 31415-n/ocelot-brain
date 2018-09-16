@@ -4,7 +4,6 @@ import totoro.ocelot.brain.entity.Entity
 import totoro.ocelot.brain.environment.traits.Environment
 import totoro.ocelot.brain.machine.Machine
 import totoro.ocelot.brain.network.Node
-import totoro.ocelot.brain.util.WorldAware
 
 /**
   * This interface has to be implemented by 'hosts' of machine instances.
