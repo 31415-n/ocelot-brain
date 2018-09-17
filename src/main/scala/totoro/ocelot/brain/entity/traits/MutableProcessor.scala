@@ -21,5 +21,9 @@ trait MutableProcessor extends Processor {
     *
     * @param architecture the architecture to use on the processor.
     */
-  def setArchitecture(architecture: Class[_ <: Architecture]): Unit
+  def setArchitecture(architecture: Class[_ <: Architecture]): Unit = {
+    if (allArchitectures.exists(_ == architecture))
+      _architecture = architecture
+    else throw new IllegalArgumentException("Unsupported processor type.")
+  }
 }

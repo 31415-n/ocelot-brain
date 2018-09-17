@@ -1,6 +1,9 @@
 package totoro.ocelot.brain.entity.traits
 
+import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.machine.Architecture
+import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.util.Persistable
 
 /**
   * Use this interface to implement item drivers extending the number of
@@ -10,7 +13,7 @@ import totoro.ocelot.brain.machine.Architecture
   * work. If it is installed in an external inventory the server will not
   * recognize the memory.
   */
-trait Processor extends CallBudget {
+trait Processor extends CallBudget with Persistable {
   /**
     * The additional number of components supported if this processor is
     * installed in the server.
@@ -18,6 +21,8 @@ trait Processor extends CallBudget {
     * @return the number of additionally supported components.
     */
   def supportedComponents: Int
+
+  protected var _architecture: Class[_ <: Architecture] = _
 
   /**
     * The architecture of this CPU.
@@ -29,5 +34,27 @@ trait Processor extends CallBudget {
     *
     * @return the type of this CPU's architecture.
     */
-  def architecture: Class[_ <: Architecture]
+  def architecture: Class[_ <: Architecture] = _architecture
+
+  override def load(nbt: NBTTagCompound): Unit = {
+    super.load(nbt)
+    if (nbt.hasKey(Processor.ArchTag)) {
+      val archClass = nbt.getString(Processor.ArchTag)
+      if (!archClass.isEmpty) try
+        _architecture = Class.forName(archClass).asSubclass(classOf[Architecture])
+      catch {
+        case t: Throwable =>
+          Ocelot.log.warn("Failed getting class for CPU architecture. Resetting CPU to use the default.", t)
+      }
+    }
+  }
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    super.save(nbt)
+    nbt.setString(Processor.ArchTag, architecture.getName)
+  }
+}
+
+object Processor {
+  val ArchTag = "archClass"
 }

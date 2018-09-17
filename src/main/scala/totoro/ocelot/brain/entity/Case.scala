@@ -6,7 +6,7 @@ import totoro.ocelot.brain.environment.traits.DeviceInfo
 import totoro.ocelot.brain.environment.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.util.Tier
 
-class Case(var tier: Int) extends traits.Computer with DeviceInfo with Tiered {
+class Case(override var tier: Int) extends traits.Computer with DeviceInfo with Tiered {
 
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.System,
