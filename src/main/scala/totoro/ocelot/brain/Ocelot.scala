@@ -43,8 +43,10 @@ object Ocelot {
   }
 
   def initialize(): Unit = {
+    log.info("Brain initialization...")
     preInit()
     init()
     postInit()
+    log.info("Initialization finished.")
   }
 }
