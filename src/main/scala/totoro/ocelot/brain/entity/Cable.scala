@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.EntityEnvironment
+import totoro.ocelot.brain.environment.traits.Environment
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 
-class Cable extends EntityEnvironment {
+class Cable extends Environment {
   override val node: Node = Network.newNode(this, Visibility.None).create()
 }

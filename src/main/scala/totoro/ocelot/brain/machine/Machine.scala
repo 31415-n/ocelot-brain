@@ -5,8 +5,8 @@ import java.util.concurrent.TimeUnit
 
 import totoro.ocelot.brain.entity.traits.{CallBudget, MachineHost, Processor}
 import totoro.ocelot.brain.environment.fs.FileSystemAPI
-import totoro.ocelot.brain.environment.traits.DeviceInfo
-import totoro.ocelot.brain.environment.{AbstractManagedEnvironment, FileSystem}
+import totoro.ocelot.brain.environment.traits.{DeviceInfo, Environment}
+import totoro.ocelot.brain.environment.FileSystem
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network._
@@ -19,10 +19,10 @@ import scala.collection.convert.WrapAsJava._
 import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
 
-class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Context with Runnable with DeviceInfo {
+class Machine(val host: MachineHost) extends Environment with Context with Runnable with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("computer", Visibility.Neighbors).
-    create
+    create()
 
   val tmp: Option[FileSystem] = if (Settings.get.tmpSize > 0) {
     Option(FileSystemAPI.asManagedEnvironment(FileSystemAPI.
@@ -403,7 +403,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Con
 
   def isExecuting: Boolean = state.synchronized(state.contains(MachineAPI.State.Running))
 
-  override val canUpdate = true
+  override val needUpdate = true
 
   override def update(): Unit = if (state.synchronized(state.top != MachineAPI.State.Stopped)) {
     // Add components that were added since the last update to the actual list

@@ -1,5 +1,7 @@
 package totoro.ocelot.brain.environment.traits
 
+import totoro.ocelot.brain.entity.Entity
+import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Message, Network, Node}
 
 /**
@@ -35,7 +37,7 @@ import totoro.ocelot.brain.network.{Component, Message, Network, Node}
   * be seen by computers in the network.
   * - Annotate methods in the environment as [[totoro.ocelot.brain.machine.Callback]]s.
   */
-trait Environment {
+trait Environment extends Entity {
   /**
     * The node this environment wraps.
     *
@@ -94,4 +96,34 @@ trait Environment {
     * @param message the message to handle.
     */
   def onMessage(message: Message): Unit = {}
+
+  /**
+    * Returns `true` if the current environment is attached to a network
+    */
+  def isConnected: Boolean = node != null && node.address != null && node.network != null
+
+  // ----------------------------------------------------------------------- //
+
+  override def dispose(): Unit = {
+    if (node != null) node.remove()
+    super.dispose()
+  }
+
+  // ----------------------------------------------------------------------- //
+
+  override def load(nbt: NBTTagCompound): Unit = {
+    if (node != null) node.load(nbt.getCompoundTag(Environment.NodeTag))
+  }
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    if (node != null) {
+      val nodeTag = new NBTTagCompound
+      node.save(nodeTag)
+      nbt.setTag(Environment.NodeTag, nodeTag)
+    }
+  }
+}
+
+object Environment {
+  val NodeTag = "node"
 }

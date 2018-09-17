@@ -8,7 +8,7 @@ import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
 
-trait Computer extends EntityEnvironment with MachineHost with ComponentInventory {
+trait Computer extends Environment with MachineHost with ComponentInventory {
 
   private lazy val _machine = MachineAPI.create(this)
 

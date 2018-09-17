@@ -3,7 +3,7 @@ package totoro.ocelot.brain.environment
 import java.io.{FileNotFoundException, IOException}
 
 import totoro.ocelot.brain.environment.fs.{FileSystemTrait, HandleValue, Label, Mode}
-import totoro.ocelot.brain.environment.traits.DeviceInfo
+import totoro.ocelot.brain.environment.traits.{DeviceInfo, Environment}
 import totoro.ocelot.brain.environment.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
@@ -14,11 +14,11 @@ import totoro.ocelot.brain.{Constants, Settings}
 import scala.collection.mutable
 
 class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: Int)
-  extends AbstractManagedEnvironment with DeviceInfo {
+  extends Environment with DeviceInfo {
 
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("filesystem", Visibility.Neighbors).
-    create
+    create()
 
   private val owners = mutable.Map.empty[String, mutable.Set[Int]]
 
