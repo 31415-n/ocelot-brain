@@ -1,6 +1,5 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.entity.Entity
 import totoro.ocelot.brain.environment.traits.Environment
 import totoro.ocelot.brain.machine.Machine
 import totoro.ocelot.brain.network.Node
@@ -11,18 +10,11 @@ import totoro.ocelot.brain.network.Node
   * It provides some context for the machine, in particular which world it is
   * running in, to allow querying the time of day, for example.
   */
-trait MachineHost extends WorldAware {
+trait MachineHost extends Inventory with WorldAware {
   /**
     * The machine currently hosted.
     */
   def machine: Machine
-
-  /**
-    * List of all components that are built into this machine directly.
-    *
-    * This is used to find CPUs, component buses and memory.
-    */
-  def internalComponents: Iterable[Entity]
 
   /**
     * Get the slot a component with the specified address is in.

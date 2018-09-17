@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.util
+package totoro.ocelot.brain.entity.traits
 
 object StateAware {
 
@@ -7,6 +7,7 @@ object StateAware {
     */
   object State extends Enumeration {
     type State = Value
+
     val None,
 
     /**

@@ -1,8 +1,9 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.Cable
+import totoro.ocelot.brain.entity.{Cable, Case}
 import totoro.ocelot.brain.network.Network
+import totoro.ocelot.brain.util.Tier
 
 object Demo extends App {
   println("Hi! We are testing Ocelot brains here. Join in!")
@@ -10,6 +11,9 @@ object Demo extends App {
   Ocelot.initialize()
   val cable = new Cable()
   val network = new Network(cable.node)
-  cable.node.connect(new Cable().node)
-  cable.node.connect(new Cable().node)
+
+  val computer = new Case(Tier.Four)
+  cable.node.connect(computer.node)
+
+  computer.turnOn()
 }

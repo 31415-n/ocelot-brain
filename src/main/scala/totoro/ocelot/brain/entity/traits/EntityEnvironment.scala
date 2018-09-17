@@ -6,7 +6,7 @@ import totoro.ocelot.brain.environment.traits.Environment
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Message, Node}
-import totoro.ocelot.brain.util.{Persistable, ResultWrapper, World}
+import totoro.ocelot.brain.util.{Persistable, ResultWrapper}
 
 trait EntityEnvironment extends Entity with Environment with WorldAware with Persistable {
 

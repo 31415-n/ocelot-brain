@@ -51,7 +51,7 @@ class ComputerAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
     computer.set("maxEnergy", (_: Varargs) => LuaValue.valueOf(infinity))
 
     computer.set("getArchitectures", (_: Varargs) => {
-      machine.host.internalComponents.collectFirst {
+      machine.host.inventory.collectFirst {
         case processor: MutableProcessor => processor.allArchitectures.toSeq
         case processor: Processor => Seq(processor.architecture)
       } match {
@@ -61,14 +61,14 @@ class ComputerAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
     })
 
     computer.set("getArchitecture", (_: Varargs) => {
-      machine.host.internalComponents.collectFirst {
+      machine.host.inventory.collectFirst {
         case processor: Processor => LuaValue.valueOf(MachineAPI.getArchitectureName(processor.architecture))
       }.getOrElse(LuaValue.NONE)
     })
 
     computer.set("setArchitecture", (args: Varargs) => {
       val archName = args.checkjstring(1)
-      machine.host.internalComponents.collectFirst {
+      machine.host.inventory.collectFirst {
         case processor: MutableProcessor => processor.allArchitectures.find(arch => MachineAPI.getArchitectureName(arch) == archName) match {
           case Some(archClass) =>
             if (archClass != processor.architecture) {

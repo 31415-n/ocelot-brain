@@ -3,6 +3,7 @@ package totoro.ocelot.brain
 import java.io.File
 
 import org.apache.logging.log4j.{LogManager, Logger}
+import totoro.ocelot.brain.entity.{Cable, Case, EntityFactory}
 import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.machine.{MachineAPI, Registry}
@@ -28,6 +29,10 @@ object Ocelot {
     if (MachineAPI.architectures.isEmpty) {
       MachineAPI.add(classOf[LuaJLuaArchitecture], "LuaJ")
     }
+
+    log.info("Registering available entities (to be able to persist them later)...")
+    EntityFactory.add(classOf[Cable])
+    EntityFactory.add(classOf[Case])
   }
 
   private def init(): Unit = {}

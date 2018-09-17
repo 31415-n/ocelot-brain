@@ -106,7 +106,7 @@ class ComputerAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     lua.setField(-2, "maxEnergy")
 
     lua.pushScalaFunction(lua => {
-      machine.host.internalComponents.collectFirst {
+      machine.host.inventory.collectFirst {
         case processor: MutableProcessor => processor.allArchitectures
         case processor: Processor => Seq(processor.architecture)
       } match {
@@ -120,7 +120,7 @@ class ComputerAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     lua.setField(-2, "getArchitectures")
 
     lua.pushScalaFunction(lua => {
-      machine.host.internalComponents.collectFirst {
+      machine.host.inventory.collectFirst {
         case processor: Processor =>
           lua.pushString(MachineAPI.getArchitectureName(processor.architecture))
           1
@@ -130,7 +130,7 @@ class ComputerAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
 
     lua.pushScalaFunction(lua => {
       val archName = lua.checkString(1)
-      machine.host.internalComponents.collectFirst {
+      machine.host.inventory.collectFirst {
         case processor: MutableProcessor =>
           processor.allArchitectures.find(arch => MachineAPI.getArchitectureName(arch) == archName) match {
             case Some(archClass) =>

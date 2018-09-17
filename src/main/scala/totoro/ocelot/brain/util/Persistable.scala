@@ -11,7 +11,7 @@ trait Persistable {
     *
     * @param nbt the tag to read the state from.
     */
-  def load(nbt: NBTTagCompound): Unit
+  def load(nbt: NBTTagCompound): Unit = {}
 
   /**
     * Saves the current state of the object into the specified NBT tag.
@@ -21,5 +21,5 @@ trait Persistable {
     *
     * @param nbt the tag to save the state to.
     */
-  def save(nbt: NBTTagCompound): Unit
+  def save(nbt: NBTTagCompound): Unit = {}
 }

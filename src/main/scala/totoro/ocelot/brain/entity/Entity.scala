@@ -1,14 +1,37 @@
 package totoro.ocelot.brain.entity
 
+import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.util.Persistable
+
 /**
   * Represents a single usable object, which may be created
-  * abd then placed into the workspace, or into the inventory
+  * and then placed into the workspace, or into the inventory
   * of some other `Entity`.
   *
-  * This may be a component, a computer case, a cable, etc.
+  * This may be a card, a computer case, a cable, etc.
   */
-trait Entity {
+trait Entity extends Persistable {
+  /**
+    * Use this if the entity need some additional work to be set up
+    */
   def initialize(): Unit = {}
+
+  /**
+    * Called every tick.
+    */
   def update(): Unit = {}
+
+  /**
+    * Called to properly destroy the entity and dispose all resources
+    */
   def dispose(): Unit = {}
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    super.save(nbt)
+    nbt.setString(Entity.TypeTag, this.getClass.getSimpleName)
+  }
+}
+
+object Entity {
+  val TypeTag = "type"
 }

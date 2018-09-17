@@ -63,7 +63,7 @@ trait Environment {
     * - B.onConnect(A)
     * - C.onConnect(A)
     */
-  def onConnect(node: Node): Unit
+  def onConnect(node: Node): Unit = {}
 
   /**
     * This is called when a node is removed from the network.
@@ -82,7 +82,7 @@ trait Environment {
     * - B.onDisconnect(A)
     * - C.onDisconnect(A)
     */
-  def onDisconnect(node: Node): Unit
+  def onDisconnect(node: Node): Unit = {}
 
   /**
     * This is the generic message handler.
@@ -93,5 +93,5 @@ trait Environment {
     *
     * @param message the message to handle.
     */
-  def onMessage(message: Message): Unit
+  def onMessage(message: Message): Unit = {}
 }

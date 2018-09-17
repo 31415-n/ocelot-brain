@@ -73,7 +73,7 @@ class Machine(val host: MachineHost) extends AbstractManagedEnvironment with Con
   // ----------------------------------------------------------------------- //
 
   def onHostChanged(): Unit = {
-    val components = host.internalComponents
+    val components = host.inventory
     maxComponents = components.foldLeft(0)((sum, entity) => sum + (entity match {
       case processor: Processor => processor.supportedComponents
       case _ => 0
