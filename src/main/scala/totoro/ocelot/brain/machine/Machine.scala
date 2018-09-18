@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import totoro.ocelot.brain.entity.fs.FileSystemAPI
 import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, MachineHost, Processor}
 import totoro.ocelot.brain.entity.{Environment, FileSystem}
+import totoro.ocelot.brain.event.{BeepEvent, BeepPatternEvent, EventBus, MachineCrashEvent}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network._
@@ -232,12 +233,15 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   }
 
   def beep(frequency: Short, duration: Short): Unit = {
+    EventBus.send(BeepEvent(frequency, duration))
   }
 
-  def beep(pattern: String) {
+  def beep(pattern: String): Unit = {
+    EventBus.send(BeepPatternEvent(pattern))
   }
 
   def crash(message: String): Boolean = {
+    EventBus.send(MachineCrashEvent(message))
     this.message = Option(message)
     state.synchronized {
       val result = stop()

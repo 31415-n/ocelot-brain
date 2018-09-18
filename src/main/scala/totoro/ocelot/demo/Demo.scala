@@ -2,6 +2,7 @@ package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, Memory}
+import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.network.Network
 import totoro.ocelot.brain.util.Tier
 
@@ -9,6 +10,8 @@ object Demo extends App {
   println("Hi! We are testing Ocelot brains here. Join in!")
 
   Ocelot.initialize()
+
+  // setup simple network with a computer
   val cable = new Cable()
   val network = new Network(cable.node)
 
@@ -30,6 +33,18 @@ object Demo extends App {
   eeprom.label = "Test BIOS"
   computer.add(eeprom)
 
+  // register some event listeners
+  EventBus.listenTo(classOf[BeepEvent], { case event: BeepEvent =>
+    println(s"[EVENT] Beep (frequency = ${event.frequency}, duration = ${event.duration})")
+  })
+  EventBus.listenTo(classOf[BeepPatternEvent], { case event: BeepPatternEvent =>
+    println(s"[EVENT] Beep (${event.pattern})")
+  })
+  EventBus.listenTo(classOf[MachineCrashEvent], { case event: MachineCrashEvent =>
+    println(s"[EVENT] Machine crash! (${event.message})")
+  })
+
+  // turn the computer on
   computer.turnOn()
 
   while (computer.machine.isRunning) {
