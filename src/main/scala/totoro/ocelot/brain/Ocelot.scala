@@ -20,11 +20,11 @@ object Ocelot {
     Settings.load(new File("settings.conf"))
 
     log.info("Registering available machine architectures...")
-    if (LuaStateFactory.include53) {
-      MachineAPI.add(classOf[NativeLua53Architecture], "Lua 5.3")
-    }
     if (LuaStateFactory.include52) {
       MachineAPI.add(classOf[NativeLua52Architecture], "Lua 5.2")
+    }
+    if (LuaStateFactory.include53) {
+      MachineAPI.add(classOf[NativeLua53Architecture], "Lua 5.3")
     }
     if (MachineAPI.architectures.isEmpty) {
       MachineAPI.add(classOf[LuaJLuaArchitecture], "LuaJ")
