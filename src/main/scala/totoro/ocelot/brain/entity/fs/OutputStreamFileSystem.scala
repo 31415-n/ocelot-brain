@@ -1,8 +1,8 @@
-package totoro.ocelot.brain.environment.fs
+package totoro.ocelot.brain.entity.fs
 
 import java.io.{FileNotFoundException, IOException}
 
-import totoro.ocelot.brain.environment.fs
+import totoro.ocelot.brain.entity.fs
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagList}
 
 import scala.collection.mutable

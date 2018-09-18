@@ -1,6 +1,5 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.environment.traits.Environment
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 
 class Cable extends Environment {

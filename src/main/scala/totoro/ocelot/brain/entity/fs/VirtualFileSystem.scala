@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.environment.fs
+package totoro.ocelot.brain.entity.fs
 
 import java.io
 import java.io.FileNotFoundException

@@ -1,6 +1,6 @@
-package totoro.ocelot.brain.environment.traits
+package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.entity.traits.MachineHost
+import totoro.ocelot.brain.entity.Environment
 
 /**
   * Implement this on [[Environment]]s if you wish to

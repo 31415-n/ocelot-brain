@@ -1,9 +1,8 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Constants
-import totoro.ocelot.brain.entity.traits.Tiered
-import totoro.ocelot.brain.environment.traits.DeviceInfo
-import totoro.ocelot.brain.environment.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
 import totoro.ocelot.brain.util.Tier
 
 class Case(override var tier: Int) extends traits.Computer with DeviceInfo with Tiered {

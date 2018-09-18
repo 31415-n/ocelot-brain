@@ -1,10 +1,10 @@
-package totoro.ocelot.brain.environment
+package totoro.ocelot.brain.entity
 
 import java.io.{FileNotFoundException, IOException}
 
-import totoro.ocelot.brain.environment.fs.{FileSystemTrait, HandleValue, Label, Mode}
-import totoro.ocelot.brain.environment.traits.{DeviceInfo, Environment}
-import totoro.ocelot.brain.environment.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.fs.{FileSystemTrait, HandleValue, Label, Mode}
+import totoro.ocelot.brain.entity.traits.DeviceInfo
+import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}

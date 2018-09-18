@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.environment.fs
+package totoro.ocelot.brain.entity.fs
 
 trait Volatile extends VirtualFileSystem {
   override def close() {

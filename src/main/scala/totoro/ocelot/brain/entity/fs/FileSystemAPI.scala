@@ -1,10 +1,10 @@
-package totoro.ocelot.brain.environment.fs
+package totoro.ocelot.brain.entity.fs
 
 import java.io
 import java.net.{MalformedURLException, URISyntaxException, URL}
 import java.util.UUID
 
-import totoro.ocelot.brain.environment.FileSystem
+import totoro.ocelot.brain.entity.FileSystem
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.{Ocelot, Settings}
 

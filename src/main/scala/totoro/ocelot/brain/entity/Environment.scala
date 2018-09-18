@@ -1,6 +1,5 @@
-package totoro.ocelot.brain.environment.traits
+package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.Entity
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Message, Network, Node}
 

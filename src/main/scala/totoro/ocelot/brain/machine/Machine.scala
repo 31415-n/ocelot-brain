@@ -3,10 +3,9 @@ package totoro.ocelot.brain.machine
 import java.util
 import java.util.concurrent.TimeUnit
 
-import totoro.ocelot.brain.entity.traits.{CallBudget, MachineHost, Processor}
-import totoro.ocelot.brain.environment.fs.FileSystemAPI
-import totoro.ocelot.brain.environment.traits.{DeviceInfo, Environment}
-import totoro.ocelot.brain.environment.FileSystem
+import totoro.ocelot.brain.entity.fs.FileSystemAPI
+import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, MachineHost, Processor}
+import totoro.ocelot.brain.entity.{Environment, FileSystem}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network._
@@ -368,6 +367,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
     val duration = args.optDouble(1, 0.1)
     val durationInMilliseconds = math.max(50, math.min(5000, (duration * 1000).toInt))
+    beep(frequency.toShort, durationInMilliseconds.toShort)
     context.pause(durationInMilliseconds / 1000.0)
     null
   }

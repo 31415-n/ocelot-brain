@@ -1,8 +1,7 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.{CPULike, MutableProcessor, Tiered}
-import totoro.ocelot.brain.environment.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.environment.traits.{DeviceInfo, Environment}
+import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{CPULike, DeviceInfo, MutableProcessor, Tiered}
 import totoro.ocelot.brain.machine.{Architecture, MachineAPI}
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.util.Tier

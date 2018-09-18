@@ -1,6 +1,6 @@
-package totoro.ocelot.brain.environment.fs
+package totoro.ocelot.brain.entity.fs
 
-import totoro.ocelot.brain.environment.FileSystem
+import totoro.ocelot.brain.entity.FileSystem
 import totoro.ocelot.brain.machine.{AbstractValue, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 

@@ -1,8 +1,7 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.Memory
-import totoro.ocelot.brain.entity.{CPU, Cable, Case}
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, Memory}
 import totoro.ocelot.brain.network.Network
 import totoro.ocelot.brain.util.Tier
 
@@ -22,5 +21,21 @@ object Demo extends App {
   val memory = new Memory(Tier.Six)
   computer.add(memory)
 
+  val eeprom = new EEPROM()
+  eeprom.codeData =
+    """
+      |computer.beep(1000, 1)
+      |while (true) do end
+    """.stripMargin.getBytes("UTF-8")
+  eeprom.label = "Test BIOS"
+  computer.add(eeprom)
+
   computer.turnOn()
+
+  while (computer.machine.isRunning) {
+    computer.update()
+    Thread.sleep(50)
+  }
+
+  computer.turnOff()
 }

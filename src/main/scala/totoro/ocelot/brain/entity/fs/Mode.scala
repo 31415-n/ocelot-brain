@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.environment.fs
+package totoro.ocelot.brain.entity.fs
 
 /**
   * Possible file modes.
