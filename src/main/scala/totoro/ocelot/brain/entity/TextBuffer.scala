@@ -3,6 +3,7 @@ package totoro.ocelot.brain.entity
 import totoro.ocelot.brain.{Constants, Settings, util}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.event.{EventBus, TextBufferSetEvent}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
@@ -420,7 +421,8 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
       else (column, row, value.substring(0, math.min(value.length, data.height - row)))
       else if (column < 0) (0, row, value.substring(-column))
       else (column, row, value.substring(0, math.min(value.length, data.width - column)))
-      data.set(x, y, truncated, vertical)
+      if (data.set(x, y, truncated, vertical))
+        EventBus.send(TextBufferSetEvent(x, y, truncated, vertical))
     }
 
   /**

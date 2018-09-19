@@ -28,6 +28,10 @@ object Demo extends App {
   eeprom.codeData =
     """
       |computer.beep(1000, 1)
+      |local gpu = component.proxy(component.list("gpu")())
+      |local screen = component.list("screen")()
+      |gpu.bind(screen)
+      |gpu.set(1, 1, "Hello from Ocelot EEPROM!")
       |while (true) do end
     """.stripMargin.getBytes("UTF-8")
   eeprom.label = "Test BIOS"
@@ -48,6 +52,9 @@ object Demo extends App {
   })
   EventBus.listenTo(classOf[MachineCrashEvent], { case event: MachineCrashEvent =>
     println(s"[EVENT] Machine crash! (${event.message})")
+  })
+  EventBus.listenTo(classOf[TextBufferSetEvent], { case event: TextBufferSetEvent =>
+    println(s"[EVENT] Text buffer set (${event.x}, ${event.y}, ${event.value}, ${event.vertical})")
   })
 
   // turn the computer on
