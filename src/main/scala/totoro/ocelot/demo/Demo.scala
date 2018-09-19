@@ -1,7 +1,7 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, Memory}
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, Memory, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.network.Network
 import totoro.ocelot.brain.util.Tier
@@ -32,6 +32,9 @@ object Demo extends App {
     """.stripMargin.getBytes("UTF-8")
   eeprom.label = "Test BIOS"
   computer.add(eeprom)
+
+  val screen = new Screen(Tier.Three)
+  cable.node.connect(screen.node)
 
   // register some event listeners
   EventBus.listenTo(classOf[BeepEvent], { case event: BeepEvent =>
