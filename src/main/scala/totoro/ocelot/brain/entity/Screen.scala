@@ -7,7 +7,7 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.Tier
 
-class Screen(override val tier: Int) extends TextBuffer with Tiered {
+class Screen(override var tier: Int) extends TextBuffer with Tiered {
   def this() = this(Tier.One)
 
   var width, height = 1

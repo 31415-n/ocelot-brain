@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.{Constants, Settings, util}
-import totoro.ocelot.brain.entity.traits.DeviceInfo
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -15,14 +15,14 @@ import scala.collection.mutable
   * This trait implements functionality for displaying and manipulating
   * text, like screens and robots.
   */
-class TextBuffer(val tier: Int = Tier.One) extends Environment with DeviceInfo {
+class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with DeviceInfo with Tiered {
   override val node: Component =  Network.newNode(this, Visibility.Network).
     withComponent("screen").
     create()
 
-  private var maxResolution = Settings.screenResolutionsByTier(tier)
+  private var maxResolution = Settings.screenResolutionsByTier(bufferTier)
 
-  private var maxDepth = Settings.screenDepthsByTier(tier)
+  private var maxDepth = Settings.screenDepthsByTier(bufferTier)
 
   private var aspectRatio = (1.0, 1.0)
 
@@ -44,6 +44,9 @@ class TextBuffer(val tier: Int = Tier.One) extends Environment with DeviceInfo {
   )
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
+
+  override def tier: Int = bufferTier
+  override def tier_=(value: Int): Unit = bufferTier = value
 
   // ----------------------------------------------------------------------- //
 

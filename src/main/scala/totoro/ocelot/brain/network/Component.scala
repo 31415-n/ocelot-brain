@@ -162,12 +162,12 @@ trait Component extends Node {
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)
-    if (nbt.hasKey(VisibilityTag)) _visibility = Visibility(nbt.getInteger(VisibilityTag))
+    if (nbt.hasKey(Node.VisibilityTag)) _visibility = Visibility(nbt.getInteger(Node.VisibilityTag))
   }
 
   override def save(nbt: NBTTagCompound) {
     super.save(nbt)
-    nbt.setInteger(VisibilityTag, _visibility.id)
+    nbt.setInteger(Node.VisibilityTag, _visibility.id)
   }
 
   override def toString: String = super.toString + s"@$name"
