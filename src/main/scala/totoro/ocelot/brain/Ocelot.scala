@@ -4,6 +4,7 @@ import java.io.File
 
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, EntityFactory, Memory}
+import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.machine.{MachineAPI, Registry}
@@ -36,6 +37,9 @@ object Ocelot {
     EntityFactory.add(classOf[CPU])
     EntityFactory.add(classOf[Memory])
     EntityFactory.add(classOf[EEPROM])
+
+    log.info("Registering loot (floppies and EEPROMs with standart OpenComputers software)...")
+    Loot.init()
   }
 
   private def init(): Unit = {}

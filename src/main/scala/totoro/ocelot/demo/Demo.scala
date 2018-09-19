@@ -3,6 +3,7 @@ package totoro.ocelot.demo
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, GraphicsCard, Memory, Screen}
 import totoro.ocelot.brain.event._
+import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.network.Network
 import totoro.ocelot.brain.util.Tier
 
@@ -35,7 +36,9 @@ object Demo extends App {
       |while (true) do end
     """.stripMargin.getBytes("UTF-8")
   eeprom.label = "Test BIOS"
-  computer.add(eeprom)
+  //computer.add(eeprom)
+
+  computer.add(Loot.OpenOsBIOS)
 
   val gpu = new GraphicsCard(Tier.One)
   computer.add(gpu)
