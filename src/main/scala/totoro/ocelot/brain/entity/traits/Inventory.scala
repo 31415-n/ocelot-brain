@@ -30,10 +30,20 @@ trait Inventory extends Persistable {
     } else false
   }
 
+  /**
+    * Remove an entity from inventory
+    */
   def remove(entity: Entity): Boolean = {
     if (inventory.contains(entity)) {
       inventory -= entity
       onEntityRemoved(entity)
+      true
+    } else false
+  }
+
+  def clear(): Boolean = {
+    if (inventory.nonEmpty) {
+      inventory.clear()
       true
     } else false
   }
