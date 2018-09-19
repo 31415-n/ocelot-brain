@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity.fs
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
-private class ReadWriteLabel(private var label: String) extends Label {
+class ReadWriteLabel(private var label: String) extends Label {
 
   override def getLabel: String = label
 

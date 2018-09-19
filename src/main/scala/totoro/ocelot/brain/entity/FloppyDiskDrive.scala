@@ -42,7 +42,7 @@ class FloppyDiskDrive extends Environment with ComponentInventory with DeviceInf
 
   // ----------------------------------------------------------------------- //
 
-  override protected def onEntityAdded(entity: Entity) {
+  override def onEntityAdded(entity: Entity) {
     super.onEntityAdded(entity)
     entity match {
       case environment: Environment => environment.node match {
