@@ -10,6 +10,7 @@ import scala.collection.mutable
 object FontUtils {
   private val defined_double_wide: mutable.BitSet = mutable.BitSet()
 
+  // TODO:
   // font.hex actually has some codepoints larger than 0x10000
   // but, UnicodeAPI.scala is using java's Integer.ToChar which only supports the utf-16 range
   // and thus will truncate any incoming codepoint, forcing it below 0x10000
