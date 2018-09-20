@@ -4,13 +4,13 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import com.google.common.io.Files
-import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 import totoro.ocelot.brain.entity.fs.Label
 import totoro.ocelot.brain.entity.traits.DeviceInfo
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
+import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 
 class Drive(val capacity: Int, val platterCount: Int, val label: Label, val speed: Int)
   extends Environment with DeviceInfo {

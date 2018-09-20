@@ -1,13 +1,13 @@
 package totoro.ocelot.brain.entity
 
 import com.google.common.base.Charsets
-import totoro.ocelot.brain.{Constants, Settings}
 import totoro.ocelot.brain.entity.traits.DeviceInfo
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
 

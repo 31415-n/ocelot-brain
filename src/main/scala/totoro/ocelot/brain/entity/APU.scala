@@ -1,9 +1,8 @@
 package totoro.ocelot.brain.entity
 
-import li.cil.oc.common.Tier
 import totoro.ocelot.brain.entity.traits.DeviceInfo
-import totoro.ocelot.brain.{Constants, Settings}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.{Constants, Settings}
 
 class APU(override var tier: Int) extends traits.CPU with traits.GraphicsCard with DeviceInfo {
   private final lazy val deviceInfo = Map(

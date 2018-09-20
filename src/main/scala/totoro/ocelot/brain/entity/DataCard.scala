@@ -8,14 +8,14 @@ import java.util.zip.{DeflaterOutputStream, InflaterOutputStream}
 import com.google.common.hash.Hashing
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, KeyAgreement, Mac}
+import org.apache.commons.codec.binary.Base64
+import org.apache.commons.io.output.ByteArrayOutputStream
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.traits.DeviceInfo
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.machine.{AbstractValue, Arguments, Callback, Context}
-import totoro.ocelot.brain.network.{Network, Node, Visibility}
-import org.apache.commons.codec.binary.Base64
-import org.apache.commons.io.output.ByteArrayOutputStream
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.network.{Network, Node, Visibility}
 
 abstract class DataCard extends Environment with DeviceInfo {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).

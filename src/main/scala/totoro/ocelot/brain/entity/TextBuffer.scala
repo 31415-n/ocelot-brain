@@ -1,14 +1,14 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.{Constants, Settings, util}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
 import totoro.ocelot.brain.event.{EventBus, TextBufferSetEvent}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.{ColorDepth, PackedColor, Tier}
+import totoro.ocelot.brain.{Constants, Settings, util}
 
 import scala.collection.mutable
 
