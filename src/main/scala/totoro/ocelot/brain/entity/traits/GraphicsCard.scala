@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.{Environment, TextBuffer}
-import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.machine.{Arguments, Callback, Context, Machine}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Message, Network, Node, Visibility}
 import totoro.ocelot.brain.util.{ColorDepth, PackedColor}
@@ -301,7 +301,7 @@ trait GraphicsCard extends Environment with Tiered with GPULike {
         val w = s.getWidth
         val h = s.getHeight
         message.source.host match {
-          case machine: li.cil.oc.server.machine.Machine if machine.lastError != null =>
+          case machine: Machine if machine.lastError != null =>
             if (s.getColorDepth.id > ColorDepth.OneBit.id) s.setBackgroundColor(0x0000FF)
             else s.setBackgroundColor(0x000000)
             s.fill(0, 0, w, h, ' ')
