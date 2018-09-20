@@ -1,18 +1,19 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.Constants
+import li.cil.oc.common.Tier
 import totoro.ocelot.brain.entity.traits.DeviceInfo
+import totoro.ocelot.brain.{Constants, Settings}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 
-class GraphicsCard(override var tier: Int) extends traits.GraphicsCard with DeviceInfo {
+class APU(override var tier: Int) extends traits.CPU with traits.GraphicsCard with DeviceInfo {
   private final lazy val deviceInfo = Map(
-    DeviceAttribute.Class -> DeviceClass.Display,
-    DeviceAttribute.Description -> "Graphics controller",
+    DeviceAttribute.Class -> DeviceClass.Processor,
+    DeviceAttribute.Description -> "APU",
     DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product -> ("MPG" + ((tier + 1) * 1000).toString + " GTZ"),
+    DeviceAttribute.Product -> ("Ripper FX " + (tier + 1).toString + " (Builtin Graphics)"),
     DeviceAttribute.Capacity -> capacityInfo,
     DeviceAttribute.Width -> widthInfo,
-    DeviceAttribute.Clock -> clockInfo
+    DeviceAttribute.Clock -> ((Settings.get.callBudgets(tier) * 1000).toInt.toString + "+" + clockInfo)
   )
 
   def capacityInfo: String = (maxResolution._1 * maxResolution._2).toString
@@ -28,4 +29,6 @@ class GraphicsCard(override var tier: Int) extends traits.GraphicsCard with Devi
       ((2000 / fillCosts(tier)).toInt / 100).toString
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
+
+  override def cpuTier: Int = math.min(Tier.Three, tier + 1)
 }
