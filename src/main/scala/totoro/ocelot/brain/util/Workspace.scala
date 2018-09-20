@@ -11,7 +11,7 @@ class Workspace {
   def getWorldTime: Long = getTotalWorldTime / 50 % 24000
   def getTotalWorldTime: Long = System.currentTimeMillis()
   def isPaused = false
-  def rand: Random = Random()
+  def rand: Random = Random
 }
 
 object Workspace {

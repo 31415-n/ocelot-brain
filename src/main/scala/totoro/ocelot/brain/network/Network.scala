@@ -324,6 +324,56 @@ class Network private(private val data: mutable.Map[String, Network.Vertex] = mu
 
 object Network {
   /**
+    * Makes a wireless endpoint join the wireless network defined by the mod.
+    *
+    * OpenComputers tracks endpoints to which to send wireless packets sent
+    * via the `sendWirelessPacket(WirelessEndpoint, double, Packet)`
+    * method. The packets will ''only'' be sent to endpoints registered
+    * with the network.
+    *
+    * '''Important''': when your endpoint is removed from the world,
+    * ''you must ensure it is also removed from the network''!
+    *
+    * @param endpoint the endpoint to register with the network.
+    */
+  def joinWirelessNetwork(endpoint: WirelessEndpoint): Unit = {
+    WirelessNetwork.add(endpoint)
+  }
+
+  /**
+    * Removes a wireless endpoint from the wireless network.
+    *
+    * This must be called when an endpoint becomes invalid, otherwise it will
+    * remain in the network!
+    *
+    * Calling this for an endpoint that was not added before does nothing.
+    *
+    * @param endpoint the endpoint to remove from the wireless network.
+    */
+  def leaveWirelessNetwork(endpoint: WirelessEndpoint): Unit = {
+    WirelessNetwork.remove(endpoint)
+  }
+
+  /**
+    * Sends a packet via the wireless network.
+    *
+    * This will look for all other registered wireless endpoints in range of
+    * the sender and submit the packets to them. Whether another end point is
+    * reached depends on the distance and potential obstacles between the
+    * sender and the receiver (harder blocks require a stronger signal to be
+    * penetrated).
+    *
+    * @param source   the endpoint that is sending the message.
+    * @param strength the signal strength with which to send the packet.
+    * @param packet   the packet to send.
+    */
+  def sendWirelessPacket(source: WirelessEndpoint, strength: Double, packet: Packet): Unit = {
+    for (endpoint <- WirelessNetwork.endpoints) {
+      endpoint.receivePacket(packet, source)
+    }
+  }
+
+  /**
     * Factory function for creating new nodes.
     *
     * Use this to create a node for your environment. This
