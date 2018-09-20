@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.fs.{Label, ReadWriteLabel}
-import totoro.ocelot.brain.entity.traits.FileSystemLike
+import totoro.ocelot.brain.entity.traits.{FileSystemLike, ManagedDisk}
 import totoro.ocelot.brain.loot.Loot.FileSystemFactory
 
 class FloppyDisk(name: String, override val lootFactory: FileSystemFactory = null) extends ManagedDisk with FileSystemLike {

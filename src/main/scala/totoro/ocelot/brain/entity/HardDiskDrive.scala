@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.fs.{Label, ReadWriteLabel}
-import totoro.ocelot.brain.entity.traits.{FileSystemLike, Tiered}
+import totoro.ocelot.brain.entity.traits.{FileSystemLike, ManagedDisk, Tiered}
 
 class HardDiskDrive(override var tier: Int, name: String) extends ManagedDisk with FileSystemLike with Tiered {
   override val kiloBytes: Int = Settings.get.hddSizes(tier)

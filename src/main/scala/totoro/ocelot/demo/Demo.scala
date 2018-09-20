@@ -40,8 +40,7 @@ object Demo extends App {
   //computer.add(eeprom)
 
   computer.add(Loot.OpenOsBIOS.create())
-  val floppy = Loot.OpenOsFloppy.create()
-  computer.add(floppy)
+  computer.add(Loot.OpenOsFloppy.create())
 
   val screen = new Screen(Tier.Three)
   cable.node.connect(screen.node)

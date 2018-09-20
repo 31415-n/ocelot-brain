@@ -1,9 +1,10 @@
-package totoro.ocelot.brain.entity
+package totoro.ocelot.brain.entity.traits
 
 import java.util.UUID
 
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.fs.{FileSystemAPI, Label, ReadWriteLabel}
+import totoro.ocelot.brain.entity.fs.{FileSystemAPI, Label}
+import totoro.ocelot.brain.entity.{Drive, Environment, FileSystem}
 import totoro.ocelot.brain.loot.Loot.FileSystemFactory
 import totoro.ocelot.brain.network.Node
 
