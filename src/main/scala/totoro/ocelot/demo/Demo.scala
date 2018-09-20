@@ -38,7 +38,7 @@ object Demo extends App {
   eeprom.label = "Test BIOS"
   //computer.add(eeprom)
 
-  computer.add(Loot.OpenOsBIOS)
+  computer.add(Loot.OpenOsBIOS.create())
 
   val gpu = new GraphicsCard(Tier.One)
   computer.add(gpu)

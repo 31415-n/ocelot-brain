@@ -214,24 +214,12 @@ object FileSystemAPI extends {
   def asManagedEnvironment(fileSystem: FileSystemTrait, label: String, speed: Int): FileSystem =
     asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), speed)
 
-  /**
-    * @deprecated Don't use this directly, use the wrapper in { @link li.cil.oc.api.FileSystem}.
-    */
-  @deprecated
   def asManagedEnvironment(fileSystem: FileSystemTrait, label: Label): FileSystem =
     asManagedEnvironment(fileSystem, label, 1)
 
-  /**
-    * @deprecated Don't use this directly, use the wrapper in { @link li.cil.oc.api.FileSystem}.
-    */
-  @deprecated
   def asManagedEnvironment(fileSystem: FileSystemTrait, label: String): FileSystem =
     asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), 1)
 
-  /**
-    * @deprecated Don't use this directly, use the wrapper in { @link li.cil.oc.api.FileSystem}.
-    */
-  @deprecated
   def asManagedEnvironment(fileSystem: FileSystemTrait): FileSystem =
     asManagedEnvironment(fileSystem, null: Label, 1)
 

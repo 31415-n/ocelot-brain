@@ -4,6 +4,7 @@ import java.util.UUID
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.fs.{FileSystemAPI, Label, ReadWriteLabel}
+import totoro.ocelot.brain.loot.Loot.FileSystemFactory
 import totoro.ocelot.brain.network.Node
 
 /**
@@ -41,6 +42,11 @@ trait ManagedDisk extends Environment {
   def speed: Int
 
   /**
+    * Creates a filesystem from loot directories
+    */
+  def lootFactory: FileSystemFactory = null
+
+  /**
     * Determines the exact type of environment that will be used for this
     * disk. In the managed mode this is an instance of [[FileSystem]]. In unmanaged
     * mode this is an instance of [[Drive]]. Filesystem is a little bit more advanced
@@ -61,7 +67,9 @@ trait ManagedDisk extends Environment {
     */
   def generateEnvironment(): Environment = {
     val oldAddress = address
-    val environment = if (managed) {
+    val environment = if (lootFactory != null) {
+      lootFactory.createFileSystem()
+    } else if (managed) {
       val fs = FileSystemAPI.fromSaveDirectory(address, capacity max 0, Settings.get.bufferChanges)
       FileSystemAPI.asManagedEnvironment(fs, label, speed)
     } else {
