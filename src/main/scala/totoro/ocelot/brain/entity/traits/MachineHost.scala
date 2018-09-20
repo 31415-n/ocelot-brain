@@ -10,7 +10,7 @@ import totoro.ocelot.brain.network.Node
   * It provides some context for the machine, in particular which world it is
   * running in, to allow querying the time of day, for example.
   */
-trait MachineHost extends Inventory with WorldAware {
+trait MachineHost extends Inventory with WorkspaceAware {
   /**
     * The machine currently hosted.
     */
