@@ -11,7 +11,7 @@ import totoro.ocelot.brain.network.Node
   * Environment which allows to switch between [[Drive]] and [[FileSystem]].
   */
 trait ManagedDisk extends Environment {
-  private var _environment: Environment = generateEnvironment()
+  private var _environment: Environment = _
 
   override def node: Node =
     if (_environment != null) _environment.node
@@ -42,7 +42,7 @@ trait ManagedDisk extends Environment {
   def speed: Int
 
   /**
-    * Creates a filesystem from loot directories
+    * Creates a filesystem from loot directories.
     */
   def lootFactory: FileSystemFactory = null
 

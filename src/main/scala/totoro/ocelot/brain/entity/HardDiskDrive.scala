@@ -10,4 +10,6 @@ class HardDiskDrive(override var tier: Int, name: String) extends ManagedDisk wi
   override val capacity: Int = kiloBytes * 1024
   override val platterCount: Int = Settings.get.hddPlatterCounts(tier)
   override val speed: Int = tier + 2
+
+  setManaged(true)
 }

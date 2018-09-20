@@ -91,7 +91,7 @@ object FileSystemAPI extends {
 
     if (isArchive) ZipFileInputStreamFileSystem.fromFile(file, innerPath.substring(1))
     else {
-      if (!file.exists || file.isDirectory) return null
+      if (!file.exists) return null
       new io.File(new io.File(file.getParent), innerPath) match {
         case fsp if fsp.exists() && fsp.isDirectory =>
           new ReadOnlyFileSystem(fsp)

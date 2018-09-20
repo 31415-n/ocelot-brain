@@ -11,4 +11,6 @@ class FloppyDisk(name: String, override val lootFactory: FileSystemFactory = nul
   override val capacity: Int = kiloBytes * 1024
   override val platterCount: Int = 1
   override val speed: Int = 1
+
+  setManaged(true)
 }

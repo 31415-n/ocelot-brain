@@ -39,6 +39,8 @@ object Demo extends App {
   //computer.add(eeprom)
 
   computer.add(Loot.OpenOsBIOS.create())
+  val floppy = Loot.OpenOsFloppy.create()
+  computer.add(floppy)
 
   val gpu = new GraphicsCard(Tier.One)
   computer.add(gpu)
