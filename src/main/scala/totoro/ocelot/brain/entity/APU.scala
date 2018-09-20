@@ -2,6 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.traits.DeviceInfo
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.util.Tier
 import totoro.ocelot.brain.{Constants, Settings}
 
 class APU(override var tier: Int) extends traits.CPU with traits.GraphicsCard with DeviceInfo {
