@@ -5,6 +5,7 @@ libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.11",
   "com.typesafe" % "config" % "1.3.3",
   "org.apache.commons" % "commons-lang3" % "3.8",
+  "org.apache.commons" % "commons-text" % "1.4",
   "commons-io" % "commons-io" % "2.6",
   "org.ow2.asm" % "asm" % "6.2.1"
 )
