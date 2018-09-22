@@ -9,7 +9,7 @@ class GraphicsCard(override var tier: Int) extends traits.GraphicsCard with Devi
     DeviceAttribute.Class -> DeviceClass.Display,
     DeviceAttribute.Description -> "Graphics controller",
     DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product -> ("MPG" + ((tier + 1) * 1000).toString + " GTZ"),
+    DeviceAttribute.Product -> ("GirlForce" + ((tier + 1) * 1000).toString + " X"),
     DeviceAttribute.Capacity -> capacityInfo,
     DeviceAttribute.Width -> widthInfo,
     DeviceAttribute.Clock -> clockInfo
