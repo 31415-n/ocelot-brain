@@ -58,6 +58,12 @@ object Demo extends App {
   EventBus.listenTo(classOf[TextBufferSetEvent], { case event: TextBufferSetEvent =>
     println(s"[EVENT] Text buffer set (${event.x}, ${event.y}, ${event.value}, ${event.vertical})")
   })
+  EventBus.listenTo(classOf[TextBufferSetForegroundColorEvent], { case event: TextBufferSetForegroundColorEvent =>
+    println(s"[EVENT] Foreground color changed (${event.color})")
+  })
+  EventBus.listenTo(classOf[TextBufferSetBackgroundColorEvent], { case event: TextBufferSetBackgroundColorEvent =>
+    println(s"[EVENT] Background color changed (${event.color})")
+  })
 
   // turn the computer on
   computer.turnOn()

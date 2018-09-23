@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
-import totoro.ocelot.brain.event.{EventBus, TextBufferSetEvent}
+import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
@@ -172,6 +172,8 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val (mw, mh) = maxResolution
     if (width < 1 || height < 1 || width > mw || height > mw || height * width > mw * mh)
       throw new IllegalArgumentException("unsupported resolution")
+    // Send to clients
+    EventBus.send(TextBufferSetResolutionEvent(width, height))
     // Force set viewport to new resolution. This is partially for
     // backwards compatibility, and partially to enforce a valid one.
     val sizeChanged = data.size = (width, height)
@@ -211,6 +213,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val (mw, mh) = data.size
     if (width < 1 || height < 1 || width > mw || height > mh)
       throw new IllegalArgumentException("unsupported viewport resolution")
+    EventBus.send(TextBufferSetViewportEvent(width, height))
     val (cw, ch) = viewport
     if (width != cw || height != ch) {
       viewport = (width, height)
@@ -260,6 +263,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   def setColorDepth(depth: ColorDepth.Value): Boolean = {
     if (depth.id > maxDepth.id)
       throw new IllegalArgumentException("unsupported depth")
+    EventBus.send(TextBufferSetColorDepthEvent(depth.id))
     data.format = PackedColor.Depth.format(depth)
   }
 
@@ -279,6 +283,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   def setPaletteColor(index: Int, color: Int): Unit = data.format match {
     case palette: PackedColor.MutablePaletteFormat =>
       palette(index) = color
+      EventBus.send(TextBufferSetPaletteColorEvent(index, color))
     case _ => throw new Exception("palette not available")
   }
 
@@ -318,7 +323,10 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     */
   def setForegroundColor(color: Int, isFromPalette: Boolean) {
     val value = PackedColor.Color(color, isFromPalette)
-    if (data.foreground != value) data.foreground = value
+    if (data.foreground != value) {
+      data.foreground = value
+      EventBus.send(TextBufferSetForegroundColorEvent(color, isFromPalette))
+    }
   }
 
   /**
@@ -358,6 +366,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val value = PackedColor.Color(color, isFromPalette)
     if (data.background != value) {
       data.background = value
+      EventBus.send(TextBufferSetBackgroundColorEvent(color, isFromPalette))
     }
   }
 
@@ -386,7 +395,8 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param verticalTranslation   the vertical offset, relative to the starting row to copy the are to.
     */
   def copy(column: Int, row: Int, width: Int, height: Int, horizontalTranslation: Int, verticalTranslation: Int): Unit =
-    data.copy(column, row, width, height, horizontalTranslation, verticalTranslation)
+    if (data.copy(column, row, width, height, horizontalTranslation, verticalTranslation))
+      EventBus.send(TextBufferCopyEvent(column, row, width, height, horizontalTranslation, verticalTranslation))
 
   /**
     * Fill a portion of the text buffer.
@@ -400,7 +410,8 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param value  the character to fill the area with.
     */
   def fill(column: Int, row: Int, width: Int, height: Int, value: Char): Unit =
-    data.fill(column, row, width, height, value)
+    if (data.fill(column, row, width, height, value))
+      EventBus.send(TextBufferFillEvent(column, row, width, height, value))
 
   /**
     * Write a string into the text buffer.
