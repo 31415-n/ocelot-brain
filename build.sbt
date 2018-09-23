@@ -3,7 +3,7 @@ name := "ocelot-brain"
 // do not forget to change the version in `Ocelot.scala`
 version := "0.1.0"
 
-scalaVersion := "2.12.4"
+scalaVersion := "2.12.6"
 
 libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % "2.11.1",
@@ -16,3 +16,5 @@ libraryDependencies ++= Seq(
   "commons-io" % "commons-io" % "2.6",
   "org.ow2.asm" % "asm" % "6.2.1"
 )
+
+assemblyJarName := s"ocelot-brain-${version.value}.jar"
