@@ -10,7 +10,7 @@ package totoro.ocelot.brain.network
   * @param name the name of this message
   * @param data the values passed along in the message.
   */
-class Message(val source: Node, val name: String, val data: Array[AnyRef]) {
+class Message(val source: Node, val name: String, val data: Array[Any]) {
   var isCanceled = false
 
   /**

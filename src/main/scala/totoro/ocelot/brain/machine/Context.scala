@@ -179,5 +179,5 @@ trait Context {
     * @param args additional arguments to pass along with the signal.
     * @return `true` if the signal was queued; `false` otherwise.
     */
-  def signal(name: String, args: AnyRef*): Boolean
+  def signal(name: String, args: Any*): Boolean
 }

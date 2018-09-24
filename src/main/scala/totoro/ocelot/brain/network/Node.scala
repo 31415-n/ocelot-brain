@@ -189,7 +189,7 @@ trait Node {
     * @param name   the name of the message.
     * @param data   the data to pass along with the message.
     */
-  def sendToAddress(target: String, name: String, data: AnyRef*): Unit =
+  def sendToAddress(target: String, name: String, data: Any*): Unit =
     if (network != null) network.sendToAddress(this, target, name, data: _*)
 
   /**
@@ -203,7 +203,7 @@ trait Node {
     * @param name the name of the message.
     * @param data the data to pass along with the message.
     */
-  def sendToNeighbors(name: String, data: AnyRef*): Unit =
+  def sendToNeighbors(name: String, data: Any*): Unit =
     if (network != null) network.sendToNeighbors(this, name, data: _*)
 
   /**
@@ -217,7 +217,7 @@ trait Node {
     * @param name the name of the message.
     * @param data the data to pass along with the message.
     */
-  def sendToReachable(name: String, data: AnyRef*): Unit =
+  def sendToReachable(name: String, data: Any*): Unit =
     if (network != null) network.sendToReachable(this, name, data: _*)
 
   /**
@@ -231,7 +231,7 @@ trait Node {
     * @param name the name of the message.
     * @param data the data to pass along with the message.
     */
-  def sendToVisible(name: String, data: AnyRef*): Unit =
+  def sendToVisible(name: String, data: Any*): Unit =
     if (network != null) network.sendToVisible(this, name, data: _*)
 
   // ----------------------------------------------------------------------- //

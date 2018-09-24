@@ -155,7 +155,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex] = mu
 
   // ----------------------------------------------------------------------- //
 
-  def sendToAddress(source: Node, target: String, name: String, args: AnyRef*): Unit = {
+  def sendToAddress(source: Node, target: String, name: String, args: Any*): Unit = {
     if (source.network != this)
       throw new IllegalArgumentException("Source node must be in this network.")
     data.get(target) match {
@@ -165,19 +165,19 @@ class Network private(private val data: mutable.Map[String, Network.Vertex] = mu
     }
   }
 
-  def sendToNeighbors(source: Node, name: String, args: AnyRef*): Unit = {
+  def sendToNeighbors(source: Node, name: String, args: Any*): Unit = {
     if (source.network != this)
       throw new IllegalArgumentException("Source node must be in this network.")
     send(source, neighbors(source).filter(_.reachability != Visibility.None), name, args: _*)
   }
 
-  def sendToReachable(source: Node, name: String, args: AnyRef*): Unit = {
+  def sendToReachable(source: Node, name: String, args: Any*): Unit = {
     if (source.network != this)
       throw new IllegalArgumentException("Source node must be in this network.")
     send(source, reachableNodes(source), name, args: _*)
   }
 
-  def sendToVisible(source: Node, name: String, args: AnyRef*): Unit = {
+  def sendToVisible(source: Node, name: String, args: Any*): Unit = {
     if (source.network != this)
       throw new IllegalArgumentException("Source node must be in this network.")
     send(source, reachableNodes(source) collect {
@@ -315,7 +315,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex] = mu
       }
     }
 
-  private def send(source: Node, targets: Iterable[Node], name: String, args: AnyRef*) {
+  private def send(source: Node, targets: Iterable[Node], name: String, args: Any*) {
     val message = new Message(source, name, Array(args: _*))
     targets.foreach(_.host.onMessage(message))
   }

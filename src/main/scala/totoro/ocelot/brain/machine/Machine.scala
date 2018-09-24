@@ -254,7 +254,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
   }
 
-  override def signal(name: String, args: AnyRef*): Boolean = {
+  override def signal(name: String, args: Any*): Boolean = {
     state.synchronized(state.top match {
       case MachineAPI.State.Stopped | MachineAPI.State.Stopping => return false
       case _ => signals.synchronized {
