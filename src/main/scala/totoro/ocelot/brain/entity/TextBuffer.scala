@@ -283,7 +283,6 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   def setPaletteColor(index: Int, color: Int): Unit = data.format match {
     case palette: PackedColor.MutablePaletteFormat =>
       palette(index) = color
-      EventBus.send(TextBufferSetPaletteColorEvent(index, color))
     case _ => throw new Exception("palette not available")
   }
 
@@ -325,7 +324,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val value = PackedColor.Color(color, isFromPalette)
     if (data.foreground != value) {
       data.foreground = value
-      EventBus.send(TextBufferSetForegroundColorEvent(color, isFromPalette))
+      EventBus.send(TextBufferSetForegroundColorEvent(data.format.inflate(data.format.deflate(value))))
     }
   }
 
@@ -366,7 +365,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val value = PackedColor.Color(color, isFromPalette)
     if (data.background != value) {
       data.background = value
-      EventBus.send(TextBufferSetBackgroundColorEvent(color, isFromPalette))
+      EventBus.send(TextBufferSetBackgroundColorEvent(data.format.inflate(data.format.deflate(value))))
     }
   }
 
