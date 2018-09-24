@@ -75,6 +75,8 @@ object FileSystemAPI extends {
     val (codeUrl, isArchive) =
       if (codeSource.contains(".zip!") || codeSource.contains(".jar!"))
         (codeSource.substring(0, codeSource.lastIndexOf('!')), true)
+      else if (codeSource.contains(".zip") || codeSource.contains(".jar"))
+        (codeSource, true)
       else
         (codeSource, false)
 
