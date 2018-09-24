@@ -189,8 +189,8 @@ trait Node {
     * @param name   the name of the message.
     * @param data   the data to pass along with the message.
     */
-  def sendToAddress(target: String, name: String, data: Any*): Unit =
-    if (network != null) network.sendToAddress(this, target, name, data)
+  def sendToAddress(target: String, name: String, data: AnyRef*): Unit =
+    if (network != null) network.sendToAddress(this, target, name, data: _*)
 
   /**
     * Send a message to all neighbors of this node.
@@ -203,8 +203,8 @@ trait Node {
     * @param name the name of the message.
     * @param data the data to pass along with the message.
     */
-  def sendToNeighbors(name: String, data: Any*): Unit =
-    if (network != null) network.sendToNeighbors(this, name, data)
+  def sendToNeighbors(name: String, data: AnyRef*): Unit =
+    if (network != null) network.sendToNeighbors(this, name, data: _*)
 
   /**
     * Send a message to all nodes reachable from this node.
@@ -217,8 +217,8 @@ trait Node {
     * @param name the name of the message.
     * @param data the data to pass along with the message.
     */
-  def sendToReachable(name: String, data: Any*): Unit =
-    if (network != null) network.sendToReachable(this, name, data)
+  def sendToReachable(name: String, data: AnyRef*): Unit =
+    if (network != null) network.sendToReachable(this, name, data: _*)
 
   /**
     * Send a message to all nodes visible from this node.
@@ -231,8 +231,8 @@ trait Node {
     * @param name the name of the message.
     * @param data the data to pass along with the message.
     */
-  def sendToVisible(name: String, data: Any*): Unit =
-    if (network != null) network.sendToVisible(this, name, data)
+  def sendToVisible(name: String, data: AnyRef*): Unit =
+    if (network != null) network.sendToVisible(this, name, data: _*)
 
   // ----------------------------------------------------------------------- //
 
