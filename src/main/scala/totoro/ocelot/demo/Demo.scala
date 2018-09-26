@@ -42,7 +42,7 @@ object Demo extends App {
 
   //computer.add(eeprom)
 
-  computer.add(Loot.OpenOsBIOS.create())
+  computer.add(Loot.AdvLoader.create())
   computer.add(Loot.OpenOsFloppy.create())
 
   val screen = new Screen(Tier.Three)

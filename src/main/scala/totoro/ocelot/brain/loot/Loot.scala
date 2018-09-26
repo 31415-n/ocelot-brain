@@ -7,23 +7,13 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 
 object Loot {
   var OpenOsBIOS: LootFactory = _
+  var AdvLoader: LootFactory = _
   var OpenOsFloppy: LootFactory = _
 
   def init(): Unit = {
     // EEPROM
-    OpenOsBIOS = new LootFactory {
-      private val code = new Array[Byte](4 * 1024)
-      private val count = Ocelot.getClass.getResourceAsStream(Settings.scriptPath + "bios.lua").read(code)
-      private val codeData = code.take(count)
-
-      override def create(): Environment = {
-        val eeprom = new EEPROM()
-        eeprom.label = "OpenOS BIOS"
-        eeprom.codeData = codeData
-        eeprom.readonly = true
-        eeprom
-      }
-    }
+    OpenOsBIOS = new EEPROMFactory("OpenOS BIOS", "bios.lua")
+    AdvLoader = new EEPROMFactory("advancedLoader", "advLoader.lua")
 
     // Floppies
     OpenOsFloppy = new FloppyFactory("OpenOS (Operating System)", "openos", DyeColor.GREEN)
@@ -48,6 +38,20 @@ object Loot {
 
     override def create(): Environment = {
       new FloppyDisk(name, this)
+    }
+  }
+
+  class EEPROMFactory(label: String, file: String, readonly: Boolean = true) extends LootFactory {
+    private val code = new Array[Byte](4 * 1024)
+    private val count = Ocelot.getClass.getResourceAsStream(Settings.scriptPath + file).read(code)
+    private val codeData = code.take(count)
+
+    override def create(): Environment = {
+      val eeprom = new EEPROM()
+      eeprom.label = label
+      eeprom.codeData = codeData
+      eeprom.readonly = readonly
+      eeprom
     }
   }
 }
