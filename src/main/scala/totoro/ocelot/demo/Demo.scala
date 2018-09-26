@@ -1,7 +1,7 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.{APU, Cable, Case, EEPROM, Memory, Screen}
+import totoro.ocelot.brain.entity.{APU, Cable, Case, EEPROM, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.network.Network
@@ -24,6 +24,9 @@ object Demo extends App {
 
   val memory = new Memory(Tier.Six)
   computer.add(memory)
+
+  val redstone = new Redstone.Tier1()
+  computer.add(redstone)
 
   val eeprom = new EEPROM()
   eeprom.codeData =
