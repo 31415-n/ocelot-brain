@@ -6,8 +6,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 
-class Redstone() extends Environment with DeviceInfo {
-
+class Redstone extends Environment with DeviceInfo {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
     withComponent("redstone", Visibility.Neighbors).
     create()
@@ -23,29 +22,28 @@ class Redstone() extends Environment with DeviceInfo {
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
 
-  val redState = new Array[Int](6) // Out
+  // ----------------------------------------------------------------------- //
 
-  //
-  val redInState = new Array[Int](6) // In
+  val redstoneOutput = new Array[Int](6)
+  val redstoneInput = new Array[Int](6)
 
   @Callback(doc = """function(side:number, value:number):number -- Set the redstone output on the specified side.""")
   def setOutput(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
     val power = args.checkInteger(1)
     val side = args.checkInteger(0)
-    redState(side) = power
+    redstoneOutput(side) = power
     result()
   }
 
   @Callback(doc = """function(side:number):number -- Get the redstone output on the specified side.""")
   def getOutput(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
     val side = args.checkInteger(0)
-    result(redState(side))
+    result(redstoneOutput(side))
   }
 
   @Callback(doc = """function(side:number):number -- Get the redstone input on the specified side.""")
   def getInput(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
     val side = args.checkInteger(0)
-    result(redInState(side))
+    result(redstoneInput(side))
   }
-
 }
