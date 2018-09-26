@@ -24,7 +24,7 @@ object Redstone {
 
     override def getDeviceInfo: Map[String, String] = deviceInfo
 
-    override def tier: Int = Tier.One
+    override var tier: Int = Tier.One
 
     // ----------------------------------------------------------------------- //
 
