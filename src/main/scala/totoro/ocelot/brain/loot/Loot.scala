@@ -16,7 +16,7 @@ object Loot {
     AdvLoader = new EEPROMFactory("advancedLoader", "advLoader.lua")
 
     // Floppies
-    OpenOsFloppy = new FloppyFactory("OpenOS (Operating System)", "openos", DyeColor.GREEN)
+    OpenOsFloppy = new FloppyFactory("OpenOS (Installation Floppy)", "openos", DyeColor.GREEN)
   }
 
   abstract class LootFactory {
