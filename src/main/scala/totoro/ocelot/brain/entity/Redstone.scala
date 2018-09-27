@@ -24,7 +24,7 @@ object Redstone {
 
     override def getDeviceInfo: Map[String, String] = deviceInfo
 
-    override var tier: Int = Tier.One
+    var tier = Tier.One
 
     // ----------------------------------------------------------------------- //
 
@@ -50,5 +50,53 @@ object Redstone {
       val side = args.checkInteger(0)
       result(redstoneInput(side))
     }
+  }
+
+  class Tier2 extends Tier1 with DeviceInfo with Tiered {
+    override val node: Node = Network.newNode(this, Visibility.Neighbors).
+      withComponent("redstone", Visibility.Neighbors).
+      create()
+
+    private final lazy val deviceInfo = Map(
+      DeviceAttribute.Class -> DeviceClass.Communication,
+      DeviceAttribute.Description -> "Combined redstone controller",
+      DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
+      DeviceAttribute.Product -> "Rx900-MX",
+      DeviceAttribute.Capacity -> "65536",
+      DeviceAttribute.Width -> "16"
+    )
+
+    override def getDeviceInfo: Map[String, String] = deviceInfo
+
+    tier = Tier.Two
+
+    // ----------------------------------------------------------------------- //
+
+    val bundledRestoneOutput = Array.ofDim[Int](6, 15)
+    val bundledRestoneInput = Array.ofDim[Int](6, 15)
+
+    @Callback
+    def getBundledInput(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
+      val side = args.checkInteger(0)
+      val color = args.checkInteger(1)
+      result(bundledRestoneInput(side)(color))
+    }
+
+    @Callback
+    def getBundledOutput(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
+      val side = args.checkInteger(0)
+      val color = args.checkInteger(1)
+      result(bundledRestoneOutput(side)(color))
+    }
+
+    @Callback
+    def setBundledInput(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
+      val side = args.checkInteger(0)
+      val color = args.checkInteger(1)
+      val power = args.checkInteger(2)
+      bundledRestoneOutput(side)(color) = power
+      result()
+    }
+
   }
 }
