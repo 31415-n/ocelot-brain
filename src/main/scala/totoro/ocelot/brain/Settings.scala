@@ -145,6 +145,7 @@ class Settings(val config: Config) {
       Ocelot.log.warn("Bad number of wireless card max ranges, ignoring.")
       Array(16.0, 400.0)
   }
+  val redstoneDelay: Double = config.getDouble("misc.redstoneDelay") max 0
 
   val rTreeMaxEntries = 10
 
