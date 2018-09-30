@@ -218,27 +218,6 @@ object Settings {
           settings = new Settings(defaults.getConfig("opencomputers"))
           defaults
       }
-    if (file.exists()) {
-      try {
-        val renderSettings = ConfigRenderOptions.defaults.setJson(false).setOriginComments(false)
-        val nl = sys.props("line.separator")
-        val nle = StringEscapeUtils.escapeJava(nl)
-        file.getParentFile.mkdirs()
-        val out = new PrintWriter(file)
-        out.write(config.root.render(renderSettings).lines.
-          // Indent two spaces instead of four.
-          map(line => """^(\s*)""".r.replaceAllIn(line, m => Regex.quoteReplacement(m.group(1).replace("  ", " ")))).
-          // Finalize the string.
-          filter(_ != "").mkString(nl).
-          // Newline after values.
-          replaceAll(s"((?:\\s*#.*$nle)(?:\\s*[^#\\s].*$nle)+)", "$1" + nl))
-        out.close()
-      }
-      catch {
-        case e: Throwable =>
-          Ocelot.log.warn("Failed saving config.", e)
-      }
-    }
   }
 
   val cidrPattern: Regex = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:/(\d{1,2}))""".r

@@ -19,7 +19,7 @@ object Ocelot {
 
   private def preInit(): Unit = {
     log.info("Loading configuration...")
-    Settings.load(new File("settings.conf"))
+    Settings.load(new File("brain.conf"))
 
     log.info("Registering available machine architectures...")
     if (LuaStateFactory.include52) {
