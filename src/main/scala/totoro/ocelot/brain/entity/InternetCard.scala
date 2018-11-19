@@ -178,6 +178,8 @@ object InternetCard {
           Stream.continually(toAccept.poll).takeWhile(_ != null).foreach({
             case (channel: SocketChannel, action: (() => Unit)) =>
               channel.register(selector, SelectionKey.OP_READ, action)
+            case (a, b) =>
+              Ocelot.log.error("Caught something unusual in InternetCard TCPNotifier: " + a + ", " + b)
           })
 
           selector.select()
