@@ -50,6 +50,11 @@ object Ocelot {
     Registry.locked = true
   }
 
+  def initialize(logger: Logger): Unit = {
+    this.logger = Some(logger)
+    initialize()
+  }
+
   def initialize(): Unit = {
     log.info("Brain initialization...")
     preInit()
