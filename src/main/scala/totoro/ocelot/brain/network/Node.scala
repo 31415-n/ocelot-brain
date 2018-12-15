@@ -126,6 +126,19 @@ trait Node {
     * If this node is not in a network, i.e. `network` is `null`,
     * this will throw an exception.
     *
+    * @param environment the environment to connect it's node to this node.
+    * @throws NullPointerException if `network` is `null`.
+    */
+  def connect(environment: Environment): Unit = network.connect(this, environment.node)
+
+  /**
+    * Connects the specified node to this node.
+    *
+    * This is a shortcut for `node.network.connect(node, other)`.
+    *
+    * If this node is not in a network, i.e. `network` is `null`,
+    * this will throw an exception.
+    *
     * @param node the node to connect to this node.
     * @throws NullPointerException if `network` is `null`.
     */

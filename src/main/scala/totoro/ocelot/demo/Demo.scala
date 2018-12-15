@@ -10,15 +10,42 @@ import totoro.ocelot.brain.util.Tier
 object Demo extends App {
   println("Hi! We are testing Ocelot brains here. Join in!")
 
+  /**
+    * We can pass here tout custom logger: `Ocelot.initialize(logger)`
+    */
   Ocelot.initialize()
 
-  // setup simple network with a computer
+  /**
+    * Network connects things.
+    * Without network - all `a.connect(b)` calls will fail.
+    * Without network the components cannot "see" each other.
+    * Also network transmits modem messages and OC-signals.
+    */
+  val network = new Network()
+
+  /**
+    * We choose the cable to be the base of our demo network.
+    * But it can be any component actually.
+    */
   val cable = new Cable()
-  val network = new Network(cable.node)
+
+  /**
+    * We need to connect one of entites to the network explicitly.
+    * All subsequent connection of other entities to this one will pass the network reference implicitly.
+    */
+  network.connect(cable)
 
   val computer = new Case(Tier.Four)
-  cable.node.connect(computer.node)
 
+  /**
+    * Here, on the left is an already connected to the network entity, on the right - the new one.
+    */
+  cable.connect(computer)
+
+  /**
+    * Computer components need to be added inside of the computers case.
+    * They form there their own lisolated network. This prevents components leaking and clashes.
+    */
   val cpu = new APU(Tier.Two)
   computer.add(cpu)
 
@@ -28,25 +55,29 @@ object Demo extends App {
   val redstone = new Redstone.Tier1()
   computer.add(redstone)
 
-  val eeprom = new EEPROM()
-  eeprom.codeData =
-    """
-      |computer.beep(1000, 1)
-      |local gpu = component.proxy(component.list("gpu")())
-      |local screen = component.list("screen")()
-      |gpu.bind(screen)
-      |gpu.set(1, 1, "Hello from Ocelot EEPROM!")
-      |while (true) do end
-    """.stripMargin.getBytes("UTF-8")
-  eeprom.label = "Test BIOS"
+  /**
+    * Custom EEPROM can be created like this:
+    * `
+    * val eeprom = new EEPROM()
+    * eeprom.codeData =
+    *   """
+    *     |computer.beep(1000, 1)
+    *     |local gpu = component.proxy(component.list("gpu")())
+    *     |local screen = component.list("screen")()
+    *     |gpu.bind(screen)
+    *     |gpu.set(1, 1, "Hello from Ocelot EEPROM!")
+    *     |while (true) do end
+    *   """.stripMargin.getBytes("UTF-8")
+    * eeprom.label = "Test BIOS"
+    * computer.add(eeprom)
+    * `
+    */
 
-  //computer.add(eeprom)
-
-  computer.add(Loot.AdvLoader.create())
+  computer.add(Loot.AdvLoaderEEPROM.create())
   computer.add(Loot.OpenOsFloppy.create())
 
   val screen = new Screen(Tier.Three)
-  cable.node.connect(screen.node)
+  cable.connect(screen)
 
   // register some event listeners
   EventBus.listenTo(classOf[BeepEvent], { case event: BeepEvent =>

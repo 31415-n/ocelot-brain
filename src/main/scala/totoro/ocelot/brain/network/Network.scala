@@ -9,7 +9,11 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 // Looking at this again after some time, the similarity to const in C++ is somewhat uncanny.
-class Network private(private val data: mutable.Map[String, Network.Vertex] = mutable.Map.empty) {
+class Network private(private val data: mutable.Map[String, Network.Vertex]) {
+
+  def this() = {
+    this(mutable.Map[String, Network.Vertex]())
+  }
 
   def this(node: Node) = {
     this()
@@ -40,6 +44,22 @@ class Network private(private val data: mutable.Map[String, Network.Vertex] = mu
   }
 
   // ----------------------------------------------------------------------- //
+
+  def connect(environment: Environment): Boolean = {
+    connect(environment.node)
+  }
+
+  def connect(node: Node): Boolean = {
+    if (!nodes.exists(_ == node)) {
+      addNew(node)
+      node.onConnect(node)
+      true
+    } else false
+  }
+
+  def connect(envA: Environment, envB: Environment): Boolean = {
+    connect(envA.node, envB.node)
+  }
 
   def connect(nodeA: Node, nodeB: Node): Boolean = {
     if (nodeA == null) throw new NullPointerException("nodeA")

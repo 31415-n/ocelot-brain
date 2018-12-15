@@ -48,6 +48,32 @@ trait Environment extends Entity {
   def node: Node
 
   /**
+    * Connects the node of specified environment to the nodeof this environment.
+    *
+    * This is a shortcut for `node.network.connect(node, other.node)`.
+    *
+    * If this environment is not in a network, i.e. `node.network` is `null`,
+    * this will throw an exception.
+    *
+    * @param environment the environment to connect it's node to this environment's node.
+    * @throws NullPointerException if `network` is `null`.
+    */
+  def connect(environment: Environment): Unit = node.network.connect(this, environment)
+
+  /**
+    * Connects the node of specified environment to the nodeof this environment.
+    *
+    * This is a shortcut for `node.network.connect(node, other.node)`.
+    *
+    * If this environment is not in a network, i.e. `node.network` is `null`,
+    * this will throw an exception.
+    *
+    * @param node the node to connect to this environment's node.
+    * @throws NullPointerException if `network` is `null`.
+    */
+  def connect(node: Node): Unit = this.node.network.connect(this.node, node)
+
+  /**
     * This is called when a node is added to a network.
     *
     * This is also called for the node itself, if it was added to the network.

@@ -6,14 +6,14 @@ import totoro.ocelot.brain.util.DyeColor
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 object Loot {
-  var OpenOsBIOS: LootFactory = _
-  var AdvLoader: LootFactory = _
+  var OpenOsEEPROM: LootFactory = _
+  var AdvLoaderEEPROM: LootFactory = _
   var OpenOsFloppy: LootFactory = _
 
   def init(): Unit = {
     // EEPROM
-    OpenOsBIOS = new EEPROMFactory("OpenOS BIOS", "bios.lua")
-    AdvLoader = new EEPROMFactory("advancedLoader", "advLoader.lua")
+    OpenOsEEPROM = new EEPROMFactory("OpenOS BIOS", "bios.lua")
+    AdvLoaderEEPROM = new EEPROMFactory("advancedLoader", "advLoader.lua")
 
     // Floppies
     OpenOsFloppy = new FloppyFactory("OpenOS (Installation Floppy)", "openos", DyeColor.GREEN)
