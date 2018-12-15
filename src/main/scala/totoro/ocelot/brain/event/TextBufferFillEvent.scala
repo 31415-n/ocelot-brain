@@ -1,4 +1,4 @@
 package totoro.ocelot.brain.event
 
-case class TextBufferFillEvent(address: String, column: Int, row: Int,
+case class TextBufferFillEvent(address: String, x: Int, y: Int,
                                width: Int, height: Int, value: Char) extends Event
