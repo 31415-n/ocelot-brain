@@ -50,22 +50,22 @@ object Demo extends App {
 
   // register some event listeners
   EventBus.listenTo(classOf[BeepEvent], { case event: BeepEvent =>
-    println(s"[EVENT] Beep (frequency = ${event.frequency}, duration = ${event.duration})")
+    println(s"[EVENT] Beep (address = ${event.address}, frequency = ${event.frequency}, duration = ${event.duration})")
   })
   EventBus.listenTo(classOf[BeepPatternEvent], { case event: BeepPatternEvent =>
-    println(s"[EVENT] Beep (${event.pattern})")
+    println(s"[EVENT] Beep (address = ${event.address}, pattern = ${event.pattern})")
   })
   EventBus.listenTo(classOf[MachineCrashEvent], { case event: MachineCrashEvent =>
-    println(s"[EVENT] Machine crash! (${event.message})")
+    println(s"[EVENT] Machine crash! (address = ${event.address}, ${event.message})")
   })
   EventBus.listenTo(classOf[TextBufferSetEvent], { case event: TextBufferSetEvent =>
-    println(s"[EVENT] Text buffer set (${event.x}, ${event.y}, ${event.value}, ${event.vertical})")
+    println(s"[EVENT] Text buffer set (address = ${event.address}, ${event.x}, ${event.y}, ${event.value}, ${event.vertical})")
   })
   EventBus.listenTo(classOf[TextBufferSetForegroundColorEvent], { case event: TextBufferSetForegroundColorEvent =>
-    println(s"[EVENT] Foreground color changed (${event.color})")
+    println(s"[EVENT] Foreground color changed (address = ${event.address}, ${event.color})")
   })
   EventBus.listenTo(classOf[TextBufferSetBackgroundColorEvent], { case event: TextBufferSetBackgroundColorEvent =>
-    println(s"[EVENT] Background color changed (${event.color})")
+    println(s"[EVENT] Background color changed (address = ${event.address}, ${event.color})")
   })
 
   // turn the computer on

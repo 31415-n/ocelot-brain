@@ -1,3 +1,3 @@
 package totoro.ocelot.brain.event
 
-case class TextBufferSetBackgroundColorEvent(color: Int) extends Event
+case class TextBufferSetBackgroundColorEvent(address: String, color: Int) extends Event

@@ -233,15 +233,15 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   }
 
   def beep(frequency: Short, duration: Short): Unit = {
-    EventBus.send(BeepEvent(frequency, duration))
+    EventBus.send(BeepEvent(this.node.address, frequency, duration))
   }
 
   def beep(pattern: String): Unit = {
-    EventBus.send(BeepPatternEvent(pattern))
+    EventBus.send(BeepPatternEvent(this.node.address, pattern))
   }
 
   def crash(message: String): Boolean = {
-    EventBus.send(MachineCrashEvent(message))
+    EventBus.send(MachineCrashEvent(this.node.address, message))
     this.message = Option(message)
     state.synchronized {
       val result = stop()

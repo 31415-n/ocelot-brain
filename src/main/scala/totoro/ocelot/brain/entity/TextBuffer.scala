@@ -173,7 +173,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     if (width < 1 || height < 1 || width > mw || height > mw || height * width > mw * mh)
       throw new IllegalArgumentException("unsupported resolution")
     // Send to clients
-    EventBus.send(TextBufferSetResolutionEvent(width, height))
+    EventBus.send(TextBufferSetResolutionEvent(this.node.address, width, height))
     // Force set viewport to new resolution. This is partially for
     // backwards compatibility, and partially to enforce a valid one.
     val sizeChanged = data.size = (width, height)
@@ -213,7 +213,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val (mw, mh) = data.size
     if (width < 1 || height < 1 || width > mw || height > mh)
       throw new IllegalArgumentException("unsupported viewport resolution")
-    EventBus.send(TextBufferSetViewportEvent(width, height))
+    EventBus.send(TextBufferSetViewportEvent(this.node.address, width, height))
     val (cw, ch) = viewport
     if (width != cw || height != ch) {
       viewport = (width, height)
@@ -263,7 +263,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   def setColorDepth(depth: ColorDepth.Value): Boolean = {
     if (depth.id > maxDepth.id)
       throw new IllegalArgumentException("unsupported depth")
-    EventBus.send(TextBufferSetColorDepthEvent(depth.id))
+    EventBus.send(TextBufferSetColorDepthEvent(this.node.address, depth.id))
     data.format = PackedColor.Depth.format(depth)
   }
 
@@ -324,7 +324,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val value = PackedColor.Color(color, isFromPalette)
     if (data.foreground != value) {
       data.foreground = value
-      EventBus.send(TextBufferSetForegroundColorEvent(data.format.inflate(data.format.deflate(value))))
+      EventBus.send(TextBufferSetForegroundColorEvent(this.node.address, data.format.inflate(data.format.deflate(value))))
     }
   }
 
@@ -365,7 +365,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val value = PackedColor.Color(color, isFromPalette)
     if (data.background != value) {
       data.background = value
-      EventBus.send(TextBufferSetBackgroundColorEvent(data.format.inflate(data.format.deflate(value))))
+      EventBus.send(TextBufferSetBackgroundColorEvent(this.node.address, data.format.inflate(data.format.deflate(value))))
     }
   }
 
@@ -395,7 +395,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     */
   def copy(column: Int, row: Int, width: Int, height: Int, horizontalTranslation: Int, verticalTranslation: Int): Unit =
     if (data.copy(column, row, width, height, horizontalTranslation, verticalTranslation))
-      EventBus.send(TextBufferCopyEvent(column, row, width, height, horizontalTranslation, verticalTranslation))
+      EventBus.send(TextBufferCopyEvent(this.node.address, column, row, width, height, horizontalTranslation, verticalTranslation))
 
   /**
     * Fill a portion of the text buffer.
@@ -410,7 +410,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     */
   def fill(column: Int, row: Int, width: Int, height: Int, value: Char): Unit =
     if (data.fill(column, row, width, height, value))
-      EventBus.send(TextBufferFillEvent(column, row, width, height, value))
+      EventBus.send(TextBufferFillEvent(this.node.address, column, row, width, height, value))
 
   /**
     * Write a string into the text buffer.
@@ -432,7 +432,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
       else if (column < 0) (0, row, value.substring(-column))
       else (column, row, value.substring(0, math.min(value.length, data.width - column)))
       if (data.set(x, y, truncated, vertical))
-        EventBus.send(TextBufferSetEvent(x, y, truncated, vertical))
+        EventBus.send(TextBufferSetEvent(this.node.address, x, y, truncated, vertical))
     }
 
   /**
