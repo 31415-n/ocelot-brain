@@ -1,9 +1,9 @@
 name := "ocelot-brain"
 
 // do not forget to change the version in `Ocelot.scala`
-version := "0.2.2"
+version := "0.2.4"
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.8"
 
 libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % "2.11.1",
