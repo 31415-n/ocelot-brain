@@ -281,8 +281,10 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param color the color to set for the specified index.
     */
   def setPaletteColor(index: Int, color: Int): Unit = data.format match {
-    case palette: PackedColor.MutablePaletteFormat =>
+    case palette: PackedColor.MutablePaletteFormat => {
       palette(index) = color
+      EventBus.send(TextBufferSetPaletteColorEvent(this.node.address, index, color))
+    }
     case _ => throw new Exception("palette not available")
   }
 
