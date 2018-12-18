@@ -48,9 +48,9 @@ trait Environment extends Entity {
   def node: Node
 
   /**
-    * Connects the node of specified environment to the nodeof this environment.
+    * Connects the node of specified environment to the node of this environment.
     *
-    * This is a shortcut for `node.network.connect(node, other.node)`.
+    * This is a shortcut for `node.network.connect(this.node, other.node)`.
     *
     * If this environment is not in a network, i.e. `node.network` is `null`,
     * this will throw an exception.
@@ -61,9 +61,9 @@ trait Environment extends Entity {
   def connect(environment: Environment): Unit = node.network.connect(this, environment)
 
   /**
-    * Connects the node of specified environment to the nodeof this environment.
+    * Connects the node of specified environment to the node of this environment.
     *
-    * This is a shortcut for `node.network.connect(node, other.node)`.
+    * This is a shortcut for `node.network.connect(this.node, node)`.
     *
     * If this environment is not in a network, i.e. `node.network` is `null`,
     * this will throw an exception.
@@ -72,6 +72,32 @@ trait Environment extends Entity {
     * @throws NullPointerException if `network` is `null`.
     */
   def connect(node: Node): Unit = this.node.network.connect(this.node, node)
+
+  /**
+    * Disconnects the node of specified environment from the node of this environment.
+    *
+    * This is a shortcut for `node.network.disconnect(this.node, other.node)`.
+    *
+    * If this environment is not in a network, i.e. `node.network` is `null`,
+    * this will throw an exception.
+    *
+    * @param environment the environment to disconnect it's node from this environment's node.
+    * @throws NullPointerException if `network` is `null`.
+    */
+  def disconnect(environment: Environment): Unit = node.network.disconnect(this, environment)
+
+  /**
+    * Disconnects the node of specified environment from the node of this environment.
+    *
+    * This is a shortcut for `node.network.disconnect(this.node, node)`.
+    *
+    * If this environment is not in a network, i.e. `node.network` is `null`,
+    * this will throw an exception.
+    *
+    * @param node the node to disconnect from this environment's node.
+    * @throws NullPointerException if `network` is `null`.
+    */
+  def disconnect(node: Node): Unit = this.node.network.disconnect(this.node, node)
 
   /**
     * This is called when a node is added to a network.

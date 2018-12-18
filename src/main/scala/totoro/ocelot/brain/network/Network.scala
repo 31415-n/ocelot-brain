@@ -98,6 +98,10 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
     else add(oldNodeB, nodeA)
   }
 
+  def disconnect(envA: Environment, envB: Environment): Boolean = {
+    disconnect(envA.node, envB.node)
+  }
+
   def disconnect(nodeA: Node, nodeB: Node): Boolean = {
     if (nodeA == nodeB) throw new IllegalArgumentException(
       "Cannot disconnect a node from itself.")
