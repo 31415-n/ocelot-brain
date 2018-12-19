@@ -38,6 +38,18 @@ object Demo extends App {
   val computer = new Case(Tier.Four)
 
   /**
+    * `computer.workspace = Workspace.Default`
+    *
+    * Each computer can be assigned to some "workspace".
+    * This workspace can have a name, it has it's own random numbers generator, it's own time settings and
+    * it can be put on pause.
+    * If the workspace is paused, all computers that belong to it cease to update
+    * (even if the `update()` metod is still called).
+    *
+    * By default all computers are implicitly assigned to the `Workspace.Default`.
+    */
+
+  /**
     * Here on the left is an already connected to the network entity, on the right - the new one.
     */
   cable.connect(computer)
@@ -114,7 +126,6 @@ object Demo extends App {
     /**
       * Each component has the `update()` method. But it's actually used only by computers right now.
       * You need to call this method every tick to keep the machine running.
-      * Respectively, to pause the simulation you need to stop calling the `update()` methods.
       */
     computer.update()
     /**

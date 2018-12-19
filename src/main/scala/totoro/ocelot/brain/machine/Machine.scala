@@ -428,7 +428,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
 
     // Update world time for time() and uptime().
-    worldTime = host.workspace.getWorldTime
+    worldTime = host.workspace.getIngameTime
     uptime += 1
 
     if (remainIdle > 0) {

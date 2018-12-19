@@ -6,5 +6,5 @@ trait WorkspaceAware {
   /**
     * The workspace the entity is located in.
     */
-  def workspace: Workspace = Workspace.Default
+  var workspace: Workspace = Workspace.Default
 }
