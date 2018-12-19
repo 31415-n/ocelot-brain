@@ -3,7 +3,7 @@ package totoro.ocelot.brain
 import java.io.File
 
 import org.apache.logging.log4j.{LogManager, Logger}
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, EntityFactory, Memory}
+import totoro.ocelot.brain.entity._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
@@ -33,11 +33,28 @@ object Ocelot {
     }
 
     log.info("Registering available entities (to be able to persist them later)...")
+    EntityFactory.add(classOf[APU])
     EntityFactory.add(classOf[Cable])
     EntityFactory.add(classOf[Case])
     EntityFactory.add(classOf[CPU])
-    EntityFactory.add(classOf[Memory])
+    EntityFactory.add(classOf[DataCard.Tier1])
+    EntityFactory.add(classOf[DataCard.Tier2])
+    EntityFactory.add(classOf[DataCard.Tier3])
+    EntityFactory.add(classOf[Drive])
     EntityFactory.add(classOf[EEPROM])
+    EntityFactory.add(classOf[FloppyDisk])
+    EntityFactory.add(classOf[FloppyDiskDrive])
+    EntityFactory.add(classOf[GraphicsCard])
+    EntityFactory.add(classOf[HardDiskDrive])
+    EntityFactory.add(classOf[InternetCard])
+    EntityFactory.add(classOf[Keyboard])
+    EntityFactory.add(classOf[LinkedCard])
+    EntityFactory.add(classOf[Memory])
+    EntityFactory.add(classOf[NetworkCard])
+    EntityFactory.add(classOf[Redstone.Tier1])
+    EntityFactory.add(classOf[Redstone.Tier2])
+    EntityFactory.add(classOf[Screen])
+    EntityFactory.add(classOf[WirelessNetworkCard])
 
     log.info("Registering loot (floppies and EEPROMs with standart OpenComputers software)...")
     Loot.init()
