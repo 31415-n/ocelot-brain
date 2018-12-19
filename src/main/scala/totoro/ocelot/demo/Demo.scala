@@ -11,7 +11,7 @@ object Demo extends App {
   println("Hi! We are testing Ocelot brains here. Join in!")
 
   /**
-    * We can pass here tout custom logger: `Ocelot.initialize(logger)`
+    * We can pass here a custom logger: `Ocelot.initialize(logger)`
     */
   Ocelot.initialize()
 
@@ -25,7 +25,7 @@ object Demo extends App {
 
   /**
     * We choose the cable to be the base of our demo network.
-    * But it can be any component actually.
+    * But we can use any other component actually.
     */
   val cable = new Cable()
 
@@ -38,13 +38,14 @@ object Demo extends App {
   val computer = new Case(Tier.Four)
 
   /**
-    * Here, on the left is an already connected to the network entity, on the right - the new one.
+    * Here on the left is an already connected to the network entity, on the right - the new one.
     */
   cable.connect(computer)
 
   /**
     * Computer components need to be added inside of the computers case.
-    * They form there their own lisolated network. This prevents components leaking and clashes.
+    * They form there their own isolated network. This prevents components from leaking into the global network
+    * and cause processor limits overflow and component clashes.
     */
   val cpu = new APU(Tier.Two)
   computer.add(cpu)
@@ -99,11 +100,27 @@ object Demo extends App {
     println(s"[EVENT] Background color changed (address = ${event.address}, ${event.color})")
   })
 
-  // turn the computer on
+  /**
+    * The computer can be turned on or off. By defaults it is turned off.
+    */
   computer.turnOn()
 
+
+  /**
+    * The `computer.machine.isRunning` flag will tell you, if the computers is still operational,
+    * or has it crashed or stopped the execution otherwise.
+    */
   while (computer.machine.isRunning) {
+    /**
+      * Each component has the `update()` method. But it's actually used only by computers right now.
+      * You need to call this method every tick to keep the machine running.
+      * Respectively, to pause the simulation you need to stop calling the `update()` methods.
+      */
     computer.update()
+    /**
+      * 50 milliseconds is the duration of standart Minecraft tick.
+      * You can speed the simulation up or slow it down by changing this value.
+      */
     Thread.sleep(50)
   }
 
