@@ -23,6 +23,8 @@ class Screen(override var tier: Int) extends TextBuffer(tier) with Tiered {
     }
   }
 
+  def getPrecisionMode: Boolean = precisionMode
+
   // ----------------------------------------------------------------------- //
 
   @Callback(direct = true, doc = """function():boolean -- Whether touch mode is inverted (sneak-activate opens GUI, instead of normal activate).""")

@@ -27,7 +27,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
 
   private var aspectRatio = (1.0, 1.0)
 
-  private var precisionMode = false
+  protected var precisionMode = false
 
   private var isDisplaying = true
 
