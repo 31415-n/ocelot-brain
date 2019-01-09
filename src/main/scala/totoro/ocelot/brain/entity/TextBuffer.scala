@@ -326,7 +326,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val value = PackedColor.Color(color, isFromPalette)
     if (data.foreground != value) {
       data.foreground = value
-      EventBus.send(TextBufferSetForegroundColorEvent(this.node.address, data.format.inflate(data.format.deflate(value))))
+      EventBus.send(TextBufferSetForegroundColorEvent(this.node.address, data.format.inflate(data.format.deflate(value) & 0xFF)))
     }
   }
 
@@ -367,7 +367,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     val value = PackedColor.Color(color, isFromPalette)
     if (data.background != value) {
       data.background = value
-      EventBus.send(TextBufferSetBackgroundColorEvent(this.node.address, data.format.inflate(data.format.deflate(value))))
+      EventBus.send(TextBufferSetBackgroundColorEvent(this.node.address, data.format.inflate(data.format.deflate(value) & 0xFF)))
     }
   }
 
