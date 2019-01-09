@@ -111,7 +111,7 @@ class ComputerAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
         case processor: Processor => Seq(processor.architecture)
       } match {
         case Some(architectures) =>
-          lua.pushValue(architectures.map(MachineAPI.getArchitectureName))
+          lua.pushValue(architectures.map(MachineAPI.getArchitectureName).toArray)
         case _ =>
           lua.newTable()
       }
