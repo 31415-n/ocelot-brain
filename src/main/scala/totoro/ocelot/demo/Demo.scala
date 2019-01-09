@@ -1,7 +1,7 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.{APU, Cable, Case, EEPROM, Memory, Redstone, Screen}
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.network.Network
@@ -59,8 +59,11 @@ object Demo extends App {
     * They form there their own isolated network. This prevents components from leaking into the global network
     * and cause processor limits overflow and component clashes.
     */
-  val cpu = new APU(Tier.Two)
+  val cpu = new CPU(Tier.Three)
   computer.add(cpu)
+
+  val gpu = new GraphicsCard(Tier.Three)
+  computer.add(gpu)
 
   val memory = new Memory(Tier.Six)
   computer.add(memory)
