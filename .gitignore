@@ -41,3 +41,6 @@ cacerts
 
 # Log files
 *.log
+
+# Builds and mods
+*.jar
