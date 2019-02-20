@@ -1,7 +1,7 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, Memory, Redstone, Screen}
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.network.Network
@@ -70,6 +70,14 @@ object Demo extends App {
 
   val redstone = new Redstone.Tier1()
   computer.add(redstone)
+
+  /**
+    * When creating a new hard drive, you can specify it's address.
+    * If you will leave it `null`, then new random UUID will be used.
+    */
+
+  val hdd = new HDDManaged("59aef805-4085-485f-b92c-163b3f0426da", Tier.One, "volume 1")
+  computer.add(hdd)
 
   /**
     * Custom EEPROM can be created like this:

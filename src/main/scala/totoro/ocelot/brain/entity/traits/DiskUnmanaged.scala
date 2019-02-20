@@ -1,58 +1,55 @@
-package totoro.ocelot.brain.entity
+package totoro.ocelot.brain.entity.traits
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import com.google.common.io.Files
-import totoro.ocelot.brain.entity.fs.Label
-import totoro.ocelot.brain.entity.traits.DeviceInfo
-import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.{Ocelot, Settings}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
-import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 
-class Drive(val capacity: Int, val platterCount: Int, val label: Label, val speed: Int)
-  extends Environment with DeviceInfo {
-
+/**
+  * Basic trait for all unmanaged-disk-like entities.
+  */
+trait DiskUnmanaged extends Disk {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("drive", Visibility.Neighbors).
     create()
 
-  private def savePath = new File(Settings.saveRootDirectory, Settings.savePath + node.address + ".bin")
+  protected def savePath = new File(Settings.saveRootDirectory, Settings.savePath + node.address + ".bin")
 
-  private final val sectorSize = 512
+  /**
+    * Number of physical platters to pretend a disk has in unmanaged mode. This
+    * controls seek times, in how it emulates sectors overlapping (thus sharing
+    * a common head position for access).
+    */
+  def platterCount: Int
 
-  private val data = new Array[Byte](capacity)
+  def capacity: Int
 
-  private val sectorCount = capacity / sectorSize
+  def speed: Int
 
-  private val sectorsPerPlatter = sectorCount / platterCount
+  def setAddress(newAddress: String): Unit = {
+    node.network.remap(node, newAddress)
+  }
 
-  private var headPos = 0
+  // ----------------------------------------------------------------------- //
+
+  protected final val sectorSize = 512
+
+  protected val data = new Array[Byte](capacity)
+
+  protected val sectorCount: Int = capacity / sectorSize
+
+  protected val sectorsPerPlatter: Int = sectorCount / platterCount
+
+  protected var headPos = 0
 
   final val readSectorCosts = Array(1.0 / 10, 1.0 / 20, 1.0 / 30, 1.0 / 40, 1.0 / 50, 1.0 / 60)
   final val writeSectorCosts = Array(1.0 / 5, 1.0 / 10, 1.0 / 15, 1.0 / 20, 1.0 / 25, 1.0 / 30)
   final val readByteCosts = Array(1.0 / 48, 1.0 / 64, 1.0 / 80, 1.0 / 96, 1.0 / 112, 1.0 / 128)
   final val writeByteCosts = Array(1.0 / 24, 1.0 / 32, 1.0 / 40, 1.0 / 48, 1.0 / 56, 1.0 / 64)
-
-  // ----------------------------------------------------------------------- //
-
-  private final lazy val deviceInfo = Map(
-    DeviceAttribute.Class -> DeviceClass.Disk,
-    DeviceAttribute.Description -> "Hard disk drive",
-    DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product -> ("Catfish " + (capacity / 1024).toString + "L" + platterCount.toString),
-    DeviceAttribute.Capacity -> (capacity * 1.024).toInt.toString,
-    DeviceAttribute.Size -> capacity.toString,
-    DeviceAttribute.Clock ->
-       (((2000 / readSectorCosts(speed)).toInt / 100).toString + "/" +
-        ((2000 / writeSectorCosts(speed)).toInt / 100).toString + "/" +
-        ((2000 / readByteCosts(speed)).toInt / 100).toString + "/" +
-        ((2000 / writeByteCosts(speed)).toInt / 100).toString)
-  )
-
-  override def getDeviceInfo: Map[String, String] = deviceInfo
 
   // ----------------------------------------------------------------------- //
 
@@ -116,6 +113,34 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, val spee
 
   // ----------------------------------------------------------------------- //
 
+  protected def validateSector(sector: Int): Int = {
+    if (sector < 0 || sector >= sectorCount)
+      throw new IllegalArgumentException("invalid offset, not in a usable sector")
+    sector
+  }
+
+  protected def checkSector(offset: Int): Int = validateSector(offsetSector(offset))
+
+  protected def checkSector(args: Arguments, n: Int): Int = validateSector(args.checkInteger(n) - 1)
+
+  protected def moveToSector(context: Context, sector: Int): Int = {
+    val newHeadPos = sectorToHeadPos(sector)
+    if (headPos != newHeadPos) {
+      val delta = math.abs(headPos - newHeadPos)
+      if (delta > Settings.get.sectorSeekThreshold) context.pause(Settings.get.sectorSeekTime)
+      headPos = newHeadPos
+    }
+    sector
+  }
+
+  protected def sectorToHeadPos(sector: Int): Int = sector % sectorsPerPlatter
+
+  protected def sectorOffset(sector: Int): Int = sector * sectorSize
+
+  protected def offsetSector(offset: Int): Int = offset / sectorSize
+
+  // ----------------------------------------------------------------------- //
+
   private final val HeadPosTag = "headPos"
 
   override def load(nbt: NBTTagCompound): Unit = this.synchronized {
@@ -167,32 +192,4 @@ class Drive(val capacity: Int, val platterCount: Int, val label: Label, val spee
       label.save(nbt)
     }
   }
-
-  // ----------------------------------------------------------------------- //
-
-  private def validateSector(sector: Int) = {
-    if (sector < 0 || sector >= sectorCount)
-      throw new IllegalArgumentException("invalid offset, not in a usable sector")
-    sector
-  }
-
-  private def checkSector(offset: Int) = validateSector(offsetSector(offset))
-
-  private def checkSector(args: Arguments, n: Int) = validateSector(args.checkInteger(n) - 1)
-
-  private def moveToSector(context: Context, sector: Int) = {
-    val newHeadPos = sectorToHeadPos(sector)
-    if (headPos != newHeadPos) {
-      val delta = math.abs(headPos - newHeadPos)
-      if (delta > Settings.get.sectorSeekThreshold) context.pause(Settings.get.sectorSeekTime)
-      headPos = newHeadPos
-    }
-    sector
-  }
-
-  private def sectorToHeadPos(sector: Int) = sector % sectorsPerPlatter
-
-  private def sectorOffset(sector: Int) = sector * sectorSize
-
-  private def offsetSector(offset: Int) = offset / sectorSize
 }

@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.loot
 
 import totoro.ocelot.brain.entity.fs.{FileSystemAPI, ReadWriteLabel}
-import totoro.ocelot.brain.entity.{EEPROM, Environment, FileSystem, FloppyDisk}
+import totoro.ocelot.brain.entity.{EEPROM, Environment, FloppyManaged}
 import totoro.ocelot.brain.util.DyeColor
 import totoro.ocelot.brain.{Ocelot, Settings}
 
@@ -19,25 +19,25 @@ object Loot {
     OpenOsFloppy = new FloppyFactory("OpenOS (Installation Floppy)", "openos", DyeColor.GREEN)
   }
 
+  // ----------------------------------------------------------------------- //
+
   abstract class LootFactory {
     def create(): Environment
   }
 
-  abstract class FileSystemFactory extends LootFactory {
-    def createFileSystem(): FileSystem
-  }
-
-  class FloppyFactory(name: String, path: String, color: DyeColor, external: Boolean = false) extends FileSystemFactory {
-    override def createFileSystem(): FileSystem = {
+  class LootFloppy(name: String, path: String, external: Boolean) extends FloppyManaged(null, name) {
+    override protected def generateEnvironment(): Environment = {
       FileSystemAPI.asManagedEnvironment(
         if (external) FileSystemAPI.asReadOnly(FileSystemAPI.fromSaveDirectory("loot/" + path, 0, buffered = false))
         else FileSystemAPI.fromClass(Ocelot.getClass, Settings.resourceDomain, "loot/" + path),
         new ReadWriteLabel(name)
       )
     }
+  }
 
+  class FloppyFactory(name: String, path: String, color: DyeColor, external: Boolean = false) extends LootFactory {
     override def create(): Environment = {
-      new FloppyDisk(name, this)
+      new LootFloppy(name, path, external)
     }
   }
 
