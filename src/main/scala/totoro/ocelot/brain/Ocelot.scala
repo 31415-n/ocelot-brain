@@ -12,7 +12,7 @@ import totoro.ocelot.brain.machine.{MachineAPI, Registry}
 object Ocelot {
   final val Name = "Ocelot"
   // do not forget to change the version in `build.sbt`
-  final val Version = "0.2.6"
+  final val Version = "0.2.7"
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
