@@ -31,18 +31,21 @@ trait DiskUnmanaged extends Disk {
   def speed: Int
 
   def setAddress(newAddress: String): Unit = {
-    node.network.remap(node, newAddress)
+    if (node.network != null)
+      node.network.remap(node, newAddress)
+    else
+      node.address = newAddress
   }
 
   // ----------------------------------------------------------------------- //
 
   protected final val sectorSize = 512
 
-  protected val data = new Array[Byte](capacity)
+  protected def data = new Array[Byte](capacity)
 
-  protected val sectorCount: Int = capacity / sectorSize
+  protected def sectorCount: Int = capacity / sectorSize
 
-  protected val sectorsPerPlatter: Int = sectorCount / platterCount
+  protected def sectorsPerPlatter: Int = sectorCount / platterCount
 
   protected var headPos = 0
 
