@@ -4,8 +4,8 @@ import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
-import totoro.ocelot.brain.network.Network
 import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.workspace.Workspace
 
 object Demo extends App {
   println("Hi! We are testing Ocelot brains here. Join in!")
@@ -16,16 +16,25 @@ object Demo extends App {
   Ocelot.initialize()
 
   /**
+    * All things inside of Ocelot usually are grouped by workspaces.
+    * Workspace is like 'world' in Minecraft. It has it's own timeflow,
+    * it's own name, random numbers generator and a list of networks with entities.
+    * Workspace can be serialized or deserialized from NBT tags.
+    */
+  val workspace = Workspace.Default
+
+  /**
     * Network connects things.
     * Without network - all `a.connect(b)` calls will fail.
     * Without network the components cannot "see" each other.
     * Also network transmits modem messages and OC-signals.
+    * We can either create our own network, or use the workspace Default network.
     */
-  val network = new Network()
+  val network = workspace.DefaultNetwork
 
   /**
     * We choose the cable to be the base of our demo network.
-    * But we can use any other component actually.
+    * (But we can use any other component actually.)
     */
   val cable = new Cable()
 
@@ -35,19 +44,10 @@ object Demo extends App {
     */
   network.connect(cable)
 
-  val computer = new Case(Tier.Four)
-
   /**
-    * `computer.workspace = Workspace.Default`
-    *
-    * Each computer can be assigned to some "workspace".
-    * This workspace can have a name, it has it's own random numbers generator, it's own time settings and
-    * it can be put on pause.
-    * If the workspace is paused, all computers that belong to it cease to update
-    * (even if the `update()` metod is still called).
-    *
-    * By default all computers are implicitly assigned to the `Workspace.Default`.
+    * Then we create a new entity - computer case.
     */
+  val computer = new Case(Tier.Four)
 
   /**
     * Here on the left is an already connected to the network entity, on the right - the new one.

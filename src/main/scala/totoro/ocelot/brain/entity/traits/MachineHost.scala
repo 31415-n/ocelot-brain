@@ -7,10 +7,9 @@ import totoro.ocelot.brain.network.Node
 /**
   * This interface has to be implemented by 'hosts' of machine instances.
   *
-  * It provides some context for the machine, in particular which world it is
-  * running in, to allow querying the time of day, for example.
+  * It provides some context for the machine.
   */
-trait MachineHost extends Inventory with WorkspaceAware {
+trait MachineHost extends Inventory {
   /**
     * The machine currently hosted.
     */

@@ -428,7 +428,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
 
     // Update world time for time() and uptime().
-    worldTime = host.workspace.getIngameTime
+    worldTime = node.network.workspace.getIngameTime
     uptime += 1
 
     if (remainIdle > 0) {
@@ -837,7 +837,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     result
   }
 
-  private def isGamePaused = host.workspace.isPaused
+  private def isGamePaused = node.network.workspace.isPaused
 
   // This is a really high level lock that we only use for saving and loading.
   override def run(): Unit = Machine.this.synchronized {

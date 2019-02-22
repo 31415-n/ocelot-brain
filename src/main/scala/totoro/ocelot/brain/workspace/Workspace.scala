@@ -1,15 +1,20 @@
-package totoro.ocelot.brain.util
+package totoro.ocelot.brain.workspace
 
 import java.util.UUID
 
+import totoro.ocelot.brain.network.Network
+
+import scala.collection.mutable
 import scala.util.Random
 
 /**
-  * A separated space with it's own internal time.
-  * Can be put on pause.
-  * All emulated computers belong to some workspace.
+  * A separated spacetime plane with networks and entities.
+  * Can be put on pause. Can be serialized to a NBT tag.
   */
 class Workspace(val name: String = UUID.randomUUID().toString) {
+
+  // Time-related aspects
+  // ----------------------------------------------------------------------- //
   private var paused = false
 
   private var timeOffset: Int = 0
@@ -36,6 +41,27 @@ class Workspace(val name: String = UUID.randomUUID().toString) {
     if (value) ingameTimeSnapshot = getTotalWorldTime
     else setIngameTime(getIngameTime)
     this.ingameTimePaused = value
+  }
+
+  // Networks
+  // ----------------------------------------------------------------------- //
+  private val networks: mutable.ListBuffer[Network] = mutable.ListBuffer.empty
+
+  val DefaultNetwork = new Network()
+  addNetwork(DefaultNetwork)
+
+  def addNetwork(network: Network): Unit = {
+    networks += network
+    network.workspace = this
+  }
+
+  def getNetworksIter: Iterator[Network] = {
+    networks.iterator
+  }
+
+  def removeNetwork(network: Network): Unit = {
+    networks -= network
+    network.workspace = null
   }
 }
 
