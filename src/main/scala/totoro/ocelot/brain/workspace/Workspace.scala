@@ -13,9 +13,16 @@ import scala.util.Random
   */
 class Workspace(val name: String = UUID.randomUUID().toString) {
 
+  def rand: Random = Random
+
   // Time-related aspects
   // ----------------------------------------------------------------------- //
   private var paused = false
+
+  def isPaused: Boolean = paused
+  def setPaused(value: Boolean): Unit = {
+    this.paused = value
+  }
 
   private var timeOffset: Int = 0
   private var ingameTimePaused = false
@@ -26,12 +33,6 @@ class Workspace(val name: String = UUID.randomUUID().toString) {
     else (System.currentTimeMillis() / 50 % 24000).toInt
 
   def getIngameTime: Int = (getTotalWorldTime + timeOffset) % 24000
-  def rand: Random = Random
-
-  def isPaused: Boolean = paused
-  def setPaused(value: Boolean): Unit = {
-    this.paused = value
-  }
 
   def setIngameTime(ticks: Int): Unit = {
     timeOffset = ticks - getTotalWorldTime
@@ -62,6 +63,17 @@ class Workspace(val name: String = UUID.randomUUID().toString) {
   def removeNetwork(network: Network): Unit = {
     networks -= network
     network.workspace = null
+  }
+
+  /**
+    * Update all entities in all networks
+    */
+  def update(): Unit = {
+    networks.foreach(network => {
+      network.nodes.foreach(node => {
+        if (node.host.needUpdate) node.host.update()
+      })
+    })
   }
 }
 
