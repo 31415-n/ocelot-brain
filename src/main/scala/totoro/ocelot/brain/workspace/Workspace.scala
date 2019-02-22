@@ -63,7 +63,7 @@ class Workspace(val name: String = UUID.randomUUID().toString) {
       })
     })
 
-    if (!ingameTimePaused) ingameTime = (ingameTime + 1) % 24000
+    if (!ingameTimePaused) ingameTime += 1
   }
 }
 
