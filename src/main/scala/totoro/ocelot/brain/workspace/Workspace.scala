@@ -15,33 +15,21 @@ class Workspace(val name: String = UUID.randomUUID().toString) {
 
   def rand: Random = Random
 
-  // Time-related aspects
+  // Internal emulator time in Minecraft ticks
   // ----------------------------------------------------------------------- //
-  private var paused = false
+  private var ingameTime: Int = 0
+  private var ingameTimePaused: Boolean = false
 
-  def isPaused: Boolean = paused
-  def setPaused(value: Boolean): Unit = {
-    this.paused = value
-  }
-
-  private var timeOffset: Int = 0
-  private var ingameTimePaused = false
-  private var ingameTimeSnapshot = 0
-
-  private def getTotalWorldTime: Int =
-    if (isIngameTimePaused) ingameTimeSnapshot
-    else (System.currentTimeMillis() / 50 % 24000).toInt
-
-  def getIngameTime: Int = (getTotalWorldTime + timeOffset) % 24000
+  def getIngameTime: Int = ingameTime
 
   def setIngameTime(ticks: Int): Unit = {
-    timeOffset = ticks - getTotalWorldTime
+    ingameTime = ticks
   }
+
   def isIngameTimePaused: Boolean = ingameTimePaused
-  def setIngameTimePaused(value: Boolean): Unit = {
-    if (value) ingameTimeSnapshot = getTotalWorldTime
-    else setIngameTime(getIngameTime)
-    this.ingameTimePaused = value
+
+  def setIngameTimePaused(paused: Boolean): Unit = {
+    ingameTimePaused = paused
   }
 
   // Networks
@@ -74,6 +62,8 @@ class Workspace(val name: String = UUID.randomUUID().toString) {
         if (node.host.needUpdate) node.host.update()
       })
     })
+
+    if (!ingameTimePaused) ingameTime = (ingameTime + 1) % 24000
   }
 }
 

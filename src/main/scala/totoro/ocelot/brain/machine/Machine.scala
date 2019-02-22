@@ -837,7 +837,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     result
   }
 
-  private def isGamePaused = node.network.workspace.isPaused
+  private def isGamePaused = false
 
   // This is a really high level lock that we only use for saving and loading.
   override def run(): Unit = Machine.this.synchronized {
