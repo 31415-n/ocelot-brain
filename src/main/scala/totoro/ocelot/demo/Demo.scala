@@ -130,17 +130,18 @@ object Demo extends App {
 
 
   /**
-    * The `computer.machine.isRunning` flag will tell you, if the computers is still operational,
-    * or has it crashed or stopped the execution otherwise.
+    * The `computer.machine.isRunning` flag will tell you, if the computer is still operational,
+    * or had it crashed or stopped the execution otherwise.
     */
   while (computer.machine.isRunning) {
     /**
-      * Each component has the `update()` method. But it's actually used only by computers right now.
-      * You need to call this method every tick to keep the machine running.
+      * The `update()` method of workspace will update all components in each registered network,
+      * that need to be updated.
+      * These are usually computers or network cards.
       */
-    computer.update()
+    workspace.update()
     /**
-      * 50 milliseconds is the duration of standart Minecraft tick.
+      * 50 milliseconds is the duration of standard Minecraft tick.
       * You can speed the simulation up or slow it down by changing this value.
       */
     Thread.sleep(50)

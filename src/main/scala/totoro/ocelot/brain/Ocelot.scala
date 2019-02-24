@@ -57,7 +57,7 @@ object Ocelot {
     EntityFactory.add(classOf[Screen])
     EntityFactory.add(classOf[WirelessNetworkCard])
 
-    log.info("Registering loot (floppies and EEPROMs with standart OpenComputers software)...")
+    log.info("Registering loot (floppies and EEPROMs with standard OpenComputers software)...")
     Loot.init()
   }
 
