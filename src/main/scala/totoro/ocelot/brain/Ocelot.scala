@@ -8,6 +8,7 @@ import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.machine.{MachineAPI, Registry}
+import totoro.ocelot.brain.util.FontUtils
 
 object Ocelot {
   final val Name = "Ocelot"
@@ -20,7 +21,9 @@ object Ocelot {
   private def preInit(): Unit = {
     log.info("Loading configuration...")
     Settings.load(new File("brain.conf"))
+  }
 
+  private def init(): Unit = {
     log.info("Registering available machine architectures...")
     if (LuaStateFactory.include52) {
       MachineAPI.add(classOf[NativeLua52Architecture], "Lua 5.2")
@@ -59,9 +62,9 @@ object Ocelot {
 
     log.info("Registering loot (floppies and EEPROMs with standard OpenComputers software)...")
     Loot.init()
-  }
 
-  private def init(): Unit = {}
+    FontUtils.init()
+  }
 
   private def postInit(): Unit = {
     // Don't allow registration after this point, to avoid issues.

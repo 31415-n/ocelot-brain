@@ -20,7 +20,7 @@ object FontUtils {
   val codepoint_limit: Int = 0x10000
   def wcwidth(charCode: Int): Int = if (defined_double_wide(charCode)) 2 else 1
 
-  {
+  def init(): Unit = {
     val table = Array[Int](
       16,16,16,18,19,20,21,22,23,24,25,26,27,28,29,30,31,16,16,32,16,16,16,33,34,35,
       36,37,38,39,16,16,40,16,16,16,16,16,16,16,16,16,16,16,41,42,16,16,43,16,16,16,
