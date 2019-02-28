@@ -152,9 +152,22 @@ object Demo extends App {
     * Make a snapshot ot the system.
     * You need to use an existing NBT compound tag (or create a new one).
     */
+  println("... Creating snapshot ...")
+
   val nbt = new NBTTagCompound()
   workspace.save(nbt)
   println(nbt)
 
-  computer.turnOff()
+  println("... Loading snapshot ...")
+
+  /**
+    * Load workspace from snapshot
+    */
+  val loadedWorkspace = new Workspace()
+  loadedWorkspace.load(nbt)
+
+  while (loadedWorkspace.getIngameTime < 100) {
+    loadedWorkspace.update()
+    Thread.sleep(50)
+  }
 }
