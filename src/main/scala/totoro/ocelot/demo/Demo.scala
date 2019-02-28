@@ -148,8 +148,6 @@ object Demo extends App {
     Thread.sleep(50)
   }
 
-  computer.turnOff()
-
   /**
     * Make a snapshot ot the system.
     * You need to use an existing NBT compound tag (or create a new one).
@@ -157,4 +155,6 @@ object Demo extends App {
   val nbt = new NBTTagCompound()
   workspace.save(nbt)
   println(nbt)
+
+  computer.turnOff()
 }

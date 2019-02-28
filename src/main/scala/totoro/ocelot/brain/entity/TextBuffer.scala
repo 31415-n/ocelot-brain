@@ -712,6 +712,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
 
   // ----------------------------------------------------------------------- //
 
+  private final val DataTag = "data"
   private final val IsOnTag = "isOn"
   private final val MaxWidthTag = "maxWidth"
   private final val MaxHeightTag = "maxHeight"
@@ -763,6 +764,10 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
         case _ =>
       }
     }
+
+    val dataNbt = new NBTTagCompound()
+    data.save(dataNbt)
+    nbt.setTag(DataTag, dataNbt)
 
     nbt.setBoolean(IsOnTag, isDisplaying)
     nbt.setInteger(MaxWidthTag, maxResolution._1)
