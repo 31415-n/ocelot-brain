@@ -16,7 +16,7 @@ object EntityFactory {
     * Register new `Entity` type
     */
   def add(entity: Class[_ <: Entity]): Unit = {
-    entities(entity.getSimpleName) = entity
+    entities(entity.getName) = entity
   }
 
   /**

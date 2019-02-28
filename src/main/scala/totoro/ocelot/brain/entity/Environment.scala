@@ -167,6 +167,7 @@ trait Environment extends Entity {
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
+    super.save(nbt)
     if (node != null) {
       val nodeTag = new NBTTagCompound
       node.save(nodeTag)

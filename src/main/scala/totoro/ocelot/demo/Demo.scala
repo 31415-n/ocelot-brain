@@ -150,6 +150,10 @@ object Demo extends App {
 
   computer.turnOff()
 
+  /**
+    * Make a snapshot ot the system.
+    * You need to use an existing NBT compound tag (or create a new one).
+    */
   val nbt = new NBTTagCompound()
   workspace.save(nbt)
   println(nbt)

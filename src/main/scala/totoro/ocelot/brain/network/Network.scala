@@ -9,6 +9,7 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import collection.JavaConverters._
 
 // Looking at this again after some time, the similarity to const in C++ is somewhat uncanny.
 class Network private(private val data: mutable.Map[String, Network.Vertex]) extends WorkspaceAware with Persistable {
@@ -349,12 +350,33 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) ext
   // Persistence
   // ----------------------------------------------------------------------- //
 
-  override def save(nbt: NBTTagCompound): Unit = {
+  private val EntityTag = "entity"
+  private val EdgesTag = "edges"
+  private val LeftTag = "left"
+  private val RightTag = "right"
 
+  override def save(nbt: NBTTagCompound): Unit = {
+    for ((address, node) <- data) {
+      val vertexNbt = new NBTTagCompound()
+
+      val hostNbt = new NBTTagCompound()
+      node.data.host.save(hostNbt)
+      vertexNbt.setTag(EntityTag, hostNbt)
+
+      val edgesList: ArrayBuffer[NBTBase] = node.edges.map(edge => {
+        val edgeNbt = new NBTTagCompound()
+        edgeNbt.setString(LeftTag, edge.left.data.address)
+        edgeNbt.setString(RightTag, edge.right.data.address)
+        edgeNbt
+      })
+      vertexNbt.setTagList(EdgesTag, edgesList.asJava)
+
+      nbt.setTag(address, vertexNbt)
+    }
   }
 
   override def load(nbt: NBTTagCompound): Unit = {
-
+    // TODO
   }
 }
 

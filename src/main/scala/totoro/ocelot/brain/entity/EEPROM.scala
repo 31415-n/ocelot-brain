@@ -98,10 +98,10 @@ class EEPROM extends Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  private final val EEPROMTag = Settings.namespace + "eeprom"
-  private final val LabelTag = Settings.namespace + "label"
-  private final val ReadonlyTag = Settings.namespace + "readonly"
-  private final val UserdataTag = Settings.namespace + "userdata"
+  private final val EEPROMTag = "eeprom"
+  private final val LabelTag = "label"
+  private final val ReadonlyTag = "readonly"
+  private final val UserdataTag = "userdata"
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)

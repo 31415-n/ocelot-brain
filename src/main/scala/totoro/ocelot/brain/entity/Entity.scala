@@ -36,7 +36,7 @@ trait Entity extends Persistable {
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
-    nbt.setString(Entity.TypeTag, this.getClass.getSimpleName)
+    nbt.setString(Entity.TypeTag, this.getClass.getName)
   }
 }
 
