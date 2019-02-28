@@ -2,18 +2,24 @@ package totoro.ocelot.brain.workspace
 
 import java.util.UUID
 
+import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
 import totoro.ocelot.brain.network.Network
+import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.nbt.ExtendedNBT._
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 import scala.util.Random
+import collection.JavaConverters._
 
 /**
   * A separated spacetime plane with networks and entities.
   * Can be put on pause. Can be serialized to a NBT tag.
   */
-class Workspace(val name: String = UUID.randomUUID().toString) {
+class Workspace(val name: String = UUID.randomUUID().toString) extends Persistable {
 
-  def rand: Random = Random
+  private val random = new Random(System.currentTimeMillis())
+  def rand: Random = random
 
   // Internal emulator time in Minecraft ticks
   // ----------------------------------------------------------------------- //
@@ -65,11 +71,34 @@ class Workspace(val name: String = UUID.randomUUID().toString) {
 
     if (!ingameTimePaused) ingameTime += 1
   }
-}
 
-object Workspace {
-  /**
-    * General workspace that will used if not specified otherwise.
-    */
-  val Default = new Workspace()
+  // Persistence
+  // ----------------------------------------------------------------------- //
+  private val TimeTag = "time"
+  private val TimePausedTag = "time_paused"
+  private val NetworksTag = "networks"
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    nbt.setInteger(TimeTag, ingameTime)
+    nbt.setBoolean(TimePausedTag, ingameTimePaused)
+
+    val nbtNetworks: ListBuffer[NBTBase] = networks.map(network => {
+      val nbt = new NBTTagCompound()
+      network.save(nbt)
+      nbt
+    })
+    nbt.setTagList(NetworksTag, nbtNetworks.asJava)
+  }
+
+  override def load(nbt: NBTTagCompound): Unit = {
+    ingameTime = nbt.getInteger(TimeTag)
+    ingameTimePaused = nbt.getBoolean(TimePausedTag)
+
+    networks.clear()
+    networks ++= nbt.getTagList(NetworksTag, NBT.TAG_COMPOUND).map((nbt: NBTBase) => {
+      val network = new Network()
+      network.load(nbt.asInstanceOf[NBTTagCompound])
+      network
+    })
+  }
 }

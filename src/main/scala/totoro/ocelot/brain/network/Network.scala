@@ -4,13 +4,14 @@ import totoro.ocelot.brain.entity.Environment
 import totoro.ocelot.brain.entity.traits.WorkspaceAware
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network.Visibility.Visibility
+import totoro.ocelot.brain.util.Persistable
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 // Looking at this again after some time, the similarity to const in C++ is somewhat uncanny.
-class Network private(private val data: mutable.Map[String, Network.Vertex]) extends WorkspaceAware {
+class Network private(private val data: mutable.Map[String, Network.Vertex]) extends WorkspaceAware with Persistable {
 
   def this() = {
     this(mutable.Map[String, Network.Vertex]())
@@ -343,6 +344,17 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) ext
   private def send(source: Node, targets: Iterable[Node], name: String, args: Any*) {
     val message = new Message(source, name, Array(args: _*))
     targets.foreach(_.host.onMessage(message))
+  }
+
+  // Persistence
+  // ----------------------------------------------------------------------- //
+
+  override def save(nbt: NBTTagCompound): Unit = {
+
+  }
+
+  override def load(nbt: NBTTagCompound): Unit = {
+
   }
 }
 

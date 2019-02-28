@@ -79,6 +79,12 @@ public class NBTTagList extends NBTBase {
         return this.list.remove(i);
     }
 
+    public void appendAll(List<NBTBase> items) {
+        for (NBTBase item : items) {
+            appendTag(item);
+        }
+    }
+
     public void set(final int i, final NBTBase nbt) {
         if (i >= 0 && i < this.list.size()) {
             if (this.type == 0) {
@@ -100,7 +106,7 @@ public class NBTTagList extends NBTBase {
         }
     }
 
-    public int[] c(int i) {
+    public int[] getIntegerAt(int i) {
         if (i >= 0 && i < this.list.size()) {
             NBTBase nbtbase = this.list.get(i);
 
@@ -110,7 +116,7 @@ public class NBTTagList extends NBTBase {
         }
     }
 
-    public double d(int i) {
+    public double getDoubleAt(int i) {
         if (i >= 0 && i < this.list.size()) {
             NBTBase nbtbase = this.list.get(i);
 
@@ -120,7 +126,7 @@ public class NBTTagList extends NBTBase {
         }
     }
 
-    public float e(int i) {
+    public float getFloatAt(int i) {
         if (i >= 0 && i < this.list.size()) {
             NBTBase nbtbase = this.list.get(i);
 
@@ -179,7 +185,7 @@ public class NBTTagList extends NBTBase {
         return super.hashCode() ^ this.list.hashCode();
     }
 
-    public int d() {
+    public int getType() {
         return this.type;
     }
 }

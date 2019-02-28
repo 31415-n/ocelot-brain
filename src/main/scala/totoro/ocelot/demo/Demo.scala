@@ -4,6 +4,7 @@ import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
+import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Tier
 import totoro.ocelot.brain.workspace.Workspace
 
@@ -21,7 +22,7 @@ object Demo extends App {
     * it's own name, random numbers generator and a list of networks with entities.
     * Workspace can be serialized or deserialized from NBT tags.
     */
-  val workspace = Workspace.Default
+  val workspace = new Workspace()
 
   /**
     * Network connects things.
@@ -133,7 +134,7 @@ object Demo extends App {
     * The `computer.machine.isRunning` flag will tell you, if the computer is still operational,
     * or had it crashed or stopped the execution otherwise.
     */
-  while (computer.machine.isRunning) {
+  while (workspace.getIngameTime < 10) {
     /**
       * The `update()` method of workspace will update all components in each registered network,
       * that need to be updated.
@@ -148,4 +149,8 @@ object Demo extends App {
   }
 
   computer.turnOff()
+
+  val nbt = new NBTTagCompound()
+  workspace.save(nbt)
+  println(nbt)
 }
