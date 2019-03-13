@@ -95,7 +95,7 @@ object WirelessNetworkCard {
     override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.One)
 
     // wired network card is before wireless cards in max port list
-    override protected def maxOpenPorts = Settings.get.maxOpenPorts(Tier.One + 1)
+    override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.One + 1)
 
     override protected def shouldSendWiredTraffic = false
 
@@ -119,7 +119,7 @@ object WirelessNetworkCard {
     override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.Two)
 
     // wired network card is before wireless cards in max port list
-    override protected def maxOpenPorts = Settings.get.maxOpenPorts(Tier.Two + 1)
+    override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.Two + 1)
 
     override protected def shouldSendWiredTraffic = true
 

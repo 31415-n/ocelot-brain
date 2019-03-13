@@ -18,8 +18,8 @@ public class NBTTagIntArray extends NBTBase {
     void write(DataOutput dataoutput) throws IOException {
         dataoutput.writeInt(this.data.length);
 
-        for (int i = 0; i < this.data.length; ++i) {
-            dataoutput.writeInt(this.data[i]);
+        for (int datum : this.data) {
+            dataoutput.writeInt(datum);
         }
     }
 
@@ -39,16 +39,10 @@ public class NBTTagIntArray extends NBTBase {
     }
 
     public String toString() {
-        String s = "[";
-        int[] aint = this.data;
-        int i = aint.length;
-
-        for (int j = 0; j < i; ++j) {
-            int k = aint[j];
-
-            s = s + k + ",";
+        StringBuilder s = new StringBuilder("[");
+        for (int k : this.data) {
+            s.append(k).append(",");
         }
-
         return s + "]";
     }
 
