@@ -19,7 +19,7 @@ class NetworkCard extends Environment with DeviceInfo {
   protected val openPorts = mutable.Set.empty[Int]
 
   // wired network card is the 1st in the max ports list (before both wireless cards)
-  protected def maxOpenPorts = Settings.get.maxOpenPorts(Tier.One)
+  protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.One)
 
   protected var wakeMessage: Option[String] = None
 

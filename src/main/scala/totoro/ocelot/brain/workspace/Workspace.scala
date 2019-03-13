@@ -2,15 +2,15 @@ package totoro.ocelot.brain.workspace
 
 import java.util.UUID
 
+import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
 import totoro.ocelot.brain.network.Network
 import totoro.ocelot.brain.util.Persistable
-import totoro.ocelot.brain.nbt.ExtendedNBT._
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
-import collection.JavaConverters._
 
 /**
   * A separated spacetime plane with networks and entities.

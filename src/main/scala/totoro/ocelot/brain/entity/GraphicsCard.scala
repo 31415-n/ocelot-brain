@@ -4,7 +4,7 @@ import totoro.ocelot.brain.Constants
 import totoro.ocelot.brain.entity.traits.DeviceInfo
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 
-class GraphicsCard(override var tier: Int) extends traits.GraphicsCard with DeviceInfo {
+class GraphicsCard(override var tier: Int) extends traits.GenericGPU with DeviceInfo {
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Display,
     DeviceAttribute.Description -> "Graphics controller",
@@ -17,7 +17,7 @@ class GraphicsCard(override var tier: Int) extends traits.GraphicsCard with Devi
 
   def capacityInfo: String = (maxResolution._1 * maxResolution._2).toString
 
-  def widthInfo = Array("1", "4", "8").apply(maxDepth.id)
+  def widthInfo: String = Array("1", "4", "8").apply(maxDepth.id)
 
   def clockInfo: String =
       ((2000 / setBackgroundCosts(tier)).toInt / 100).toString + "/" +

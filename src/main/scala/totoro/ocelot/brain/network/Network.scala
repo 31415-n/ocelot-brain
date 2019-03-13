@@ -7,9 +7,9 @@ import totoro.ocelot.brain.network.Visibility.Visibility
 import totoro.ocelot.brain.util.Persistable
 import totoro.ocelot.brain.{Ocelot, Settings}
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-import collection.JavaConverters._
 
 // Looking at this again after some time, the similarity to const in C++ is somewhat uncanny.
 class Network private(private val data: mutable.Map[String, Network.Vertex]) extends WorkspaceAware with Persistable {

@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.fs.{Label, ReadWriteLabel}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, DiskUnmanaged, Tiered}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, DiskUnmanaged, Tiered}
 import totoro.ocelot.brain.{Constants, Settings}
 
 class HDDUnmanaged(override var tier: Int, name: String)

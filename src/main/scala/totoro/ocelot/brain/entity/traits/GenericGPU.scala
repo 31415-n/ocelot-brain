@@ -21,16 +21,16 @@ import scala.util.matching.Regex
 // saved, but before the computer was saved, leading to mismatching states in
 // the save file - a Bad Thing (TM).
 
-trait GraphicsCard extends Environment with Tiered with GPULike {
+trait GenericGPU extends Environment with Tiered {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
     withComponent("gpu").
     create()
 
-  override def gpuTier: Int = tier
+  def gpuTier: Int = tier
 
-  protected val maxResolution = Settings.screenResolutionsByTier(gpuTier)
+  protected val maxResolution: (Int, Int) = Settings.screenResolutionsByTier(gpuTier)
 
-  protected val maxDepth = Settings.screenDepthsByTier(gpuTier)
+  protected val maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(gpuTier)
 
   private var screenAddress: Option[String] = None
 

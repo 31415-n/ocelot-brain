@@ -4,7 +4,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.{Constants, Settings}
 
-class CPU(override var tier: Int) extends traits.CPU with DeviceInfo {
+class CPU(override var tier: Int) extends traits.GenericCPU with DeviceInfo {
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Processor,
     DeviceAttribute.Description -> "CPU",

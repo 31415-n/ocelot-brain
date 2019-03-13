@@ -6,13 +6,13 @@ import totoro.ocelot.brain.machine.{Architecture, MachineAPI}
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.util.Tier
 
-trait CPU extends Environment with MutableProcessor with Tiered with CPULike {
+trait GenericCPU extends Environment with MutableProcessor with Tiered {
 
   override val node: Node = Network.newNode(this, Visibility.Neighbors).create()
 
-  override def cpuTier: Int = tier
+  def cpuTier: Int = tier
 
-  override def supportedComponents = Settings.get.cpuComponentSupport(cpuTier)
+  override def supportedComponents: Int = Settings.get.cpuComponentSupport(cpuTier)
 
   override def allArchitectures: Iterable[Class[_ <: Architecture]] = MachineAPI.architectures
 

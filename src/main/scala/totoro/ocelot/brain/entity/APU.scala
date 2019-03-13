@@ -1,11 +1,11 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.DeviceInfo
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, GenericCPU, GenericGPU}
 import totoro.ocelot.brain.util.Tier
 import totoro.ocelot.brain.{Constants, Settings}
 
-class APU(override var tier: Int) extends traits.CPU with traits.GraphicsCard with DeviceInfo {
+class APU(override var tier: Int) extends GenericCPU with GenericGPU with DeviceInfo {
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Processor,
     DeviceAttribute.Description -> "APU",
@@ -18,7 +18,7 @@ class APU(override var tier: Int) extends traits.CPU with traits.GraphicsCard wi
 
   def capacityInfo: String = (maxResolution._1 * maxResolution._2).toString
 
-  def widthInfo = Array("1", "4", "8").apply(maxDepth.id)
+  def widthInfo: String = Array("1", "4", "8").apply(maxDepth.id)
 
   def clockInfo: String =
       ((2000 / setBackgroundCosts(tier)).toInt / 100).toString + "/" +
