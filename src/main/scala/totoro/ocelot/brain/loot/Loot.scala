@@ -1,7 +1,8 @@
 package totoro.ocelot.brain.loot
 
 import totoro.ocelot.brain.entity.fs.{FileSystemAPI, ReadWriteLabel}
-import totoro.ocelot.brain.entity.{EEPROM, Environment, FloppyManaged}
+import totoro.ocelot.brain.entity.traits.{Entity, Environment}
+import totoro.ocelot.brain.entity.{EEPROM, FloppyManaged}
 import totoro.ocelot.brain.util.DyeColor
 import totoro.ocelot.brain.{Ocelot, Settings}
 
@@ -22,7 +23,7 @@ object Loot {
   // ----------------------------------------------------------------------- //
 
   abstract class LootFactory {
-    def create(): Environment
+    def create(): Entity
   }
 
   class LootFloppy(name: String, path: String, external: Boolean) extends FloppyManaged(null, name) {
@@ -36,7 +37,7 @@ object Loot {
   }
 
   class FloppyFactory(name: String, path: String, color: DyeColor, external: Boolean = false) extends LootFactory {
-    override def create(): Environment = {
+    override def create(): Entity = {
       new LootFloppy(name, path, external)
     }
   }
@@ -46,7 +47,7 @@ object Loot {
     private val count = Ocelot.getClass.getResourceAsStream(Settings.scriptPath + file).read(code)
     private val codeData = code.take(count)
 
-    override def create(): Environment = {
+    override def create(): Entity = {
       val eeprom = new EEPROM()
       eeprom.label = label
       eeprom.codeData = codeData

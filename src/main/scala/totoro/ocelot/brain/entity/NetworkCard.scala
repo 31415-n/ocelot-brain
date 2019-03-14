@@ -1,9 +1,9 @@
 package totoro.ocelot.brain.entity
 
 import com.google.common.base.Charsets
-import totoro.ocelot.brain.entity.traits.DeviceInfo
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
@@ -11,7 +11,7 @@ import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
 
-class NetworkCard extends Environment with DeviceInfo {
+class NetworkCard extends Entity with Environment with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("modem", Visibility.Neighbors).
     create()

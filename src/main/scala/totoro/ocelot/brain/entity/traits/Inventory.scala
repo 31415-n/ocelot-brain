@@ -1,10 +1,9 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.{Entity, EntityFactory}
+import totoro.ocelot.brain.entity.EntityFactory
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
-import totoro.ocelot.brain.util.Persistable
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer

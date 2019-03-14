@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.{Environment, TextBuffer}
-import totoro.ocelot.brain.machine.{Arguments, Callback, Context, Machine}
+import totoro.ocelot.brain.entity.TextBuffer
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context, Machine}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Message, Network, Node, Visibility}
 import totoro.ocelot.brain.util.{ColorDepth, PackedColor}

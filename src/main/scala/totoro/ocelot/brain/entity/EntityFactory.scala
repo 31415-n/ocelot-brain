@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.entity
 
+import totoro.ocelot.brain.entity.traits.Entity
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
 import scala.collection.mutable

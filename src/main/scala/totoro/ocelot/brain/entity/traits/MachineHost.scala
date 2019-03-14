@@ -1,7 +1,6 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.entity.Environment
-import totoro.ocelot.brain.machine.Machine
+import totoro.ocelot.brain.entity.machine.Machine
 import totoro.ocelot.brain.network.Node
 
 /**

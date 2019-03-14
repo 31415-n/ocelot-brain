@@ -1,11 +1,10 @@
 package totoro.ocelot.brain.network
 
-import totoro.ocelot.brain.entity.{EntityFactory, Environment}
-import totoro.ocelot.brain.entity.traits.WorkspaceAware
+import totoro.ocelot.brain.entity.EntityFactory
+import totoro.ocelot.brain.entity.traits.{Environment, Persistable, WorkspaceAware}
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.network.Visibility.Visibility
-import totoro.ocelot.brain.util.Persistable
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 import scala.collection.JavaConverters._

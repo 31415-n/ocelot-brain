@@ -3,7 +3,6 @@ package totoro.ocelot.brain.entity.traits
 import java.util.UUID
 
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.Environment
 import totoro.ocelot.brain.entity.fs.FileSystemAPI
 import totoro.ocelot.brain.network.Node
 

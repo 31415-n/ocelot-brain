@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.machine.Architecture
+import totoro.ocelot.brain.entity.machine.Architecture
 
 /**
   * May be implemented in processor drivers of processors that can be reconfigured.

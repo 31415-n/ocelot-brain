@@ -1,12 +1,12 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, Tiered}
+import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, Entity, Environment, Tiered}
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.util.Tier
 import totoro.ocelot.brain.{Constants, Settings}
 
-class Memory(override var tier: Int) extends Environment with DeviceInfo with Tiered with traits.Memory with CallBudget {
+class Memory(override var tier: Int) extends Entity with Environment with DeviceInfo with Tiered with traits.Memory with CallBudget {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
     create()
 

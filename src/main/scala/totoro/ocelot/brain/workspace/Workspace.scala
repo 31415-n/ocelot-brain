@@ -2,10 +2,10 @@ package totoro.ocelot.brain.workspace
 
 import java.util.UUID
 
+import totoro.ocelot.brain.entity.traits.Persistable
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
 import totoro.ocelot.brain.network.Network
-import totoro.ocelot.brain.util.Persistable
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable

@@ -1,14 +1,14 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, Tiered}
 import totoro.ocelot.brain.event._
-import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
 import totoro.ocelot.brain.user.User
-import totoro.ocelot.brain.util.{ColorDepth, PackedColor, Tier}
-import totoro.ocelot.brain.{Constants, Settings, util}
+import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor, Tier}
+import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
 
@@ -31,7 +31,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
 
   private var isDisplaying = true
 
-  val data = new util.TextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
+  val data = new GenericTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
 
   var viewport: (Int, Int) = data.size
 
@@ -281,10 +281,9 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param color the color to set for the specified index.
     */
   def setPaletteColor(index: Int, color: Int): Unit = data.format match {
-    case palette: PackedColor.MutablePaletteFormat => {
+    case palette: PackedColor.MutablePaletteFormat =>
       palette(index) = color
       EventBus.send(TextBufferSetPaletteColorEvent(this.node.address, index, color))
-    }
     case _ => throw new Exception("palette not available")
   }
 

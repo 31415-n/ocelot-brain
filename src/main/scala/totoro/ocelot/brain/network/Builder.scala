@@ -16,7 +16,7 @@ object Builder {
       * Makes the node a component.
       *
       * Nodes that are components can be accessed from computers, methods
-      * declared in them marked using the [[totoro.ocelot.brain.machine.Callback]] annotation can
+      * declared in them marked using the [[totoro.ocelot.brain.entity.machine.Callback]] annotation can
       * be invoked from computers that can see the component.
       *
       * @param name       the name of the component.

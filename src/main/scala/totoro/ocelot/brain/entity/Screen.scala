@@ -1,13 +1,13 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.traits.Tiered
-import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.traits.{Entity, Tiered}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.Tier
 
-class Screen(override var tier: Int) extends TextBuffer(tier) with Tiered {
+class Screen(override var tier: Int) extends TextBuffer(tier) with Entity with Tiered {
   def this() = this(Tier.One)
 
   var width, height = 1
