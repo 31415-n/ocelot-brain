@@ -1,8 +1,9 @@
 package totoro.ocelot.brain.network
 
-import totoro.ocelot.brain.entity.Environment
+import totoro.ocelot.brain.entity.{EntityFactory, Environment}
 import totoro.ocelot.brain.entity.traits.WorkspaceAware
 import totoro.ocelot.brain.nbt._
+import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.network.Visibility.Visibility
 import totoro.ocelot.brain.util.Persistable
 import totoro.ocelot.brain.{Ocelot, Settings}
@@ -376,7 +377,29 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) ext
   }
 
   override def load(nbt: NBTTagCompound): Unit = {
-    // TODO
+    data.clear()
+    for (key <- nbt.getKeySet.asScala) {
+      val address = key.asInstanceOf[String]
+
+      val vertexNbt = nbt.getCompoundTag(address)
+      val entityNbt = vertexNbt.getTag(EntityTag)
+
+      EntityFactory.from(entityNbt.asInstanceOf[NBTTagCompound]) match {
+        case entity: Environment =>
+          addNew(entity.node)
+          val edgesNbt = vertexNbt.getTagList(EdgesTag, NBT.TAG_COMPOUND)
+          edgesNbt.foreach((edgeNbt: NBTTagCompound) => {
+            val leftAddress = edgeNbt.getString(LeftTag)
+            val rightAddress = edgeNbt.getString(RightTag)
+            if (data.contains(leftAddress) && data.contains(rightAddress)) {
+              val leftNode = data(leftAddress)
+              val rightNode = data(rightAddress)
+              connect(leftNode.data, rightNode.data)
+            }
+          })
+        case _ => println("Cannot convert: " + entityNbt)
+      }
+    }
   }
 }
 
