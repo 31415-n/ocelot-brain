@@ -129,7 +129,8 @@ trait Node {
     * @param environment the environment to connect it's node to this node.
     * @throws NullPointerException if `network` is `null`.
     */
-  def connect(environment: Environment): Unit = network.connect(this, environment.node)
+  def connect(environment: Environment): Unit =
+    if (network != null) network.connect(this, environment.node)
 
   /**
     * Connects the specified node to this node.
@@ -142,7 +143,8 @@ trait Node {
     * @param node the node to connect to this node.
     * @throws NullPointerException if `network` is `null`.
     */
-  def connect(node: Node): Unit = network.connect(this, node)
+  def connect(node: Node): Unit =
+    if (network != null) network.connect(this, node)
 
   /**
     * Disconnects the specified node from this node.
