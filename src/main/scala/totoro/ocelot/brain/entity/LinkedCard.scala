@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.DeviceInfo
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, WakeMessageAware}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -9,7 +9,7 @@ import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.convert.WrapAsScala._
 
-class LinkedCard extends Environment with QuantumNetwork.QuantumNode with DeviceInfo {
+class LinkedCard extends Environment with QuantumNetwork.QuantumNode with WakeMessageAware with DeviceInfo {
   override val node: Node = Network.newNode(this, Visibility.Network).
     withComponent("tunnel", Visibility.Neighbors).
     create()
@@ -50,10 +50,7 @@ class LinkedCard extends Environment with QuantumNetwork.QuantumNode with Device
     result(this.tunnel)
   }
 
-  def receivePacket(packet: Packet) {
-    val distance = 0
-    node.sendToReachable("computer.signal", Seq("modem_message", packet.source, Int.box(packet.port), Double.box(distance)) ++ packet.data: _*)
-  }
+  def receivePacket(packet: Packet): Unit = receivePacket(packet, 0)
 
   // ----------------------------------------------------------------------- //
 
@@ -80,10 +77,12 @@ class LinkedCard extends Environment with QuantumNetwork.QuantumNode with Device
     if (nbt.hasKey(TunnelTag)) {
       tunnel = nbt.getString(TunnelTag)
     }
+    loadWakeMessage(nbt)
   }
 
   override def save(nbt: NBTTagCompound) {
     super.save(nbt)
     nbt.setString(TunnelTag, tunnel)
+    saveWakeMessage(nbt)
   }
 }
