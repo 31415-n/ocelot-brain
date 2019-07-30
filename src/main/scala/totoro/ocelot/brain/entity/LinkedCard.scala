@@ -14,7 +14,7 @@ class LinkedCard extends Environment with QuantumNetwork.QuantumNode with Device
     withComponent("tunnel", Visibility.Neighbors).
     create()
 
-  var tunnel = "creative"
+  var tunnel: String = "creative"
 
   // ----------------------------------------------------------------------- //
 
@@ -44,6 +44,11 @@ class LinkedCard extends Environment with QuantumNetwork.QuantumNode with Device
 
   @Callback(direct = true, doc = """function():number -- Gets the maximum packet size (config setting).""")
   def maxPacketSize(context: Context, args: Arguments): Array[AnyRef] = result(Settings.get.maxNetworkPacketSize)
+
+  @Callback(direct = true, doc = """function():string -- Gets this link card's shared channel address""")
+  def getChannel(context: Context, args: Arguments): Array[AnyRef] = {
+    result(this.tunnel)
+  }
 
   def receivePacket(packet: Packet) {
     val distance = 0
