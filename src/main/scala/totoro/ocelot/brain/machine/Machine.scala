@@ -695,6 +695,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
     else {
       // Clean up in case we got a weird state stack.
+      onHostChanged()
       close()
     }
   })
