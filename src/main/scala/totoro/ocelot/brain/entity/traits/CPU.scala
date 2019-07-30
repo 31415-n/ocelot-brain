@@ -12,13 +12,13 @@ trait CPU extends Environment with MutableProcessor with Tiered with CPULike {
 
   override def cpuTier: Int = tier
 
-  override def supportedComponents = Settings.get.cpuComponentSupport(cpuTier)
+  override def supportedComponents: Int = Settings.get.cpuComponentSupport(cpuTier)
 
   override def allArchitectures: Iterable[Class[_ <: Architecture]] = MachineAPI.architectures
 
   override def architecture: Class[_ <: Architecture] = {
     if (_architecture != null) _architecture
-    else MachineAPI.architectures.headOption.orNull
+    else MachineAPI.defaultArchitecture
   }
 
   override def callBudget: Double = Settings.get.callBudgets(cpuTier max Tier.One min Tier.Three)
