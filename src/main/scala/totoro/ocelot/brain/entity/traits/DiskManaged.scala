@@ -41,14 +41,17 @@ trait DiskManaged extends Disk {
 
   override def onLockChange(oldLockInfo: String): Unit = {
     super.onLockChange(oldLockInfo)
-    if (_fileSystem != null) {
-      // save changes
-      val nbt = new NBTTagCompound()
-      fileSystem.save(nbt)
-      // regenerate filesystem instance
-      _fileSystem = generateEnvironment()
-      // restore parameters
-      _fileSystem.load(nbt)
+    // do no touch the file system without need
+    if (isLocked(oldLockInfo) != isLocked) {
+      if (_fileSystem != null) {
+        // save changes
+        val nbt = new NBTTagCompound()
+        fileSystem.save(nbt)
+        // regenerate filesystem instance
+        _fileSystem = generateEnvironment()
+        // restore parameters
+        _fileSystem.load(nbt)
+      }
     }
   }
 }

@@ -16,7 +16,9 @@ trait Disk extends Environment {
 
   protected var lockInfo: String = ""
 
-  def isLocked: Boolean = lockInfo != null && !lockInfo.isEmpty
+  def isLocked: Boolean = isLocked(lockInfo)
+
+  def isLocked(forLockInfo: String): Boolean = forLockInfo != null && !forLockInfo.isEmpty
 
   def setLocked(player: String): Unit = {
     val oldInfo = lockInfo
