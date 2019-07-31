@@ -4,6 +4,7 @@ import java.io.File
 
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
+import totoro.ocelot.brain.entity.fs.BufferedFileSaveHandler
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
@@ -16,6 +17,11 @@ object Ocelot {
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
+
+  /**
+    * This `preInit`, `init`, `postInit` thing is a legacy from Minecraft/Forge life cycle.
+    * It can be replaced with simple `initialization` procedure in the future.
+    */
 
   private def preInit(): Unit = {
     log.info("Loading configuration...")
@@ -61,7 +67,9 @@ object Ocelot {
     Loot.init()
   }
 
-  private def init(): Unit = {}
+  private def init(): Unit = {
+    BufferedFileSaveHandler.newThreadPool()
+  }
 
   private def postInit(): Unit = {
     // Don't allow registration after this point, to avoid issues.
@@ -79,5 +87,11 @@ object Ocelot {
     init()
     postInit()
     log.info("Initialization finished.")
+  }
+
+  def shutdown(): Unit = {
+    log.info("Preparing for Ocelot shutdown...")
+    BufferedFileSaveHandler.waitForSaving()
+    log.info("Ocelot is shut down.")
   }
 }

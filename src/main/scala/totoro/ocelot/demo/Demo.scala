@@ -147,4 +147,9 @@ object Demo extends App {
   }
 
   computer.turnOff()
+
+  /**
+    * Necessary to successfully complete multi-threaded saving operation, and finalize other Ocelot tasks.
+    */
+  Ocelot.shutdown()
 }

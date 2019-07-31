@@ -2,8 +2,10 @@ package totoro.ocelot.brain.entity.fs
 
 import java.io
 import java.io.FileNotFoundException
+import java.util.concurrent.{CancellationException, Future, TimeUnit, TimeoutException}
 
 import org.apache.commons.io.FileUtils
+import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
 import scala.collection.mutable
@@ -33,7 +35,20 @@ trait Buffered extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
+  private var saving: Option[Future[_]] = None
+
   override def load(nbt: NBTTagCompound): Unit = {
+    saving.foreach(f => try {
+      f.get(120L, TimeUnit.SECONDS)
+    } catch {
+      case e: TimeoutException => Ocelot.log.warn("Waiting for filesystem to save took two minutes! Aborting.")
+      case e: CancellationException => // NO-OP
+    })
+    loadFiles(nbt)
+    super.load(nbt)
+  }
+
+  private def loadFiles(nbt: NBTTagCompound): Unit = this.synchronized {
     def recurse(path: String, directory: io.File) {
       makeDirectory(path)
       for (child <- directory.listFiles() if FileSystemAPI.isValidFilename(child.getName)) {
@@ -73,13 +88,14 @@ trait Buffered extends OutputStreamFileSystem {
       fileRoot.delete()
     }
     else recurse("", fileRoot)
-
-    super.load(nbt)
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
+    saving = BufferedFileSaveHandler.scheduleSave(this)
+  }
 
+  def saveFiles(): Unit = this.synchronized {
     for ((path, time) <- deletions) {
       val file = new io.File(fileRoot, path)
       if (FileUtils.isFileOlder(file, time))
