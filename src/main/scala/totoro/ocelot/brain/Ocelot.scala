@@ -13,7 +13,7 @@ import totoro.ocelot.brain.util.ThreadPoolFactory
 object Ocelot {
   final val Name = "Ocelot"
   // do not forget to change the version in `build.sbt`
-  final val Version = "0.3.0"
+  final val Version = "0.3.1"
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
@@ -83,6 +83,7 @@ object Ocelot {
 
   def initialize(): Unit = {
     log.info("Brain initialization...")
+    log.info("Version: " + Ocelot.Version)
     preInit()
     init()
     postInit()
