@@ -70,6 +70,8 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   private var message: Option[String] = None // For error messages.
 
+  private val maxSignalQueueSize = Settings.get.maxSignalQueueSize
+
   // ----------------------------------------------------------------------- //
 
   def onHostChanged(): Unit = {
@@ -273,14 +275,14 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     state.synchronized(state.top match {
       case MachineAPI.State.Stopped | MachineAPI.State.Stopping => return false
       case _ => signals.synchronized {
-        if (signals.size >= 256) return false
+        if (signals.size >= maxSignalQueueSize) return false
         else if (args == null) {
           signals.enqueue(new MachineAPI.Signal(name, Array.empty))
         }
         else {
           signals.enqueue(new MachineAPI.Signal(name, args.map {
             case null | Unit | None => null
-            case arg: java.util.Map[_, _] => {
+            case arg: java.util.Map[_, _] =>
               val convertedMap = new mutable.HashMap[AnyRef, AnyRef]
               for ((key, value) <- arg) {
                 val convertedKey = convertArg(key)
@@ -292,7 +294,6 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
                 }
               }
               convertedMap
-            }
             case arg => convertArg(arg)
           }.toArray[AnyRef]))
         }
