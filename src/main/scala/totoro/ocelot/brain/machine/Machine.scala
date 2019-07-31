@@ -254,6 +254,21 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
   }
 
+  def convertArg(param: Any): AnyRef = {
+    param match {
+      case arg: java.lang.Boolean => arg
+      case arg: java.lang.Character => Double.box(arg.toDouble)
+      case arg: java.lang.Long => arg
+      case arg: java.lang.Number => Double.box(arg.doubleValue)
+      case arg: java.lang.String => arg
+      case arg: Array[Byte] => arg
+      case arg: NBTTagCompound => arg
+      case arg =>
+        Ocelot.log.warn("Trying to push signal with an unsupported argument of type " + arg.getClass.getName)
+        null
+    }
+  }
+
   override def signal(name: String, args: Any*): Boolean = {
     state.synchronized(state.top match {
       case MachineAPI.State.Stopped | MachineAPI.State.Stopping => return false
@@ -265,19 +280,20 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
         else {
           signals.enqueue(new MachineAPI.Signal(name, args.map {
             case null | Unit | None => null
-            case arg: java.lang.Boolean => arg
-            case arg: java.lang.Character => Double.box(arg.toDouble)
-            case arg: java.lang.Long => arg
-            case arg: java.lang.Number => Double.box(arg.doubleValue)
-            case arg: java.lang.String => arg
-            case arg: Array[Byte] => arg
-            case arg: Map[_, _] if arg.isEmpty || arg.head._1.isInstanceOf[String] && arg.head._2.isInstanceOf[String] => arg
-            case arg: mutable.Map[_, _] if arg.isEmpty || arg.head._1.isInstanceOf[String] && arg.head._2.isInstanceOf[String] => arg.toMap
-            case arg: java.util.Map[_, _] if arg.isEmpty || arg.head._1.isInstanceOf[String] && arg.head._2.isInstanceOf[String] => arg.toMap
-            case arg: NBTTagCompound => arg
-            case arg =>
-              Ocelot.log.warn("Trying to push signal with an unsupported argument of type " + arg.getClass.getName)
-              null
+            case arg: java.util.Map[_, _] => {
+              val convertedMap = new mutable.HashMap[AnyRef, AnyRef]
+              for ((key, value) <- arg) {
+                val convertedKey = convertArg(key)
+                if (convertedKey != null) {
+                  val convertedValue = convertArg(value)
+                  if (convertedValue != null) {
+                    convertedMap += convertedKey -> convertedValue
+                  }
+                }
+              }
+              convertedMap
+            }
+            case arg => convertArg(arg)
           }.toArray[AnyRef]))
         }
       }
