@@ -7,8 +7,13 @@ import java.util.concurrent.{CancellationException, Future, TimeUnit, TimeoutExc
 import org.apache.commons.io.FileUtils
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.util.{SafeThreadPool, ThreadPoolFactory}
 
 import scala.collection.mutable
+
+object Buffered {
+  val fileSaveHandler: SafeThreadPool = ThreadPoolFactory.createSafePool("FileSystem", 1)
+}
 
 trait Buffered extends OutputStreamFileSystem {
   protected def fileRoot: io.File
@@ -41,8 +46,8 @@ trait Buffered extends OutputStreamFileSystem {
     saving.foreach(f => try {
       f.get(120L, TimeUnit.SECONDS)
     } catch {
-      case e: TimeoutException => Ocelot.log.warn("Waiting for filesystem to save took two minutes! Aborting.")
-      case e: CancellationException => // NO-OP
+      case _: TimeoutException => Ocelot.log.warn("Waiting for filesystem to save took two minutes! Aborting.")
+      case _: CancellationException => // NO-OP
     })
     loadFiles(nbt)
     super.load(nbt)
@@ -92,7 +97,9 @@ trait Buffered extends OutputStreamFileSystem {
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
-    saving = BufferedFileSaveHandler.scheduleSave(this)
+    saving = Buffered.fileSaveHandler.withPool(_.submit(new Runnable {
+      override def run(): Unit = saveFiles()
+    }))
   }
 
   def saveFiles(): Unit = this.synchronized {

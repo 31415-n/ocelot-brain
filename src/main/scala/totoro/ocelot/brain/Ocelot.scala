@@ -4,11 +4,11 @@ import java.io.File
 
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
-import totoro.ocelot.brain.entity.fs.BufferedFileSaveHandler
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.machine.{MachineAPI, Registry}
+import totoro.ocelot.brain.util.ThreadPoolFactory
 
 object Ocelot {
   final val Name = "Ocelot"
@@ -68,7 +68,7 @@ object Ocelot {
   }
 
   private def init(): Unit = {
-    BufferedFileSaveHandler.newThreadPool()
+    ThreadPoolFactory.safePools.foreach(_.newThreadPool())
   }
 
   private def postInit(): Unit = {
@@ -91,7 +91,7 @@ object Ocelot {
 
   def shutdown(): Unit = {
     log.info("Preparing for Ocelot shutdown...")
-    BufferedFileSaveHandler.waitForSaving()
+    ThreadPoolFactory.safePools.foreach(_.waitForCompletion())
     log.info("Ocelot is shut down.")
   }
 }
