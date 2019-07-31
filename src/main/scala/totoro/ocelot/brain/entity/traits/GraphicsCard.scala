@@ -69,7 +69,7 @@ trait GraphicsCard extends Environment with Tiered with GPULike {
             s.setForegroundColor(0xFFFFFF)
             s.setBackgroundColor(0x000000)
           }
-          else context.pause(0.2) // To discourage outputting "in realtime" to multiple screens using one GPU.
+          else context.pause(0) // To discourage outputting "in realtime" to multiple screens using one GPU.
           result(true)
         })
       case _ => result(Unit, "not a screen")
