@@ -2,7 +2,7 @@ package totoro.ocelot.brain.loot
 
 import totoro.ocelot.brain.entity.fs.{FileSystemAPI, ReadWriteLabel}
 import totoro.ocelot.brain.entity.traits.{Entity, Environment}
-import totoro.ocelot.brain.entity.{EEPROM, FloppyManaged}
+import totoro.ocelot.brain.entity.{EEPROM, FileSystem, FloppyManaged}
 import totoro.ocelot.brain.util.DyeColor
 import totoro.ocelot.brain.{Ocelot, Settings}
 
@@ -27,7 +27,7 @@ object Loot {
   }
 
   class LootFloppy(name: String, path: String, external: Boolean) extends FloppyManaged(null, name) {
-    override protected def generateEnvironment(): Environment = {
+    override protected def generateEnvironment(): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
         if (external) FileSystemAPI.asReadOnly(FileSystemAPI.fromSaveDirectory("loot/" + path, 0, buffered = false))
         else FileSystemAPI.fromClass(Ocelot.getClass, Settings.resourceDomain, "loot/" + path),

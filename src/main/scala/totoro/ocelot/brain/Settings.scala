@@ -124,7 +124,6 @@ class Settings(val config: Config) {
   // ----------------------------------------------------------------------- //
   // misc
   val inputUsername: Boolean = config.getBoolean("misc.inputUsername")
-  val maxClipboard: Int = config.getInt("misc.maxClipboard") max 0
   val maxNetworkPacketSize: Int = config.getInt("misc.maxNetworkPacketSize") max 0
   // Need at least 4 for nanomachine protocol. Because I can!
   val maxNetworkPacketParts: Int = config.getInt("misc.maxNetworkPacketParts") max 4
@@ -169,6 +168,10 @@ class Settings(val config: Config) {
   val insertIdsInConverters: Boolean = config.getBoolean("debug.insertIdsInConverters")
   val registerLuaJArchitecture: Boolean = config.getBoolean("debug.registerLuaJArchitecture")
   val disableLocaleChanging: Boolean = config.getBoolean("debug.disableLocaleChanging")
+
+  // >= 1.7.4
+  val maxSignalQueueSize: Int =
+    (if (config.hasPath("computer.maxSignalQueueSize")) config.getInt("computer.maxSignalQueueSize") else 256) min 256
 }
 
 object Settings {

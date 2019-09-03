@@ -79,7 +79,9 @@ function tty.stream:write(value)
     return
   end
   local window = tty.window
-  local cursor = window.cursor or {sy = 0, tails = {}}
+  local cursor = window.cursor or {}
+  cursor.sy = cursor.sy or 0
+  cursor.tails = cursor.tails or {}
   local beeped
   local uptime = computer.uptime
   local last_sleep = uptime()
@@ -103,7 +105,7 @@ function tty.stream:write(value)
 
     local x, y = tty.getCursor()
 
-    local _, ei, delim = unicode.sub(window.output_buffer, 1, window.width):find("([\27\t\r\n\a])")
+    local _, ei, delim = unicode.sub(window.output_buffer, 1, window.width):find("([\27\t\r\n\a\b\v\15])")
     local segment = ansi_print .. (ei and window.output_buffer:sub(1, ei - 1) or window.output_buffer)
 
     if segment ~= "" then
@@ -132,8 +134,14 @@ function tty.stream:write(value)
 
     if delim == "\t" then
       x = ((x-1) - ((x-1) % 8)) + 9
-    elseif delim == "\r" or (delim == "\n" and not window.cr_last) then
+    elseif delim == "\r" then
       x = 1
+    elseif delim == "\n" then
+      x = 1
+      y = y + 1
+    elseif delim == "\b" then
+      x = x - 1
+    elseif delim == "\v" then
       y = y + 1
     elseif delim == "\a" and not beeped then
       computer.beep()
@@ -143,7 +151,6 @@ function tty.stream:write(value)
     end
 
     tty.setCursor(x, y)
-    window.cr_last = delim == "\r"
   end
   return cursor.sy
 end

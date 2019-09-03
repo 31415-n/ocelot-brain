@@ -17,7 +17,7 @@ trait GenericCPU extends Environment with MutableProcessor with Tiered {
 
   override def architecture: Class[_ <: Architecture] = {
     if (_architecture != null) _architecture
-    else MachineAPI.architectures.headOption.orNull
+    else MachineAPI.defaultArchitecture
   }
 
   override def callBudget: Double = Settings.get.callBudgets(cpuTier max Tier.One min Tier.Three)

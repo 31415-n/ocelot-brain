@@ -1,20 +1,20 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, WakeMessageAware}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.convert.WrapAsScala._
 
-class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode with DeviceInfo {
+class LinkedCard extends Environment with QuantumNetwork.QuantumNode with WakeMessageAware with DeviceInfo {
   override val node: Node = Network.newNode(this, Visibility.Network).
     withComponent("tunnel", Visibility.Neighbors).
     create()
 
-  var tunnel = "creative"
+  var tunnel: String = "creative"
 
   // ----------------------------------------------------------------------- //
 
@@ -45,10 +45,12 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
   @Callback(direct = true, doc = """function():number -- Gets the maximum packet size (config setting).""")
   def maxPacketSize(context: Context, args: Arguments): Array[AnyRef] = result(Settings.get.maxNetworkPacketSize)
 
-  def receivePacket(packet: Packet) {
-    val distance = 0
-    node.sendToReachable("computer.signal", Seq("modem_message", packet.source, Int.box(packet.port), Double.box(distance)) ++ packet.data: _*)
+  @Callback(direct = true, doc = """function():string -- Gets this link card's shared channel address""")
+  def getChannel(context: Context, args: Arguments): Array[AnyRef] = {
+    result(this.tunnel)
   }
+
+  def receivePacket(packet: Packet): Unit = receivePacket(packet, 0)
 
   // ----------------------------------------------------------------------- //
 
@@ -75,10 +77,12 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
     if (nbt.hasKey(TunnelTag)) {
       tunnel = nbt.getString(TunnelTag)
     }
+    loadWakeMessage(nbt)
   }
 
   override def save(nbt: NBTTagCompound) {
     super.save(nbt)
     nbt.setString(TunnelTag, tunnel)
+    saveWakeMessage(nbt)
   }
 }

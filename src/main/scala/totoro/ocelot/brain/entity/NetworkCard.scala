@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity
 
 import com.google.common.base.Charsets
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, WakeMessageAware}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -11,7 +11,7 @@ import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
 
-class NetworkCard extends Entity with Environment with DeviceInfo {
+class NetworkCard extends Environment with WakeMessageAware with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("modem", Visibility.Neighbors).
     create()
@@ -20,10 +20,6 @@ class NetworkCard extends Entity with Environment with DeviceInfo {
 
   // wired network card is the 1st in the max ports list (before both wireless cards)
   protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.One)
-
-  protected var wakeMessage: Option[String] = None
-
-  protected var wakeMessageFuzzy = false
 
   // ----------------------------------------------------------------------- //
 
@@ -94,23 +90,6 @@ class NetworkCard extends Entity with Environment with DeviceInfo {
     result(true)
   }
 
-  @Callback(direct = true, doc = """function():string, boolean -- Get the current wake-up message.""")
-  def getWakeMessage(context: Context, args: Arguments): Array[AnyRef] = result(wakeMessage.orNull, wakeMessageFuzzy)
-
-  @Callback(doc = """function(message:string[, fuzzy:boolean]):string -- Set the wake-up message and whether to ignore additional data/parameters.""")
-  def setWakeMessage(context: Context, args: Arguments): Array[AnyRef] = {
-    val oldMessage = wakeMessage
-    val oldFuzzy = wakeMessageFuzzy
-
-    if (args.optAny(0, null) == null)
-      wakeMessage = None
-    else
-      wakeMessage = Option(args.checkString(0))
-    wakeMessageFuzzy = args.optBoolean(1, wakeMessageFuzzy)
-
-    result(oldMessage.orNull, oldFuzzy)
-  }
-
   protected def doSend(packet: Packet): Unit = node.sendToReachable("network.message", packet)
 
   protected def doBroadcast(packet: Packet): Unit = node.sendToReachable("network.message", packet)
@@ -129,35 +108,21 @@ class NetworkCard extends Entity with Environment with DeviceInfo {
     if ((message.name == "computer.stopped" || message.name == "computer.started") && node.isNeighborOf(message.source))
       openPorts.clear()
     if (message.name == "network.message") message.data match {
-      case Array(packet: Packet) => receivePacket(packet, 0)
+      case Array(packet: Packet) => receivePacket(packet)
       case _ =>
     }
   }
 
-  protected def receivePacket(packet: Packet, distance: Double) {
-    if (packet.source != node.address && Option(packet.destination).forall(_ == node.address)) {
+  override protected def isPacketAccepted(packet: Packet, distance: Double): Boolean = {
+    if (super.isPacketAccepted(packet, distance)) {
       if (openPorts.contains(packet.port)) {
-        node.sendToReachable("computer.signal", Seq("modem_message", packet.source, Int.box(packet.port), Double.box(distance)) ++ packet.data: _*)
-      }
-      // Accept wake-up messages regardless of port because we close all ports
-      // when our computer shuts down.
-      packet.data match {
-        case Array(message: Array[Byte]) if wakeMessage.contains(new String(message, Charsets.UTF_8)) =>
-          node.sendToNeighbors("computer.start")
-        case Array(message: String) if wakeMessage.contains(message) =>
-          node.sendToNeighbors("computer.start")
-        case Array(message: Array[Byte], _*) if wakeMessageFuzzy && wakeMessage.contains(new String(message, Charsets.UTF_8)) =>
-          node.sendToNeighbors("computer.start")
-        case Array(message: String, _*) if wakeMessageFuzzy && wakeMessage.contains(message) =>
-          node.sendToNeighbors("computer.start")
-        case _ =>
+        return true
       }
     }
+    false
   }
 
-  def receivePacket(packet: Packet): Unit = {
-    receivePacket(packet, 0)
-  }
+  def receivePacket(packet: Packet): Unit = receivePacket(packet, 0)
 
   // ----------------------------------------------------------------------- //
 
@@ -167,21 +132,15 @@ class NetworkCard extends Entity with Environment with DeviceInfo {
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)
-
     assert(openPorts.isEmpty)
     openPorts ++= nbt.getIntArray(OpenPortsTag)
-    if (nbt.hasKey(WakeMessageTag)) {
-      wakeMessage = Option(nbt.getString(WakeMessageTag))
-    }
-    wakeMessageFuzzy = nbt.getBoolean(WakeMessageFuzzyTag)
+    loadWakeMessage(nbt)
   }
 
   override def save(nbt: NBTTagCompound) {
     super.save(nbt)
-
     nbt.setIntArray(OpenPortsTag, openPorts.toArray)
-    wakeMessage.foreach(nbt.setString(WakeMessageTag, _))
-    nbt.setBoolean(WakeMessageFuzzyTag, wakeMessageFuzzy)
+    saveWakeMessage(nbt)
   }
 
   // ----------------------------------------------------------------------- //

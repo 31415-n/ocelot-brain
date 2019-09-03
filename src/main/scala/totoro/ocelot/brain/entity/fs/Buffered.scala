@@ -2,11 +2,19 @@ package totoro.ocelot.brain.entity.fs
 
 import java.io
 import java.io.FileNotFoundException
+import java.nio.ByteBuffer
+import java.util.concurrent.{CancellationException, Future, TimeUnit, TimeoutException}
 
 import org.apache.commons.io.FileUtils
+import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.util.{SafeThreadPool, ThreadPoolFactory}
 
 import scala.collection.mutable
+
+object Buffered {
+  val fileSaveHandler: SafeThreadPool = ThreadPoolFactory.createSafePool("FileSystem", 1)
+}
 
 trait Buffered extends OutputStreamFileSystem {
   protected def fileRoot: io.File
@@ -33,7 +41,20 @@ trait Buffered extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
+  private var saving: Option[Future[_]] = None
+
   override def load(nbt: NBTTagCompound): Unit = {
+    saving.foreach(f => try {
+      f.get(120L, TimeUnit.SECONDS)
+    } catch {
+      case _: TimeoutException => Ocelot.log.warn("Waiting for filesystem to save took two minutes! Aborting.")
+      case _: CancellationException => // NO-OP
+    })
+    loadFiles(nbt)
+    super.load(nbt)
+  }
+
+  private def loadFiles(nbt: NBTTagCompound): Unit = this.synchronized {
     def recurse(path: String, directory: io.File) {
       makeDirectory(path)
       for (child <- directory.listFiles() if FileSystemAPI.isValidFilename(child.getName)) {
@@ -73,13 +94,16 @@ trait Buffered extends OutputStreamFileSystem {
       fileRoot.delete()
     }
     else recurse("", fileRoot)
-
-    super.load(nbt)
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
+    saving = Buffered.fileSaveHandler.withPool(_.submit(new Runnable {
+      override def run(): Unit = saveFiles()
+    }))
+  }
 
+  def saveFiles(): Unit = this.synchronized {
     for ((path, time) <- deletions) {
       val file = new io.File(fileRoot, path)
       if (FileUtils.isFileOlder(file, time))
@@ -87,13 +111,15 @@ trait Buffered extends OutputStreamFileSystem {
     }
     deletions.clear()
 
-    def recurse(path: String) {
+    val buffer = ByteBuffer.allocateDirect(16 * 1024)
+    def recurse(path: String): Boolean = {
       val directory = new io.File(fileRoot, path)
       directory.mkdirs()
+      var dirChanged = false
       for (child <- list(path)) {
         val childPath = path + child
         if (isDirectory(childPath))
-          recurse(childPath)
+          dirChanged = recurse(childPath) || dirChanged
         else {
           val childFile = new io.File(fileRoot, childPath)
           val time = lastModified(childPath)
@@ -102,14 +128,30 @@ trait Buffered extends OutputStreamFileSystem {
             childFile.createNewFile()
             val out = new io.FileOutputStream(childFile).getChannel
             val in = openInputChannel(childPath).get
-            out.transferFrom(in, 0, Long.MaxValue)
+
+            buffer.clear()
+            while (in.read(buffer) != -1) {
+              buffer.flip()
+              out.write(buffer)
+              buffer.compact()
+            }
+
+            buffer.flip()
+            while (buffer.hasRemaining) {
+              out.write(buffer)
+            }
+
             out.close()
             in.close()
             childFile.setLastModified(time)
+            dirChanged = true
           }
         }
       }
-      directory.setLastModified(lastModified(path))
+      if (dirChanged) {
+        directory.setLastModified(lastModified(path))
+        true
+      } else false
     }
     if (list("") == null || list("").isEmpty) {
       fileRoot.delete()

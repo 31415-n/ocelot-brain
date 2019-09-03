@@ -113,6 +113,10 @@ object WirelessNetworkCard {
     )
 
     override def getDeviceInfo: Map[String, String] = deviceInfo
+
+    override protected def isPacketAccepted(packet: Packet, distance: Double): Boolean = {
+      (shouldSendWiredTraffic || distance == 0) && super.isPacketAccepted(packet, distance)
+    }
   }
 
   class Tier2 extends Tier1 {

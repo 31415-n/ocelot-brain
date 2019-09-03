@@ -170,4 +170,11 @@ object Demo extends App {
     loadedWorkspace.update()
     Thread.sleep(50)
   }
+
+  computer.turnOff()
+
+  /**
+    * Necessary to successfully complete multi-threaded saving operation, and finalize other Ocelot tasks.
+    */
+  Ocelot.shutdown()
 }

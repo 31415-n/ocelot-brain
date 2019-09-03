@@ -21,5 +21,15 @@ This repository contains some examples of the library usage in the
 
 At the moment of development I've used Scala 2.12.
 
-**P.S.** This project is a *work-in-progress*, breaking changes and bugs will break
-things from time to time. Beware.
+### usage
+
+The core can be configured using a `brain.conf` file.  
+This file has the exact format of OpenComputers configuration file.
+
+You can take one from Minecraft (or copy from the
+[`resources`](https://gitlab.com/cc-ru/ocelot/ocelot-brain/blob/master/src/main/resources/application.conf)
+folder) and modify it as needed.  
+All not used fields will be just ignored.
+
+**P.S.** Beware! This project is a *work-in-progress*, expect breaking changes or bugs
+from time to time.

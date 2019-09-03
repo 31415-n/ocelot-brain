@@ -69,6 +69,8 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   private var message: Option[String] = None // For error messages.
 
+  private val maxSignalQueueSize = Settings.get.maxSignalQueueSize
+
   // ----------------------------------------------------------------------- //
 
   def onHostChanged(): Unit = {
@@ -253,30 +255,45 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
   }
 
+  def convertArg(param: Any): AnyRef = {
+    param match {
+      case arg: java.lang.Boolean => arg
+      case arg: java.lang.Character => Double.box(arg.toDouble)
+      case arg: java.lang.Long => arg
+      case arg: java.lang.Number => Double.box(arg.doubleValue)
+      case arg: java.lang.String => arg
+      case arg: Array[Byte] => arg
+      case arg: NBTTagCompound => arg
+      case arg =>
+        Ocelot.log.warn("Trying to push signal with an unsupported argument of type " + arg.getClass.getName)
+        null
+    }
+  }
+
   override def signal(name: String, args: Any*): Boolean = {
     state.synchronized(state.top match {
       case MachineAPI.State.Stopped | MachineAPI.State.Stopping => return false
       case _ => signals.synchronized {
-        if (signals.size >= 256) return false
+        if (signals.size >= maxSignalQueueSize) return false
         else if (args == null) {
           signals.enqueue(new MachineAPI.Signal(name, Array.empty))
         }
         else {
           signals.enqueue(new MachineAPI.Signal(name, args.map {
             case null | Unit | None => null
-            case arg: java.lang.Boolean => arg
-            case arg: java.lang.Character => Double.box(arg.toDouble)
-            case arg: java.lang.Long => arg
-            case arg: java.lang.Number => Double.box(arg.doubleValue)
-            case arg: java.lang.String => arg
-            case arg: Array[Byte] => arg
-            case arg: Map[_, _] if arg.isEmpty || arg.head._1.isInstanceOf[String] && arg.head._2.isInstanceOf[String] => arg
-            case arg: mutable.Map[_, _] if arg.isEmpty || arg.head._1.isInstanceOf[String] && arg.head._2.isInstanceOf[String] => arg.toMap
-            case arg: java.util.Map[_, _] if arg.isEmpty || arg.head._1.isInstanceOf[String] && arg.head._2.isInstanceOf[String] => arg.toMap
-            case arg: NBTTagCompound => arg
-            case arg =>
-              Ocelot.log.warn("Trying to push signal with an unsupported argument of type " + arg.getClass.getName)
-              null
+            case arg: java.util.Map[_, _] =>
+              val convertedMap = new mutable.HashMap[AnyRef, AnyRef]
+              for ((key, value) <- arg) {
+                val convertedKey = convertArg(key)
+                if (convertedKey != null) {
+                  val convertedValue = convertArg(value)
+                  if (convertedValue != null) {
+                    convertedMap += convertedKey -> convertedValue
+                  }
+                }
+              }
+              convertedMap
+            case arg => convertArg(arg)
           }.toArray[AnyRef]))
         }
       }
@@ -362,16 +379,20 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   def isRunning(context: Context, args: Arguments): Array[AnyRef] =
     result(isRunning)
 
-  @Callback(doc = """function([frequency:number[, duration:number]]) -- Plays a tone, useful to alert users via audible feedback.""")
+  @Callback(doc = """function([frequency:string or number[, duration:number]]) -- Plays a tone, useful to alert users via audible feedback.""")
   def beep(context: Context, args: Arguments): Array[AnyRef] = {
-    val frequency = args.optInteger(0, 440)
-    if (frequency < 20 || frequency > 2000) {
-      throw new IllegalArgumentException("invalid frequency, must be in [20, 2000]")
+    if (args.count == 1 && args.isString(0)) {
+      beep(args.checkString(0))
+    } else {
+      val frequency = args.optInteger(0, 440)
+      if (frequency < 20 || frequency > 2000) {
+        throw new IllegalArgumentException("invalid frequency, must be in [20, 2000]")
+      }
+      val duration = args.optDouble(1, 0.1)
+      val durationInMilliseconds = math.max(50, math.min(5000, (duration * 1000).toInt))
+      beep(frequency.toShort, durationInMilliseconds.toShort)
+      context.pause(durationInMilliseconds / 1000.0)
     }
-    val duration = args.optDouble(1, 0.1)
-    val durationInMilliseconds = math.max(50, math.min(5000, (duration * 1000).toInt))
-    beep(frequency.toShort, durationInMilliseconds.toShort)
-    context.pause(durationInMilliseconds / 1000.0)
     null
   }
 
@@ -690,6 +711,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
     else {
       // Clean up in case we got a weird state stack.
+      onHostChanged()
       close()
     }
   })

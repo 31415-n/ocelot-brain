@@ -5,18 +5,23 @@ import java.io.File
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
 import totoro.ocelot.brain.loot.Loot
-import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
-import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
-import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
-import totoro.ocelot.brain.util.FontUtils
+import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
+import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
+import totoro.ocelot.brain.machine.{MachineAPI, Registry}
+import totoro.ocelot.brain.util.ThreadPoolFactory
 
 object Ocelot {
   final val Name = "Ocelot"
   // do not forget to change the version in `build.sbt`
-  final val Version = "0.2.7"
+  final val Version = "0.3.2"
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
+
+  /**
+    * This `preInit`, `init`, `postInit` thing is a legacy from Minecraft/Forge life cycle.
+    * It can be replaced with simple `initialization` procedure in the future.
+    */
 
   private def preInit(): Unit = {
     log.info("Loading configuration...")
@@ -64,6 +69,8 @@ object Ocelot {
     Loot.init()
 
     FontUtils.init()
+
+    ThreadPoolFactory.safePools.foreach(_.newThreadPool())
   }
 
   private def postInit(): Unit = {
@@ -78,9 +85,16 @@ object Ocelot {
 
   def initialize(): Unit = {
     log.info("Brain initialization...")
+    log.info("Version: " + Ocelot.Version)
     preInit()
     init()
     postInit()
     log.info("Initialization finished.")
+  }
+
+  def shutdown(): Unit = {
+    log.info("Preparing for Ocelot shutdown...")
+    ThreadPoolFactory.safePools.foreach(_.waitForCompletion())
+    log.info("Ocelot is shut down.")
   }
 }

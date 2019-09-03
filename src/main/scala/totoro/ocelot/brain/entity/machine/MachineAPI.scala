@@ -3,6 +3,7 @@ package totoro.ocelot.brain.entity.machine
 import java.util.concurrent.ScheduledExecutorService
 
 import totoro.ocelot.brain.entity.traits.MachineHost
+import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.util.ThreadPoolFactory
 import totoro.ocelot.brain.Settings
 
@@ -42,6 +43,11 @@ object MachineAPI {
     * until it also created a new machine using that architecture.
     */
   def architectures: Iterable[Class[_ <: Architecture]] = checked.keys
+
+  def defaultArchitecture: Class[_ <: Architecture] =
+    if (Settings.get.forceLuaJ)
+      classOf[LuaJLuaArchitecture]
+    else architectures.headOption.orNull
 
   /**
     * Get the name of the specified architecture.

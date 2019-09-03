@@ -788,14 +788,9 @@ sandbox = {
   _VERSION = _VERSION:match("5.3") and "Lua 5.3" or "Lua 5.2",
   xpcall = function(f, msgh, ...)
     local handled = false
-    local result = table.pack(xpcall(f, function(...)
-      if handled then
-        return ...
-      else
-        handled = true
-        return msgh(...)
-      end
-    end, ...))
+    -- TODO: apply some kind of security patch here.
+    -- Default implementation through `xpcall` may cause an infinite loop with CPU loaded on 100%.
+    local result = table.pack(pcall(f, ...))
     checkDeadline()
     return table.unpack(result, 1, result.n)
   end,

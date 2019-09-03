@@ -1,8 +1,9 @@
 -- called from /init.lua
 local raw_loadfile = ...
 
-_G._OSVERSION = "OpenOS 1.7.2"
+_G._OSVERSION = "OpenOS 1.7.4"
 
+-- luacheck: globals component computer unicode _OSVERSION
 local component = component
 local computer = computer
 local unicode = unicode
@@ -20,28 +21,23 @@ computer.shutdown = function(reboot)
   shutdown(reboot)
 end
 
-local screen = component.list('screen', true)()
-for address in component.list('screen', true) do
-  if #component.invoke(address, 'getKeyboards') > 0 then
-    screen = address
-    break
-  end
-end
-
-_G.boot_screen = screen
-
--- Report boot progress if possible.
-local gpu = component.list("gpu", true)()
 local w, h
-if gpu and screen then
+local screen = component.list("screen", true)()
+local gpu = screen and component.list("gpu", true)()
+if gpu then
   gpu = component.proxy(gpu)
-  gpu.bind(screen)
+  if not gpu.getScreen() then
+    gpu.bind(screen)
+  end
+  _G.boot_screen = gpu.getScreen()
   w, h = gpu.maxResolution()
   gpu.setResolution(w, h)
   gpu.setBackground(0x000000)
   gpu.setForeground(0xFFFFFF)
   gpu.fill(1, 1, w, h, " ")
 end
+
+-- Report boot progress if possible.
 local y = 1
 local uptime = computer.uptime
 -- we actually want to ref the original pullSignal here because /lib/event intercepts it later
@@ -49,7 +45,7 @@ local uptime = computer.uptime
 local pull = computer.pullSignal
 local last_sleep = uptime()
 local function status(msg)
-  if gpu and screen then
+  if gpu then
     gpu.set(1, y, msg)
     if y == h then
       gpu.copy(1, 2, w, h - 1, 0, -1)
@@ -73,13 +69,9 @@ end
 status("Booting " .. _OSVERSION .. "...")
 
 -- Custom low-level dofile implementation reading from our ROM.
-local loadfile = function(file)
-  status("> " .. file)
-  return raw_loadfile(file)
-end
-
 local function dofile(file)
-  local program, reason = loadfile(file)
+  status("> " .. file)
+  local program, reason = raw_loadfile(file)
   if program then
     local result = table.pack(pcall(program))
     if result[1] then
@@ -112,11 +104,11 @@ do
   package.loaded.component = component
   package.loaded.computer = computer
   package.loaded.unicode = unicode
-  package.loaded.buffer = assert(loadfile("/lib/buffer.lua"))()
-  package.loaded.filesystem = assert(loadfile("/lib/filesystem.lua"))()
+  package.loaded.buffer = dofile("/lib/buffer.lua")
+  package.loaded.filesystem = dofile("/lib/filesystem.lua")
 
   -- Inject the io modules
-  _G.io = assert(loadfile("/lib/io.lua"))()
+  _G.io = dofile("/lib/io.lua")
 end
 
 status("Initializing file system...")
