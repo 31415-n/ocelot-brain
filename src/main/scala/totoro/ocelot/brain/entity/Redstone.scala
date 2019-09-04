@@ -4,7 +4,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
-import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.{Direction, Tier}
 import totoro.ocelot.brain.{Constants, Settings}
 
 object Redstone {

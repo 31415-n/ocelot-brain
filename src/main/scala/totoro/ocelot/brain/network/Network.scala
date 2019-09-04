@@ -389,8 +389,8 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) ext
       val entityNbt = vertexNbt.getTag(EntityTag)
 
       EntityFactory.from(entityNbt.asInstanceOf[NBTTagCompound]) match {
-        case entity: Environment =>
-          addNew(entity.node)
+        case Some(environment: Environment) =>
+          addNew(environment.node)
           val edgesNbt = vertexNbt.getTagList(EdgesTag, NBT.TAG_COMPOUND)
           edgesNbt.foreach((edgeNbt: NBTTagCompound) => {
             val leftAddress = edgeNbt.getString(LeftTag)
@@ -401,7 +401,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) ext
               connect(leftNode.data, rightNode.data)
             }
           })
-        case _ => println("Cannot convert: " + entityNbt)
+        case x => println("Cannot convert: " + entityNbt + ". Got: " + x)
       }
     }
   }

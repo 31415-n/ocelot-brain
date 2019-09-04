@@ -60,25 +60,25 @@ object Demo extends App {
     * They form there their own isolated network. This prevents components from leaking into the global network
     * and cause processor limits overflow and component clashes.
     */
-  val cpu = new CPU(Tier.Three)
-  computer.add(cpu)
-
-  val gpu = new GraphicsCard(Tier.Three)
-  computer.add(gpu)
-
-  val memory = new Memory(Tier.Six)
-  computer.add(memory)
-
-  val redstone = new Redstone.Tier1()
-  computer.add(redstone)
+//  val cpu = new CPU(Tier.Three)
+//  computer.add(cpu)
+//
+//  val gpu = new GraphicsCard(Tier.Three)
+//  computer.add(gpu)
+//
+//  val memory = new Memory(Tier.Six)
+//  computer.add(memory)
+//
+//  val redstone = new Redstone.Tier1()
+//  computer.add(redstone)
 
   /**
     * When creating a new hard drive, you can specify it's address.
     * If you will leave it `null`, then new random UUID will be used.
     */
 
-  val hdd = new HDDManaged("59aef805-4085-485f-b92c-163b3f0426da", Tier.One, "volume 1")
-  computer.add(hdd)
+//  val hdd = new HDDManaged("59aef805-4085-485f-b92c-163b3f0426da", Tier.One, "volume 1")
+//  computer.add(hdd)
 
   /**
     * Custom EEPROM can be created like this:
@@ -98,8 +98,8 @@ object Demo extends App {
     * `
     */
 
-  computer.add(Loot.AdvLoaderEEPROM.create())
-  computer.add(Loot.OpenOsFloppy.create())
+//  computer.add(Loot.AdvLoaderEEPROM.create())
+//  computer.add(Loot.OpenOsFloppy.create())
 
   val screen = new Screen(Tier.Three)
   cable.connect(screen)
@@ -165,6 +165,13 @@ object Demo extends App {
     */
   val loadedWorkspace = new Workspace()
   loadedWorkspace.load(nbt)
+
+  println("Loaded.Name: " + loadedWorkspace.name);
+  loadedWorkspace.getNetworksIter.foreach(network => {
+    network.nodes.foreach(node => {
+      println("Node: " + node.address)
+    })
+  })
 
   while (loadedWorkspace.getIngameTime < 100) {
     loadedWorkspace.update()

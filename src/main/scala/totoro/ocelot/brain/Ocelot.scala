@@ -4,11 +4,11 @@ import java.io.File
 
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
+import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
+import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
+import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.loot.Loot
-import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
-import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
-import totoro.ocelot.brain.machine.{MachineAPI, Registry}
-import totoro.ocelot.brain.util.ThreadPoolFactory
+import totoro.ocelot.brain.util.{FontUtils, ThreadPoolFactory}
 
 object Ocelot {
   final val Name = "Ocelot"
@@ -63,7 +63,8 @@ object Ocelot {
     EntityFactory.add(classOf[Redstone.Tier1])
     EntityFactory.add(classOf[Redstone.Tier2])
     EntityFactory.add(classOf[Screen])
-    EntityFactory.add(classOf[WirelessNetworkCard])
+    EntityFactory.add(classOf[WirelessNetworkCard.Tier1])
+    EntityFactory.add(classOf[WirelessNetworkCard.Tier2])
 
     log.info("Registering loot (floppies and EEPROMs with standard OpenComputers software)...")
     Loot.init()

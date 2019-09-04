@@ -3,9 +3,9 @@ package totoro.ocelot.brain.entity.machine
 import java.util.concurrent.ScheduledExecutorService
 
 import totoro.ocelot.brain.entity.traits.MachineHost
-import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.util.ThreadPoolFactory
 import totoro.ocelot.brain.Settings
+import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 
 import scala.collection.mutable
 

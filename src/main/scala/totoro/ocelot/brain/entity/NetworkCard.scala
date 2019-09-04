@@ -1,7 +1,6 @@
 package totoro.ocelot.brain.entity
 
-import com.google.common.base.Charsets
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, WakeMessageAware}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, WakeMessageAware}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -11,7 +10,7 @@ import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
 
-class NetworkCard extends Environment with WakeMessageAware with DeviceInfo {
+class NetworkCard extends Entity with Environment with WakeMessageAware with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("modem", Visibility.Neighbors).
     create()
@@ -140,7 +139,8 @@ class NetworkCard extends Environment with WakeMessageAware with DeviceInfo {
   override def save(nbt: NBTTagCompound) {
     super.save(nbt)
     nbt.setIntArray(OpenPortsTag, openPorts.toArray)
-    saveWakeMessage(nbt)
+    wakeMessage.foreach(nbt.setString(WakeMessageTag, _))
+    nbt.setBoolean(WakeMessageFuzzyTag, wakeMessageFuzzy)
   }
 
   // ----------------------------------------------------------------------- //

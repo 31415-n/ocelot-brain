@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.loot
 
-import totoro.ocelot.brain.entity.fs.{FileSystemAPI, ReadWriteLabel}
+import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI, ReadWriteLabel}
 import totoro.ocelot.brain.entity.traits.{Entity, Environment}
-import totoro.ocelot.brain.entity.{EEPROM, FileSystem, FloppyManaged}
+import totoro.ocelot.brain.entity.{EEPROM, FloppyManaged}
 import totoro.ocelot.brain.util.DyeColor
 import totoro.ocelot.brain.{Ocelot, Settings}
 
