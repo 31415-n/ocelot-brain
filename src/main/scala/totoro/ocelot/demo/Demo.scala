@@ -1,7 +1,7 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen, EEPROM}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.network.Network
@@ -72,32 +72,67 @@ object Demo extends App {
   computer.add(redstone)
 
   /**
-    * When creating a new hard drive, you can specify it's address.
+    * When creating a new hard drive, you can specify its address.
     * If you will leave it `null`, then new random UUID will be used.
     */
 
-  val hdd = new HDDManaged("59aef805-4085-485f-b92c-163b3f0426da", Tier.One, "volume 1")
+  val hdd = new HDDManaged("59aef805-4085-485f-b92c-163b3f0426da", Tier.One, "init")
   computer.add(hdd)
 
   /**
-    * Custom EEPROM can be created like this:
-    * `
-    * val eeprom = new EEPROM()
-    * eeprom.codeData =
-    *   """
-    *     |computer.beep(1000, 1)
-    *     |local gpu = component.proxy(component.list("gpu")())
-    *     |local screen = component.list("screen")()
-    *     |gpu.bind(screen)
-    *     |gpu.set(1, 1, "Hello from Ocelot EEPROM!")
-    *     |while (true) do end
-    *   """.stripMargin.getBytes("UTF-8")
-    * eeprom.label = "Test BIOS"
-    * computer.add(eeprom)
-    * `
-    */
+  Custom EEPROM can be created like this:
+  **/
 
-  computer.add(Loot.AdvLoaderEEPROM.create())
+  val eeprom = new EEPROM()
+  eeprom.codeData =
+    """
+      |local gpu = component.proxy((component.list("gpu", true)()))
+      |local fs
+      |
+      |for address in component.list("filesystem", true) do
+      |  if component.invoke(address, "getLabel") == "init" then
+      |    fs = component.proxy(address)
+      |    break
+      |  end
+      |end
+      |
+      |assert(fs, "no init filesystem found")
+      |
+      |gpu.bind((component.list("screen", true)()))
+      |gpu.set(1, 1, "Running script from [59aef805]/init.lua")
+      |
+      |local w, h = gpu.getResolution()
+      |
+      |local file = fs.open("/init.lua", "r")
+      |
+      |local chunk = assert(load(function()
+      |  return fs.read(file, math.huge)
+      |end, "/init.lua", "t"))
+      |
+      |fs.close(file)
+      |gpu.fill(1, 1, w, h, " ")
+      |
+      |local returnValues = table.pack(xpcall(chunk, debug.traceback, ...))
+      |local success = table.remove(returnValues, 1)
+      |
+      |if not success then
+      |  error(returnValues[1], 0)
+      |else
+      |  local data = {}
+      |
+      |  for i = 1, returnValues.n, 1 do
+      |    table.insert(data, tostring(returnValues[i]))
+      |  end
+      |
+      |  gpu.set(1, 1, table.concat(data, ", "))
+      |end
+      |
+      |computer.shutdown()
+    """.stripMargin.getBytes("UTF-8")
+  eeprom.label = "Test BIOS"
+  computer.add(eeprom)
+
+  // computer.add(Loot.AdvLoaderEEPROM.create())
   computer.add(Loot.OpenOsFloppy.create())
 
   val screen = new Screen(Tier.Three)
