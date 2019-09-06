@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.entity.machine
 
-import totoro.ocelot.brain.entity.traits.Persistable
+import totoro.ocelot.brain.util.Persistable
 
 /**
   * A value object can be pushed to a machine like a primitive value.

@@ -8,6 +8,8 @@ import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
 import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.loot.Loot
+import totoro.ocelot.brain.nbt.NBTPersistence
+import totoro.ocelot.brain.nbt.NBTPersistence.TieredConstructor
 import totoro.ocelot.brain.util.{FontUtils, ThreadPoolFactory}
 
 object Ocelot {
@@ -40,34 +42,15 @@ object Ocelot {
       MachineAPI.add(classOf[LuaJLuaArchitecture], "LuaJ")
     }
 
-    log.info("Registering available entities (to be able to persist them later)...")
-    EntityFactory.add(classOf[APU])
-    EntityFactory.add(classOf[Cable])
-    EntityFactory.add(classOf[Case])
-    EntityFactory.add(classOf[CPU])
-    EntityFactory.add(classOf[DataCard.Tier1])
-    EntityFactory.add(classOf[DataCard.Tier2])
-    EntityFactory.add(classOf[DataCard.Tier3])
-    EntityFactory.add(classOf[HDDUnmanaged])
-    EntityFactory.add(classOf[HDDManaged])
-    EntityFactory.add(classOf[EEPROM])
-    EntityFactory.add(classOf[FloppyManaged])
-    EntityFactory.add(classOf[FloppyUnmanaged])
-    EntityFactory.add(classOf[FloppyDiskDrive])
-    EntityFactory.add(classOf[GraphicsCard])
-    EntityFactory.add(classOf[InternetCard])
-    EntityFactory.add(classOf[Keyboard])
-    EntityFactory.add(classOf[LinkedCard])
-    EntityFactory.add(classOf[Memory])
-    EntityFactory.add(classOf[NetworkCard])
-    EntityFactory.add(classOf[Redstone.Tier1])
-    EntityFactory.add(classOf[Redstone.Tier2])
-    EntityFactory.add(classOf[Screen])
-    EntityFactory.add(classOf[WirelessNetworkCard.Tier1])
-    EntityFactory.add(classOf[WirelessNetworkCard.Tier2])
-
     log.info("Registering loot (floppies and EEPROMs with standard OpenComputers software)...")
     Loot.init()
+
+    log.info("Registering entity constructors (for persistence purposes)...")
+    val tieredConstructor = new TieredConstructor()
+    NBTPersistence.registerConstructor(classOf[Case].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[CPU].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[Memory].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[GraphicsCard].getName, tieredConstructor)
 
     FontUtils.init()
 

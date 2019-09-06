@@ -343,6 +343,8 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
       lua.setTop(0)
 
       //persistence.unpersist(SaveHandler.load(nbt, machine.node.address + "_kernel"))
+      persistence.unpersist(nbt.getByteArray(machine.node.address + "_kernel"))
+
       if (!lua.isThread(1)) {
         // This shouldn't really happen, but there's a chance it does if
         // the save was corrupt (maybe someone modified the Lua files).
@@ -350,6 +352,7 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
       }
       if (state.contains(MachineAPI.State.SynchronizedCall) || state.contains(MachineAPI.State.SynchronizedReturn)) {
         //persistence.unpersist(SaveHandler.load(nbt, machine.node.address + "_stack"))
+        persistence.unpersist(nbt.getByteArray(machine.node.address + "_stack"))
         if (!(if (state.contains(MachineAPI.State.SynchronizedCall)) lua.isFunction(2) else lua.isTable(2))) {
           // Same as with the above, should not really happen normally, but
           // could for the same reasons.
@@ -388,11 +391,15 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
       assert(lua.isThread(1))
 
       //SaveHandler.scheduleSave(machine.host, nbt, machine.node.address + "_kernel", persistence.persist(1))
+      nbt.setByteArray(machine.node.address + "_kernel", persistence.persist(1))
+
       // While in a driver call we have one object on the global stack: either
       // the function to call the driver with, or the result of the call.
       if (state.contains(MachineAPI.State.SynchronizedCall) || state.contains(MachineAPI.State.SynchronizedReturn)) {
         assert(if (state.contains(MachineAPI.State.SynchronizedCall)) lua.isFunction(2) else lua.isTable(2))
+
         //SaveHandler.scheduleSave(machine.host, nbt, machine.node.address + "_stack", persistence.persist(2))
+        nbt.setByteArray(machine.node.address + "_stack", persistence.persist(2))
       }
 
       nbt.setInteger("kernelMemory", math.ceil(kernelMemory / ramScale).toInt)

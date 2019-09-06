@@ -1,4 +1,4 @@
-package totoro.ocelot.brain.entity.traits
+package totoro.ocelot.brain.util
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
 

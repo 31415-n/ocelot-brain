@@ -252,8 +252,12 @@ trait Node {
   def load(nbt: NBTTagCompound): Unit = {
     if (nbt.hasKey(Node.AddressTag)) {
       val newAddress = nbt.getString(Node.AddressTag)
-      if (!Strings.isNullOrEmpty(newAddress) && newAddress != address && network != null)
-        network.remap(this, newAddress)
+      if (!Strings.isNullOrEmpty(newAddress) && newAddress != address) {
+        if (network == null)
+          address = newAddress
+        else
+          network.remap(this, newAddress)
+      }
     }
   }
 

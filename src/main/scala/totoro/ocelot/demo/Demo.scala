@@ -1,7 +1,8 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
+import totoro.ocelot.brain.entity.traits.Environment
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -19,56 +20,46 @@ object Demo extends App {
   /**
     * All things inside of Ocelot usually are grouped by workspaces.
     * Workspace is like 'world' in Minecraft. It has it's own timeflow,
-    * it's own name, random numbers generator and a list of networks with entities.
-    * Workspace can be serialized or deserialized from NBT tags.
+    * it's own name, random numbers generator and a list of entities ('blocks' and 'items' in Minecraft).
+    * Workspace can be serialized to an NBT tag, and then restored back from it.
+    * Workspace is also responsible for the lifecycle of all its entities.
+    *
+    * For things to work correctly, you will usually add new entities to some workspace.
+    * Entities then will be managed by this workspace.
+    * Entities still can form connections between workspaces, and exchange data.
     */
   val workspace = new Workspace()
 
   /**
-    * Network connects things.
-    * Without network - all `a.connect(b)` calls will fail.
-    * Without network the components cannot "see" each other.
-    * Also network transmits modem messages and OC-signals.
-    * We can either create our own network, or use the workspace Default network.
-    */
-  val network = workspace.DefaultNetwork
-
-  /**
-    * We choose the cable to be the base of our demo network.
+    * We choose the cable to be the base of our demo setup.
     * (But we can use any other component actually.)
     */
-  val cable = new Cable()
-
-  /**
-    * We need to connect one of entites to the network explicitly.
-    * All subsequent connection of other entities to this one will pass the network reference implicitly.
-    */
-  network.connect(cable)
+  val cable = workspace.add(new Cable())
 
   /**
     * Then we create a new entity - computer case.
     */
-  val computer = new Case(Tier.Four)
+  val computer = workspace.add(new Case(Tier.Four))
 
   /**
-    * Here on the left is an already connected to the network entity, on the right - the new one.
+    * The cable and the computer case still exist separately. They are in the same workspace,
+    * but not connected.
     */
   cable.connect(computer)
 
   /**
-    * Computer components need to be added inside of the computers case.
-    * They form there their own isolated network. This prevents components from leaking into the global network
-    * and cause processor limits overflow and component clashes.
+    * Computer components do not need to be added to the workspace explicitly,
+    * because they are a part of Case entity.
     */
-//  val cpu = new CPU(Tier.Three)
-//  computer.add(cpu)
-//
-//  val gpu = new GraphicsCard(Tier.Three)
-//  computer.add(gpu)
-//
-//  val memory = new Memory(Tier.Six)
-//  computer.add(memory)
-//
+  val cpu = new CPU(Tier.Three)
+  computer.add(cpu)
+
+  val gpu = new GraphicsCard(Tier.Three)
+  computer.add(gpu)
+
+  val memory = new Memory(Tier.Six)
+  computer.add(memory)
+
 //  val redstone = new Redstone.Tier1()
 //  computer.add(redstone)
 
@@ -98,10 +89,21 @@ object Demo extends App {
     * `
     */
 
-//  computer.add(Loot.AdvLoaderEEPROM.create())
+  val eeprom = new EEPROM()
+  eeprom.codeData =
+    """
+      |computer.beep(1000, 1)
+      |local gpu = component.proxy(component.list("gpu")())
+      |local screen = component.list("screen")()
+      |gpu.bind(screen)
+    """.stripMargin.getBytes("UTF-8")
+  eeprom.label = "Test BIOS"
+  computer.add(eeprom)
+
+//  computer.add(Loot.OpenOsEEPROM.create())
 //  computer.add(Loot.OpenOsFloppy.create())
 
-  val screen = new Screen(Tier.Three)
+  val screen = workspace.add(new Screen(Tier.One))
   cable.connect(screen)
 
   // register some event listeners
@@ -134,7 +136,7 @@ object Demo extends App {
     * The `computer.machine.isRunning` flag will tell you, if the computer is still operational,
     * or had it crashed or stopped the execution otherwise.
     */
-  while (workspace.getIngameTime < 10) {
+  while (workspace.getIngameTime < 20) {
     /**
       * The `update()` method of workspace will update all components in each registered network,
       * that need to be updated.
@@ -167,11 +169,9 @@ object Demo extends App {
   loadedWorkspace.load(nbt)
 
   println("Loaded.Name: " + loadedWorkspace.name);
-  loadedWorkspace.getNetworksIter.foreach(network => {
-    network.nodes.foreach(node => {
-      println("Node: " + node.address)
-    })
-  })
+  loadedWorkspace.getEntitiesIter.foreach { case environment: Environment =>
+      println("Loaded.Entity.Address: " + environment.node.address)
+  }
 
   while (loadedWorkspace.getIngameTime < 100) {
     loadedWorkspace.update()

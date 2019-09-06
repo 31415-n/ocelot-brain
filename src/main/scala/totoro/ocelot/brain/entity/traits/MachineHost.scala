@@ -8,7 +8,7 @@ import totoro.ocelot.brain.network.Node
   *
   * It provides some context for the machine.
   */
-trait MachineHost extends Inventory {
+trait MachineHost extends Inventory with WorkspaceAware {
   /**
     * The machine currently hosted.
     */

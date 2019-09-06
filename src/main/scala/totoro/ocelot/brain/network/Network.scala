@@ -1,9 +1,9 @@
 package totoro.ocelot.brain.network
 
-import totoro.ocelot.brain.entity.EntityFactory
-import totoro.ocelot.brain.entity.traits.{Environment, Persistable, WorkspaceAware}
+import totoro.ocelot.brain.entity.traits.{Environment, WorkspaceAware}
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.nbt.ExtendedNBT._
+import totoro.ocelot.brain.network.Network.Edge
 import totoro.ocelot.brain.network.Visibility.Visibility
 import totoro.ocelot.brain.{Ocelot, Settings}
 
@@ -12,7 +12,7 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 // Looking at this again after some time, the similarity to const in C++ is somewhat uncanny.
-class Network private(private val data: mutable.Map[String, Network.Vertex]) extends WorkspaceAware with Persistable {
+class Network private(private val data: mutable.Map[String, Network.Vertex]) {
 
   def this() = {
     this(mutable.Map[String, Network.Vertex]())
@@ -354,55 +354,14 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) ext
 
   // Persistence
   // ----------------------------------------------------------------------- //
-
-  private val EntityTag = "entity"
-  private val EdgesTag = "edges"
-  private val LeftTag = "left"
-  private val RightTag = "right"
-
-  override def save(nbt: NBTTagCompound): Unit = {
-    for ((address, node) <- data) {
-      val vertexNbt = new NBTTagCompound()
-
-      val hostNbt = new NBTTagCompound()
-      node.data.host.save(hostNbt)
-      vertexNbt.setTag(EntityTag, hostNbt)
-
-      val edgesList: ArrayBuffer[NBTBase] = node.edges.map(edge => {
+  def save(): mutable.Iterable[NBTTagCompound] = {
+    data.flatMap { case (_, node) =>
+      node.edges.map(edge => {
         val edgeNbt = new NBTTagCompound()
-        edgeNbt.setString(LeftTag, edge.left.data.address)
-        edgeNbt.setString(RightTag, edge.right.data.address)
+        edgeNbt.setString(Network.LeftTag, edge.left.data.address)
+        edgeNbt.setString(Network.RightTag, edge.right.data.address)
         edgeNbt
       })
-      vertexNbt.setTagList(EdgesTag, edgesList.asJava)
-
-      nbt.setTag(address, vertexNbt)
-    }
-  }
-
-  override def load(nbt: NBTTagCompound): Unit = {
-    data.clear()
-    for (key <- nbt.getKeySet.asScala) {
-      val address = key.asInstanceOf[String]
-
-      val vertexNbt = nbt.getCompoundTag(address)
-      val entityNbt = vertexNbt.getTag(EntityTag)
-
-      EntityFactory.from(entityNbt.asInstanceOf[NBTTagCompound]) match {
-        case Some(environment: Environment) =>
-          addNew(environment.node)
-          val edgesNbt = vertexNbt.getTagList(EdgesTag, NBT.TAG_COMPOUND)
-          edgesNbt.foreach((edgeNbt: NBTTagCompound) => {
-            val leftAddress = edgeNbt.getString(LeftTag)
-            val rightAddress = edgeNbt.getString(RightTag)
-            if (data.contains(leftAddress) && data.contains(rightAddress)) {
-              val leftNode = data(leftAddress)
-              val rightNode = data(rightAddress)
-              connect(leftNode.data, rightNode.data)
-            }
-          })
-        case x => println("Cannot convert: " + entityNbt + ". Got: " + x)
-      }
     }
   }
 }
@@ -613,4 +572,9 @@ object Network {
       }
     }) filter (_.nonEmpty) map (_.get)
   }
+
+  // ----------------------------------------------------------------------- //
+
+  val LeftTag = "left"
+  val RightTag = "right"
 }

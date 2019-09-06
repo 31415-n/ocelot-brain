@@ -27,6 +27,8 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   // ----------------------------------------------------------------------- //
 
+  override def needUpdate: Boolean = true
+
   override def update(): Unit = {
     // If we're not yet in a network we might have just been loaded from disk,
     // meaning there may be other tile entities that also have not re-joined
@@ -58,7 +60,7 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   // ----------------------------------------------------------------------- //
 
-  private final val ComputerTag = Settings.namespace + "computer"
+  private final val ComputerTag = "computer"
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)

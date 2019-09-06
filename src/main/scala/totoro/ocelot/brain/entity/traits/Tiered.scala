@@ -1,6 +1,7 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.util.Persistable
 
 /**
   * This is implemented by most things that are tiered in some way.

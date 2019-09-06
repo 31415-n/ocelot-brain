@@ -1,9 +1,9 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.EntityFactory
 import totoro.ocelot.brain.nbt.ExtendedNBT._
-import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
+import totoro.ocelot.brain.nbt.{NBT, NBTPersistence, NBTTagCompound}
+import totoro.ocelot.brain.util.Persistable
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -63,9 +63,8 @@ trait Inventory extends Persistable {
 
   override def load(nbt: NBTTagCompound) {
     nbt.getTagList(InventoryTag, NBT.TAG_COMPOUND).foreach { nbt: NBTTagCompound =>
-      EntityFactory.from(nbt) match {
-        case Some(entity) =>
-          onEntityAdded(entity)
+      NBTPersistence.load(nbt) match {
+        case entity: Entity =>
           inventory += entity
         case _ =>
           Ocelot.log.error("Some problems parsing an entity from NBT tag: " + nbt)
@@ -76,9 +75,7 @@ trait Inventory extends Persistable {
   override def save(nbt: NBTTagCompound) {
     nbt.setNewTagList(InventoryTag,
       inventory.map { entity =>
-        val nbt = new NBTTagCompound()
-        entity.save(nbt)
-        nbt
+        NBTPersistence.save(entity)
       }
     )
   }

@@ -1,7 +1,6 @@
 package totoro.ocelot.brain.util
 
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.traits.Persistable
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
 object PackedColor {

@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.entity.fs
 
-import totoro.ocelot.brain.entity.traits.Persistable
+import totoro.ocelot.brain.util.Persistable
 
 /**
   * Used by file system components to get and set the file system's label.

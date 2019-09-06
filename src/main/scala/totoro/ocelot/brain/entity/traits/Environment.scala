@@ -2,6 +2,7 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Message, Network, Node}
+import totoro.ocelot.brain.util.Persistable
 
 /**
   * The environment of a node.
