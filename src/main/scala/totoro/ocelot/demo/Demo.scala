@@ -60,16 +60,16 @@ object Demo extends App {
   val memory = new Memory(Tier.Six)
   computer.add(memory)
 
-//  val redstone = new Redstone.Tier1()
-//  computer.add(redstone)
+  val redstone = new Redstone.Tier1()
+  computer.add(redstone)
 
   /**
     * When creating a new hard drive, you can specify it's address.
     * If you will leave it `null`, then new random UUID will be used.
     */
 
-//  val hdd = new HDDManaged("59aef805-4085-485f-b92c-163b3f0426da", Tier.One, "volume 1")
-//  computer.add(hdd)
+  val hdd = new HDDManaged("59aef805-4085-485f-b92c-163b3f0426da", Tier.One, "volume 1")
+  computer.add(hdd)
 
   /**
     * Custom EEPROM can be created like this:

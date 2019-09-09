@@ -7,10 +7,12 @@ import totoro.ocelot.brain.entity._
 import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
 import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
 import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
+import totoro.ocelot.brain.entity.traits.{Disk, Environment, Tiered}
 import totoro.ocelot.brain.loot.Loot
-import totoro.ocelot.brain.nbt.NBTPersistence
-import totoro.ocelot.brain.nbt.NBTPersistence.TieredConstructor
-import totoro.ocelot.brain.util.{FontUtils, ThreadPoolFactory}
+import totoro.ocelot.brain.nbt.{NBTPersistence, NBTTagCompound}
+import totoro.ocelot.brain.nbt.NBTPersistence.{InstanceConstructor, TieredConstructor}
+import totoro.ocelot.brain.network.Node
+import totoro.ocelot.brain.util.{FontUtils, Persistable, ThreadPoolFactory}
 
 object Ocelot {
   final val Name = "Ocelot"
@@ -51,6 +53,19 @@ object Ocelot {
     NBTPersistence.registerConstructor(classOf[CPU].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[Memory].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[GraphicsCard].getName, tieredConstructor)
+
+    val diskConstructor = new InstanceConstructor {
+      override def construct(nbt: NBTTagCompound, className: String): Persistable = {
+        val tier = nbt.getInteger(Tiered.TierTag)
+        val label = nbt.getString(Disk.LabelTag)
+        val node = nbt.getCompoundTag(Environment.NodeTag)
+        val address = node.getString(Node.AddressTag)
+        val hdd = new HDDManaged(address, tier, label)
+        hdd.load(nbt)
+        hdd
+      }
+    }
+    NBTPersistence.registerConstructor(classOf[HDDManaged].getName, diskConstructor)
 
     FontUtils.init()
 

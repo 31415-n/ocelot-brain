@@ -178,5 +178,5 @@ trait Environment extends Persistable with LifeCycle {
 }
 
 object Environment {
-  val NodeTag = "node"
+  final val NodeTag = "node"
 }

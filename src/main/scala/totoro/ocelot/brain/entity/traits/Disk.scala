@@ -33,20 +33,23 @@ trait Disk extends Environment with Persistable {
   def onLockChange(oldLockInfo: String): Unit = {}
 
   // ----------------------------------------------------------------------- //
-  private val LockTag = "lock"
-  private val LabelTag = "label"
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)
-    lockInfo = if (nbt.hasKey(LockTag)) {
-      nbt.getString(LockTag)
+    lockInfo = if (nbt.hasKey(Disk.LockTag)) {
+      nbt.getString(Disk.LockTag)
     } else ""
-    label.setLabel(nbt.getString(LabelTag))
+    label.setLabel(nbt.getString(Disk.LabelTag))
   }
 
   override def save(nbt: NBTTagCompound) {
     super.save(nbt)
-    nbt.setString(LockTag, lockInfo)
-    nbt.setString(LabelTag, label.getLabel)
+    nbt.setString(Disk.LockTag, lockInfo)
+    nbt.setString(Disk.LabelTag, label.getLabel)
   }
+}
+
+object Disk {
+  final val LockTag = "lock"
+  final val LabelTag = "label"
 }
