@@ -5,7 +5,7 @@ import java.util.UUID
 import totoro.ocelot.brain.entity.traits.{Entity, Environment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTPersistence, NBTTagCompound}
-import totoro.ocelot.brain.network.Network
+import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.util.Persistable
 
 import scala.collection.JavaConverters._
@@ -65,6 +65,14 @@ class Workspace(val name: String = UUID.randomUUID().toString) extends Persistab
     entity match {
       case environment: Environment =>
         if (environment.node.network == null) DefaultNetwork.connect(environment)
+        // TODO: this is a hack to re-add the component to all machines. Need something better here.
+        environment.node match {
+          case component: Component =>
+            val v = component.visibility
+            component.setVisibility(Visibility.None)
+            component.setVisibility(v)
+          case _ =>
+        }
       case _ =>
     }
     entity
@@ -119,7 +127,7 @@ class Workspace(val name: String = UUID.randomUUID().toString) extends Persistab
     val nbtEdges: List[NBTBase] = collectNetworks().toList.flatMap(network => {
       network.save()
     })
-    nbt.setTagList(EdgesTag, nbtEdges.asJava);
+    nbt.setTagList(EdgesTag, nbtEdges.asJava)
 
     // save entities
     val nbtEntities: ListBuffer[NBTBase] = entities.map(entity => {

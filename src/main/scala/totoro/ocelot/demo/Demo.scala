@@ -96,6 +96,7 @@ object Demo extends App {
       |local gpu = component.proxy(component.list("gpu")())
       |local screen = component.list("screen")()
       |gpu.bind(screen)
+      |gpu.set(1, 1, "Hello from Ocelot EEPROM!")
     """.stripMargin.getBytes("UTF-8")
   eeprom.label = "Test BIOS"
   computer.add(eeprom)
