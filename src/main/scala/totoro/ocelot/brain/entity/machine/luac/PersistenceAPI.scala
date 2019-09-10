@@ -4,8 +4,8 @@ import java.util.UUID
 
 import li.cil.repack.com.naef.jnlua.LuaState
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState._
+import totoro.ocelot.brain.nbt.NBTTagCompound
 
 import scala.collection.mutable
 

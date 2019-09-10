@@ -1,9 +1,9 @@
 package totoro.ocelot.brain.entity.machine.luaj
 
 import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
-import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
 import totoro.ocelot.brain.entity.machine.MachineAPI
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
+import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
 
 class ComputerAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
   override def initialize() {

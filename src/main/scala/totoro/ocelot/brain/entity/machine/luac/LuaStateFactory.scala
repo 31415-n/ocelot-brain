@@ -9,8 +9,8 @@ import com.google.common.io.PatternFilenameFilter
 import li.cil.repack.com.naef.jnlua
 import li.cil.repack.com.naef.jnlua.{LuaState, LuaStateFiveThree}
 import org.apache.commons.lang3.SystemUtils
-import totoro.ocelot.brain.entity.machine.Machine
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState._
+import totoro.ocelot.brain.entity.machine.Machine
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 import scala.util.Random

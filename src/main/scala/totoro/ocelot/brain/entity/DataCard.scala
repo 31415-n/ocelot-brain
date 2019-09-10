@@ -11,9 +11,9 @@ import javax.crypto.{Cipher, KeyAgreement, Mac}
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.output.ByteArrayOutputStream
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
-import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.machine.{AbstractValue, Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 

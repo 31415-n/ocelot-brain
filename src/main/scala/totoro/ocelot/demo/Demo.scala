@@ -2,7 +2,7 @@ package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.traits.Environment
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.NBTTagCompound

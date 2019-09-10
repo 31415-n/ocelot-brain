@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity.machine.luaj
 
 import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
-import totoro.ocelot.brain.util.FontUtils
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
+import totoro.ocelot.brain.util.FontUtils
 
 class UnicodeAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
   override def initialize() {

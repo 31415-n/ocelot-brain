@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Constants
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, GenericGPU}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, GenericGPU}
 
 class GraphicsCard(override var tier: Int) extends Entity with GenericGPU with DeviceInfo {
   private final lazy val deviceInfo = Map(

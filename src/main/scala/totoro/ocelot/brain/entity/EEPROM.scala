@@ -1,9 +1,9 @@
 package totoro.ocelot.brain.entity
 
 import com.google.common.hash.Hashing
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
-import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.{Constants, Settings}

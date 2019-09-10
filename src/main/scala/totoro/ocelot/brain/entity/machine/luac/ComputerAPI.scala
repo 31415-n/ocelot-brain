@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity.machine.luac
 
-import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
-import totoro.ocelot.brain.entity.machine.MachineAPI
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
+import totoro.ocelot.brain.entity.machine.MachineAPI
+import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
 
 class ComputerAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
   def initialize() {

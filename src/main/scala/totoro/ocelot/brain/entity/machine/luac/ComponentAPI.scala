@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity.machine.luac
 
-import totoro.ocelot.brain.network.Component
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
+import totoro.ocelot.brain.network.Component
 
 import scala.collection.convert.WrapAsScala._
 

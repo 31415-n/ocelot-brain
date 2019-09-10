@@ -4,10 +4,10 @@ import java.io.{FileNotFoundException, IOException}
 
 import com.google.common.base.Strings
 import li.cil.repack.com.naef.jnlua._
-import totoro.ocelot.brain.entity.traits.{Entity, Memory}
+import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.entity.machine._
+import totoro.ocelot.brain.entity.traits.{Entity, Memory}
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 class NativeLua52Architecture(machine: Machine) extends NativeLuaArchitecture(machine) {

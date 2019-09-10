@@ -5,10 +5,10 @@ import java.io.{FileNotFoundException, IOException}
 import com.google.common.base.Strings
 import li.cil.repack.org.luaj.vm2._
 import li.cil.repack.org.luaj.vm2.lib.jse.JsePlatform
-import totoro.ocelot.brain.entity.traits.{Entity, Memory}
-import totoro.ocelot.brain.entity.machine.{Architecture, ExecutionResult, LimitReachedException, Machine, ScalaClosure}
-import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
+import totoro.ocelot.brain.entity.machine._
+import totoro.ocelot.brain.entity.traits.{Entity, Memory}
+import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 class LuaJLuaArchitecture(val machine: Machine) extends Architecture {

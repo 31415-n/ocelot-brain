@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.util
 
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Executors, Future, ScheduledExecutorService, ThreadFactory, TimeUnit}
+import java.util.concurrent._
 
 import totoro.ocelot.brain.{Ocelot, Settings}
 

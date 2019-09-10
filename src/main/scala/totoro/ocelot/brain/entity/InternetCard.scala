@@ -7,9 +7,9 @@ import java.nio.channels.{SelectionKey, Selector, SocketChannel}
 import java.util.UUID
 import java.util.concurrent.{Callable, ConcurrentLinkedQueue, ExecutionException, Future}
 
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
-import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.machine.{AbstractValue, Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.ThreadPoolFactory
 import totoro.ocelot.brain.{Constants, Ocelot, Settings}

@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.traits.{Entity, Tiered}
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.traits.{Entity, Tiered}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.Tier

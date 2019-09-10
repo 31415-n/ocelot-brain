@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, GenericCPU}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, GenericCPU}
 import totoro.ocelot.brain.{Constants, Settings}
 
 class CPU(override var tier: Int) extends Entity with GenericCPU with DeviceInfo {

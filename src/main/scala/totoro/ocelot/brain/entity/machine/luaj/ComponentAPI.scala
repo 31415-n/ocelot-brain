@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity.machine.luaj
 
 import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
-import totoro.ocelot.brain.network.Component
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
+import totoro.ocelot.brain.network.Component
 
 import scala.collection.convert.WrapAsScala._
 

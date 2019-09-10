@@ -3,9 +3,9 @@ package totoro.ocelot.brain.entity.machine.luac
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, DataOutputStream}
 
 import totoro.ocelot.brain.Ocelot
+import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.entity.machine.{Arguments, Registry, Value}
 import totoro.ocelot.brain.nbt.{CompressedStreamTools, NBTTagCompound}
-import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.util.Persistable
 
 import scala.collection.convert.WrapAsScala._

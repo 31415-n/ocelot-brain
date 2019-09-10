@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.network.{Component, Message, Network, Visibility}
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.{Constants, Settings}
