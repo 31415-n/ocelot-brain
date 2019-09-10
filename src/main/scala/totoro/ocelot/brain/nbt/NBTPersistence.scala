@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.nbt
 
+import totoro.ocelot.brain.entity.traits.Tiered
 import totoro.ocelot.brain.util.Persistable
 
 import scala.collection.mutable
@@ -74,7 +75,7 @@ object NBTPersistence {
     override def construct(nbt: NBTTagCompound, className: String): Persistable = {
       val clazz = Class.forName(className)
       val constructor = clazz.getConstructors()(0)
-      val tier: Int = nbt.getInteger("tier") // TODO: do something about the `tier` tag
+      val tier: Int = nbt.getInteger(Tiered.TierTag)
       constructor.newInstance(tier.asInstanceOf[Object]).asInstanceOf[Persistable]
     }
   }
