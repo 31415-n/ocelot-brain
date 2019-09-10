@@ -6,7 +6,7 @@ import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, GraphicsCard, HDDMa
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.{Persistable, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 
 object Demo extends App {
@@ -89,23 +89,28 @@ object Demo extends App {
     * `
     */
 
-  val eeprom = new EEPROM()
-  eeprom.codeData =
-    """
-      |computer.beep(1000, 1)
-      |local gpu = component.proxy(component.list("gpu")())
-      |local screen = component.list("screen")()
-      |gpu.bind(screen)
-      |gpu.set(1, 1, "Hello from Ocelot EEPROM!")
-    """.stripMargin.getBytes("UTF-8")
-  eeprom.label = "Test BIOS"
-  computer.add(eeprom)
-
-//  computer.add(Loot.OpenOsEEPROM.create())
-//  computer.add(Loot.OpenOsFloppy.create())
+  computer.add(Loot.OpenOsEEPROM.create())
+  computer.add(Loot.OpenOsFloppy.create())
 
   val screen = workspace.add(new Screen(Tier.One))
   cable.connect(screen)
+
+  /**
+    * Here we add some custom NBT data to the computer.
+    * This data needs to implement the Persistable trait.
+    */
+  computer.setCustomData(new Persistable {
+    var immaData = "xxx"
+    private final val immaDataTag = "imma-data"
+
+    override def save(nbt: NBTTagCompound): Unit = {
+      nbt.setString(immaDataTag, immaData)
+    }
+
+    override def load(nbt: NBTTagCompound): Unit = {
+      immaData = nbt.getString(immaData)
+    }
+  })
 
   // register some event listeners
   EventBus.listenTo(classOf[BeepEvent], { case event: BeepEvent =>

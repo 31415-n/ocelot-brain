@@ -1,6 +1,5 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.{Machine, MachineAPI}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.NBTTagCompound
