@@ -4,7 +4,8 @@ import java.util.UUID
 
 import totoro.ocelot.brain.entity.traits.{Entity, Environment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
-import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTPersistence, NBTTagCompound}
+import totoro.ocelot.brain.nbt.persistence.NBTPersistence
+import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.util.Persistable
 

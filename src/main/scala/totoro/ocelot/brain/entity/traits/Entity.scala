@@ -1,6 +1,7 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.nbt.{NBTPersistence, NBTTagCompound}
+import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.nbt.persistence.NBTPersistence
 import totoro.ocelot.brain.util.Persistable
 
 /**

@@ -6,6 +6,7 @@ import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, M
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.nbt.persistence.PersistableString
 import totoro.ocelot.brain.util.{Persistable, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 
@@ -99,18 +100,7 @@ object Demo extends App {
     * Here we add some custom NBT data to the computer.
     * This data needs to implement the Persistable trait.
     */
-  computer.setCustomData(new Persistable {
-    var immaData = "xxx"
-    private final val immaDataTag = "imma-data"
-
-    override def save(nbt: NBTTagCompound): Unit = {
-      nbt.setString(immaDataTag, immaData)
-    }
-
-    override def load(nbt: NBTTagCompound): Unit = {
-      immaData = nbt.getString(immaData)
-    }
-  })
+  computer.setCustomData(new PersistableString("xxx"))
 
   // register some event listeners
   EventBus.listenTo(classOf[BeepEvent], { case event: BeepEvent =>
