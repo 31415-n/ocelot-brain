@@ -1,13 +1,13 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.traits.Environment
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
+import totoro.ocelot.brain.entity.traits.{Entity, Environment}
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.nbt.persistence.PersistableString
-import totoro.ocelot.brain.util.{Persistable, Tier}
+import totoro.ocelot.brain.util.Tier
 import totoro.ocelot.brain.workspace.Workspace
 
 object Demo extends App {
@@ -40,7 +40,7 @@ object Demo extends App {
   /**
     * Then we create a new entity - computer case.
     */
-  val computer = workspace.add(new Case(Tier.Four))
+  var computer = workspace.add(new Case(Tier.Four))
 
   /**
     * The cable and the computer case still exist separately. They are in the same workspace,
@@ -199,12 +199,22 @@ object Demo extends App {
   val loadedWorkspace = new Workspace()
   loadedWorkspace.load(nbt)
 
-  println("Loaded.Name: " + loadedWorkspace.name);
+  println("Loaded.Name: " + loadedWorkspace.name)
   loadedWorkspace.getEntitiesIter.foreach { case environment: Environment =>
       println("Loaded.Entity.Address: " + environment.node.address)
   }
 
-  while (loadedWorkspace.getIngameTime < 100) {
+  computer = null
+  for (entity: Entity <- loadedWorkspace.getEntitiesIter) {
+    entity match {
+      case c: Case => computer = c
+      case _ =>
+    }
+  }
+
+  if (computer != null) println("Successfully loaded the snapshot. Continuing the execution...")
+
+  while (computer != null && computer.machine.isRunning) {
     loadedWorkspace.update()
     Thread.sleep(50)
   }
