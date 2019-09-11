@@ -4,6 +4,8 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
 
 class PersistableString(var value: String) extends Persistable {
+  def this() = this(null)
+
   private final val Tag = "value"
 
   override def save(nbt: NBTTagCompound): Unit = {
