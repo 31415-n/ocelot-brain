@@ -5,7 +5,6 @@ import java.net.{Inet4Address, InetAddress}
 
 import com.google.common.net.InetAddresses
 import com.typesafe.config._
-import org.apache.commons.text.StringEscapeUtils
 import totoro.ocelot.brain.util.ColorDepth
 
 import scala.collection.convert.WrapAsScala._

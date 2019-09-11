@@ -1,6 +1,5 @@
 package totoro.ocelot.brain.entity.fs
 
-import totoro.ocelot.brain.entity.FileSystem
 import totoro.ocelot.brain.util.Persistable
 
 /**

@@ -63,7 +63,7 @@ object PackedColor {
   object SingleBitFormat extends SingleBitFormat(Settings.get.monochromeColor)
 
   abstract class PaletteFormat extends ColorFormat {
-    override def inflate(value: Int) = palette(math.max(0, math.min(palette.length - 1, value)))
+    override def inflate(value: Int): Int = palette(math.max(0, math.min(palette.length - 1, value)))
 
     override def validate(value: Color) {
       if (value.isPalette && (value.value < 0 || value.value >= palette.length)) {
@@ -92,7 +92,7 @@ object PackedColor {
   class MutablePaletteFormat extends PaletteFormat {
     override def depth: ColorDepth.Value = ColorDepth.FourBit
 
-    def apply(index: Int) = palette(index)
+    def apply(index: Int): Int = palette(index)
 
     def update(index: Int, value: Int): Unit = palette(index) = value
 

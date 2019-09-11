@@ -4,7 +4,6 @@ import java.io
 import java.net.{MalformedURLException, URISyntaxException, URL}
 import java.util.UUID
 
-import totoro.ocelot.brain.entity.FileSystem
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.{Ocelot, Settings}
 

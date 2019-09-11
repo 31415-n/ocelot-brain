@@ -1,15 +1,15 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, WakeMessageAware}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, WakeMessageAware}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.convert.WrapAsScala._
 
-class LinkedCard extends Environment with QuantumNetwork.QuantumNode with WakeMessageAware with DeviceInfo {
+class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode with WakeMessageAware with DeviceInfo {
   override val node: Node = Network.newNode(this, Visibility.Network).
     withComponent("tunnel", Visibility.Neighbors).
     create()

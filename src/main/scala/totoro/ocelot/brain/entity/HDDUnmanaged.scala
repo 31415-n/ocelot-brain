@@ -1,12 +1,12 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.fs.{Label, ReadWriteLabel}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, DiskUnmanaged, Tiered}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, DiskUnmanaged, Entity, Tiered}
 import totoro.ocelot.brain.{Constants, Settings}
 
 class HDDUnmanaged(override var tier: Int, name: String)
-  extends DiskUnmanaged with Tiered with DeviceInfo {
+  extends Entity with DiskUnmanaged with Tiered with DeviceInfo {
 
   val label: Label = new ReadWriteLabel(name)
   val capacity: Int = Settings.get.hddSizes(tier) * 1024

@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.network
 
-import totoro.ocelot.brain.machine._
+import totoro.ocelot.brain.entity.machine._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
 /**

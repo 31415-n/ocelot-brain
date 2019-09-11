@@ -4,10 +4,10 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import com.google.common.io.Files
-import totoro.ocelot.brain.{Ocelot, Settings}
-import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
+import totoro.ocelot.brain.{Ocelot, Settings}
 
 /**
   * Basic trait for all unmanaged-disk-like entities.

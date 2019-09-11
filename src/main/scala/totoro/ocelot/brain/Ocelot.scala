@@ -4,16 +4,21 @@ import java.io.File
 
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
+import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
+import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
+import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
+import totoro.ocelot.brain.entity.traits.{Disk, Environment, Tiered}
 import totoro.ocelot.brain.loot.Loot
-import totoro.ocelot.brain.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
-import totoro.ocelot.brain.machine.luaj.LuaJLuaArchitecture
-import totoro.ocelot.brain.machine.{MachineAPI, Registry}
-import totoro.ocelot.brain.util.ThreadPoolFactory
+import totoro.ocelot.brain.nbt.persistence.NBTPersistence.{InstanceConstructor, TieredConstructor}
+import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.nbt.persistence.NBTPersistence
+import totoro.ocelot.brain.network.Node
+import totoro.ocelot.brain.util.{FontUtils, Persistable, ThreadPoolFactory}
 
 object Ocelot {
   final val Name = "Ocelot"
   // do not forget to change the version in `build.sbt`
-  final val Version = "0.3.2"
+  final val Version = "0.4.0"
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
@@ -26,7 +31,9 @@ object Ocelot {
   private def preInit(): Unit = {
     log.info("Loading configuration...")
     Settings.load(new File("brain.conf"))
+  }
 
+  private def init(): Unit = {
     log.info("Registering available machine architectures...")
     if (LuaStateFactory.include52) {
       MachineAPI.add(classOf[NativeLua52Architecture], "Lua 5.2")
@@ -38,36 +45,31 @@ object Ocelot {
       MachineAPI.add(classOf[LuaJLuaArchitecture], "LuaJ")
     }
 
-    log.info("Registering available entities (to be able to persist them later)...")
-    EntityFactory.add(classOf[APU])
-    EntityFactory.add(classOf[Cable])
-    EntityFactory.add(classOf[Case])
-    EntityFactory.add(classOf[CPU])
-    EntityFactory.add(classOf[DataCard.Tier1])
-    EntityFactory.add(classOf[DataCard.Tier2])
-    EntityFactory.add(classOf[DataCard.Tier3])
-    EntityFactory.add(classOf[HDDUnmanaged])
-    EntityFactory.add(classOf[HDDManaged])
-    EntityFactory.add(classOf[EEPROM])
-    EntityFactory.add(classOf[FloppyManaged])
-    EntityFactory.add(classOf[FloppyUnmanaged])
-    EntityFactory.add(classOf[FloppyDiskDrive])
-    EntityFactory.add(classOf[GraphicsCard])
-    EntityFactory.add(classOf[InternetCard])
-    EntityFactory.add(classOf[Keyboard])
-    EntityFactory.add(classOf[LinkedCard])
-    EntityFactory.add(classOf[Memory])
-    EntityFactory.add(classOf[NetworkCard])
-    EntityFactory.add(classOf[Redstone.Tier1])
-    EntityFactory.add(classOf[Redstone.Tier2])
-    EntityFactory.add(classOf[Screen])
-    EntityFactory.add(classOf[WirelessNetworkCard])
-
-    log.info("Registering loot (floppies and EEPROMs with standart OpenComputers software)...")
+    log.info("Registering loot (floppies and EEPROMs with standard OpenComputers software)...")
     Loot.init()
-  }
 
-  private def init(): Unit = {
+    log.info("Registering entity constructors (for persistence purposes)...")
+    val tieredConstructor = new TieredConstructor()
+    NBTPersistence.registerConstructor(classOf[Case].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[CPU].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[Memory].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[GraphicsCard].getName, tieredConstructor)
+
+    val diskConstructor = new InstanceConstructor {
+      override def construct(nbt: NBTTagCompound, className: String): Persistable = {
+        val tier = nbt.getInteger(Tiered.TierTag)
+        val label = nbt.getString(Disk.LabelTag)
+        val node = nbt.getCompoundTag(Environment.NodeTag)
+        val address = node.getString(Node.AddressTag)
+        val hdd = new HDDManaged(address, tier, label)
+        hdd.load(nbt)
+        hdd
+      }
+    }
+    NBTPersistence.registerConstructor(classOf[HDDManaged].getName, diskConstructor)
+
+    FontUtils.init()
+
     ThreadPoolFactory.safePools.foreach(_.newThreadPool())
   }
 

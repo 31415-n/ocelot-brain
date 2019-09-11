@@ -6,10 +6,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class NBTTagCompound extends NBTBase {
@@ -102,6 +99,12 @@ public class NBTTagCompound extends NBTBase {
         this.setByte(s, (byte) (flag ? 1 : 0));
     }
 
+    public void setTagList(String s, List<NBTBase> list) {
+        NBTTagList tagList = new NBTTagList();
+        tagList.appendAll(list);
+        this.map.put(s, tagList);
+    }
+
     public NBTBase getTag(String s) {
         return (NBTBase) this.map.get(s);
     }
@@ -190,13 +193,13 @@ public class NBTTagCompound extends NBTBase {
         return !this.map.containsKey(s) ? new NBTTagCompound() : (NBTTagCompound) this.map.get(s);
     }
 
-    public NBTTagList getTagList(String s, int i) {
-        if (this.getTagType(s) != 9) {
+    public NBTTagList getTagList(String s, int type) {
+        if (this.getTagType(s) != NBT.TAG_LIST) {
             return new NBTTagList();
         } else {
             NBTTagList nbttaglist = (NBTTagList) this.map.get(s);
 
-            return nbttaglist.tagCount() > 0 && nbttaglist.d() != i ? new NBTTagList() : nbttaglist;
+            return nbttaglist.tagCount() > 0 && nbttaglist.getType() != type ? new NBTTagList() : nbttaglist;
         }
     }
 

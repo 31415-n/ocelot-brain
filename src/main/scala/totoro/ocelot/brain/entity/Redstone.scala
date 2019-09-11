@@ -1,15 +1,14 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.{Constants, Settings}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.util.{Direction, Tier}
+import totoro.ocelot.brain.{Constants, Settings}
 
 object Redstone {
-
-  class Tier1 extends Environment with DeviceInfo with Tiered {
+  class Tier1 extends Entity with Environment with DeviceInfo with Tiered {
     override val node: Node = Network.newNode(this, Visibility.Neighbors).
       withComponent("redstone", Visibility.Neighbors).
       create()

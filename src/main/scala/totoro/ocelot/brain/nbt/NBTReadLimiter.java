@@ -1,8 +1,7 @@
 package totoro.ocelot.brain.nbt;
 
 public class NBTReadLimiter {
-
-    public static final NBTReadLimiter INFINITE = new NBTReadLimiterUnlimited(0L);
+    static final NBTReadLimiter INFINITE = new NBTReadLimiterUnlimited(0L);
     private final long b;
     private long c;
 

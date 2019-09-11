@@ -21,15 +21,17 @@ trait Tiered extends Persistable {
 
   // ----------------------------------------------------------------------- //
 
-  private final val TierTag = "tier"
-
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)
-    tier = nbt.getByte(TierTag) max 0 min 3
+    tier = nbt.getByte(Tiered.TierTag) max 0 min 3
   }
 
   override def save(nbt: NBTTagCompound) {
     super.save(nbt)
-    nbt.setByte(TierTag, tier.toByte)
+    nbt.setByte(Tiered.TierTag, tier.toByte)
   }
+}
+
+object Tiered {
+  final val TierTag = "tier"
 }

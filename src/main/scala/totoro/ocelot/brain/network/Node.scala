@@ -2,7 +2,7 @@ package totoro.ocelot.brain.network
 
 import com.google.common.base.Strings
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.Environment
+import totoro.ocelot.brain.entity.traits.Environment
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
 /**
@@ -252,8 +252,12 @@ trait Node {
   def load(nbt: NBTTagCompound): Unit = {
     if (nbt.hasKey(Node.AddressTag)) {
       val newAddress = nbt.getString(Node.AddressTag)
-      if (!Strings.isNullOrEmpty(newAddress) && newAddress != address)
-        network.remap(this, newAddress)
+      if (!Strings.isNullOrEmpty(newAddress) && newAddress != address) {
+        if (network == null)
+          address = newAddress
+        else
+          network.remap(this, newAddress)
+      }
     }
   }
 

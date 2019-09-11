@@ -1,8 +1,6 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.{Entity, Environment}
-import totoro.ocelot.brain.machine.{Machine, MachineAPI}
+import totoro.ocelot.brain.entity.machine.{Machine, MachineAPI}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
@@ -27,6 +25,8 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
     }
 
   // ----------------------------------------------------------------------- //
+
+  override def needUpdate: Boolean = true
 
   override def update(): Unit = {
     // If we're not yet in a network we might have just been loaded from disk,
@@ -59,7 +59,7 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   // ----------------------------------------------------------------------- //
 
-  private final val ComputerTag = Settings.namespace + "computer"
+  private final val ComputerTag = "computer"
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)

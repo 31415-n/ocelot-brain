@@ -2,10 +2,11 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Constants
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Tiered}
+import totoro.ocelot.brain.entity.traits.{Computer, DeviceInfo, Entity, Tiered}
+import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Tier
 
-class Case(override var tier: Int) extends traits.Computer with DeviceInfo with Tiered {
+class Case(override var tier: Int) extends Computer with Entity with DeviceInfo with Tiered {
 
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.System,
@@ -26,4 +27,7 @@ class Case(override var tier: Int) extends traits.Computer with DeviceInfo with 
   def turnOff(): Unit = {
     machine.stop()
   }
+
+  override def save(nbt: NBTTagCompound): Unit = super.save(nbt)
+  override def load(nbt: NBTTagCompound): Unit = super.load(nbt)
 }

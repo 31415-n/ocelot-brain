@@ -1,14 +1,12 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.entity.Environment
-import totoro.ocelot.brain.machine.Machine
+import totoro.ocelot.brain.entity.machine.Machine
 import totoro.ocelot.brain.network.Node
 
 /**
   * This interface has to be implemented by 'hosts' of machine instances.
   *
-  * It provides some context for the machine, in particular which world it is
-  * running in, to allow querying the time of day, for example.
+  * It provides some context for the machine.
   */
 trait MachineHost extends Inventory with WorkspaceAware {
   /**

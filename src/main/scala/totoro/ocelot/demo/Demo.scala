@@ -1,11 +1,14 @@
 package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen, EEPROM}
+import totoro.ocelot.brain.entity.traits.Environment
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
-import totoro.ocelot.brain.network.Network
-import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.nbt.persistence.PersistableString
+import totoro.ocelot.brain.util.{Persistable, Tier}
+import totoro.ocelot.brain.workspace.Workspace
 
 object Demo extends App {
   println("Hi! We are testing Ocelot brains here. Join in!")
@@ -16,48 +19,38 @@ object Demo extends App {
   Ocelot.initialize()
 
   /**
-    * Network connects things.
-    * Without network - all `a.connect(b)` calls will fail.
-    * Without network the components cannot "see" each other.
-    * Also network transmits modem messages and OC-signals.
-    */
-  val network = new Network()
-
-  /**
-    * We choose the cable to be the base of our demo network.
-    * But we can use any other component actually.
-    */
-  val cable = new Cable()
-
-  /**
-    * We need to connect one of entites to the network explicitly.
-    * All subsequent connection of other entities to this one will pass the network reference implicitly.
-    */
-  network.connect(cable)
-
-  val computer = new Case(Tier.Four)
-
-  /**
-    * `computer.workspace = Workspace.Default`
+    * All things inside of Ocelot usually are grouped by workspaces.
+    * Workspace is like 'world' in Minecraft. It has it's own timeflow,
+    * it's own name, random numbers generator and a list of entities ('blocks' and 'items' in Minecraft).
+    * Workspace can be serialized to an NBT tag, and then restored back from it.
+    * Workspace is also responsible for the lifecycle of all its entities.
     *
-    * Each computer can be assigned to some "workspace".
-    * This workspace can have a name, it has it's own random numbers generator, it's own time settings and
-    * it can be put on pause.
-    * If the workspace is paused, all computers that belong to it cease to update
-    * (even if the `update()` metod is still called).
-    *
-    * By default all computers are implicitly assigned to the `Workspace.Default`.
+    * For things to work correctly, you will usually add new entities to some workspace.
+    * Entities then will be managed by this workspace.
+    * Entities still can form connections between workspaces, and exchange data.
     */
+  val workspace = new Workspace()
 
   /**
-    * Here on the left is an already connected to the network entity, on the right - the new one.
+    * We choose the cable to be the base of our demo setup.
+    * (But we can use any other component actually.)
+    */
+  val cable = workspace.add(new Cable())
+
+  /**
+    * Then we create a new entity - computer case.
+    */
+  val computer = workspace.add(new Case(Tier.Four))
+
+  /**
+    * The cable and the computer case still exist separately. They are in the same workspace,
+    * but not connected.
     */
   cable.connect(computer)
 
   /**
-    * Computer components need to be added inside of the computers case.
-    * They form there their own isolated network. This prevents components from leaking into the global network
-    * and cause processor limits overflow and component clashes.
+    * Computer components do not need to be added to the workspace explicitly,
+    * because they are a part of Case entity.
     */
   val cpu = new CPU(Tier.Three)
   computer.add(cpu)
@@ -135,8 +128,14 @@ object Demo extends App {
   // computer.add(Loot.AdvLoaderEEPROM.create())
   computer.add(Loot.OpenOsFloppy.create())
 
-  val screen = new Screen(Tier.Three)
+  val screen = workspace.add(new Screen(Tier.One))
   cable.connect(screen)
+
+  /**
+    * Here we add some custom NBT data to the computer.
+    * This data needs to implement the Persistable trait.
+    */
+  computer.setCustomData(new PersistableString("xxx"))
 
   // register some event listeners
   EventBus.listenTo(classOf[BeepEvent], { case event: BeepEvent =>
@@ -165,19 +164,48 @@ object Demo extends App {
 
 
   /**
-    * The `computer.machine.isRunning` flag will tell you, if the computers is still operational,
-    * or has it crashed or stopped the execution otherwise.
+    * The `computer.machine.isRunning` flag will tell you, if the computer is still operational,
+    * or had it crashed or stopped the execution otherwise.
     */
-  while (computer.machine.isRunning) {
+  while (workspace.getIngameTime < 20) {
     /**
-      * Each component has the `update()` method. But it's actually used only by computers right now.
-      * You need to call this method every tick to keep the machine running.
+      * The `update()` method of workspace will update all components in each registered network,
+      * that need to be updated.
+      * These are usually computers or network cards.
       */
-    computer.update()
+    workspace.update()
     /**
-      * 50 milliseconds is the duration of standart Minecraft tick.
+      * 50 milliseconds is the duration of standard Minecraft tick.
       * You can speed the simulation up or slow it down by changing this value.
       */
+    Thread.sleep(50)
+  }
+
+  /**
+    * Make a snapshot ot the system.
+    * You need to use an existing NBT compound tag (or create a new one).
+    */
+  println("... Creating snapshot ...")
+
+  val nbt = new NBTTagCompound()
+  workspace.save(nbt)
+  println(nbt)
+
+  println("... Loading snapshot ...")
+
+  /**
+    * Load workspace from snapshot
+    */
+  val loadedWorkspace = new Workspace()
+  loadedWorkspace.load(nbt)
+
+  println("Loaded.Name: " + loadedWorkspace.name);
+  loadedWorkspace.getEntitiesIter.foreach { case environment: Environment =>
+      println("Loaded.Entity.Address: " + environment.node.address)
+  }
+
+  while (loadedWorkspace.getIngameTime < 100) {
+    loadedWorkspace.update()
     Thread.sleep(50)
   }
 

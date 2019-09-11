@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.network
 
-import totoro.ocelot.brain.entity.Environment
+import totoro.ocelot.brain.entity.traits.Environment
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network.Visibility.Visibility
 import totoro.ocelot.brain.{Ocelot, Settings}
@@ -348,6 +348,19 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
     val message = new Message(source, name, Array(args: _*))
     targets.foreach(_.host.onMessage(message))
   }
+
+  // Persistence
+  // ----------------------------------------------------------------------- //
+  def save(): mutable.Iterable[NBTTagCompound] = {
+    data.flatMap { case (_, node) =>
+      node.edges.map(edge => {
+        val edgeNbt = new NBTTagCompound()
+        edgeNbt.setString(Network.LeftTag, edge.left.data.address)
+        edgeNbt.setString(Network.RightTag, edge.right.data.address)
+        edgeNbt
+      })
+    }
+  }
 }
 
 
@@ -556,4 +569,9 @@ object Network {
       }
     }) filter (_.nonEmpty) map (_.get)
   }
+
+  // ----------------------------------------------------------------------- //
+
+  val LeftTag = "left"
+  val RightTag = "right"
 }

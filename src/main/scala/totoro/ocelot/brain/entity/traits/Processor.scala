@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.machine.Architecture
+import totoro.ocelot.brain.entity.machine.Architecture
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
 

@@ -1,7 +1,6 @@
 package totoro.ocelot.brain.entity.fs
 
-import totoro.ocelot.brain.entity.FileSystem
-import totoro.ocelot.brain.machine.{AbstractValue, Context}
+import totoro.ocelot.brain.entity.machine.{AbstractValue, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
 final class HandleValue extends AbstractValue {
