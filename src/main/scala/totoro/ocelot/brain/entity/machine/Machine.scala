@@ -4,6 +4,7 @@ import java.util
 import java.util.concurrent.TimeUnit
 
 import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI}
+import totoro.ocelot.brain.entity.machine.Callbacks.InnerCallback
 import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, Environment, MachineHost, Processor}
 import totoro.ocelot.brain.event.{BeepEvent, BeepPatternEvent, EventBus, MachineCrashEvent}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
@@ -13,10 +14,8 @@ import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.ResultWrapper.result
 import totoro.ocelot.brain.{Ocelot, Settings}
 
-import scala.Array.canBuildFrom
-import scala.collection.convert.WrapAsJava._
-import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
 class Machine(val host: MachineHost) extends Environment with Context with Runnable with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Network).
@@ -110,7 +109,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     hasMemory = Option(architecture).fold(false)(_.recomputeMemory(components))
   }
 
-  def components: util.Map[String, String] = scala.collection.convert.WrapAsJava.mapAsJavaMap(_components)
+  def components: util.Map[String, String] = _components.asJava
 
   def componentCount: Int = (_components.foldLeft(0.0)((acc, entry) => entry match {
     case (_, name) => acc + (if (name != "filesystem") 1.0 else 0.25)
@@ -280,10 +279,10 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
         }
         else {
           signals.enqueue(new MachineAPI.Signal(name, args.map {
-            case null | Unit | None => null
+            case null | () | None => null
             case arg: java.util.Map[_, _] =>
               val convertedMap = new mutable.HashMap[AnyRef, AnyRef]
-              for ((key, value) <- arg) {
+              for ((key, value) <- arg.asScala) {
                 val convertedKey = convertArg(key)
                 if (convertedKey != null) {
                   val convertedValue = convertArg(value)
@@ -305,10 +304,11 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   def popSignal(): MachineAPI.Signal = signals.synchronized(if (signals.isEmpty) null else signals.dequeue().convert())
 
-  def methods(value: scala.AnyRef): util.Map[String, Callback] = Callbacks(value).map(entry => {
-    val (name, callback) = entry
-    name -> callback.annotation
-  })
+  def methods(value: scala.AnyRef): util.Map[String, Callback] =
+    Callbacks(value).map((entry: (String, InnerCallback)) => {
+      val (name, callback) = entry
+      name -> callback.annotation
+    }).asJava
 
   def invoke(address: String, method: String, args: Array[AnyRef]): Array[AnyRef] = {
     if (node != null && node.network != null) {

@@ -531,7 +531,7 @@ object Network {
 
     def remove(): Seq[mutable.Map[String, Vertex]] = {
       edges.foreach(edge => edge.other(this).edges -= edge)
-      searchGraphs(edges.map(_.other(this)))
+      searchGraphs(edges.map(_.other(this)).toSeq)
     }
 
     override def toString = s"$data [${edges.length}]"

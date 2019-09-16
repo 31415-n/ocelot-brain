@@ -2,8 +2,8 @@ package totoro.ocelot.brain.nbt
 
 import com.google.common.base.Charsets
 
-import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 import scala.language.{implicitConversions, reflectiveCalls}
 import scala.reflect.ClassTag
 
@@ -65,7 +65,7 @@ object ExtendedNBT {
       case Some(v: Array[_]) => v
       case Some(v: Map[_, _]) => mapToList(v.toArray)
       case Some(v: mutable.Map[_, _]) => mapToList(v.toArray)
-      case Some(v: java.util.Map[_, _]) => mapToList(mapAsScalaMap(v).toArray)
+      case Some(v: java.util.Map[_, _]) => mapToList(v.asScala.toArray)
       case Some(v: String) => v.getBytes(Charsets.UTF_8)
       case _ => throw new IllegalArgumentException("Illegal or missing value.")
     }
@@ -73,7 +73,7 @@ object ExtendedNBT {
     def asMap[K](value: Option[Any]): Map[K, _] = value match {
       case Some(v: Map[K, _]@unchecked) => v
       case Some(v: mutable.Map[K, _]@unchecked) => v.toMap
-      case Some(v: java.util.Map[K, _]@unchecked) => mapAsScalaMap(v).toMap
+      case Some(v: java.util.Map[K, _]@unchecked) => v.asScala.toMap
       case _ => throw new IllegalArgumentException("Illegal value.")
     }
 
@@ -182,7 +182,7 @@ object ExtendedNBT {
       case tag: NBTTagByteArray => tag.getByteArray
       case tag: NBTTagString => tag.getString
       case tag: NBTTagList => tag.map((entry: NBTBase) => entry.toTypedMap)
-      case tag: NBTTagCompound => tag.getKeySet.collect {
+      case tag: NBTTagCompound => tag.getKeySet.asScala.collect {
         case key: String => key -> tag.getTag(key).toTypedMap
       }.toMap
       case tag: NBTTagIntArray => tag.getIntArray
@@ -241,7 +241,7 @@ object ExtendedNBT {
         buffer += f(iterable.removeTag(0).asInstanceOf[Tag])
       }
       buffer
-    }
+    }.toIndexedSeq
 
     def toArray[Tag: ClassTag]: Array[Tag] = map((t: Tag) => t).toArray
   }

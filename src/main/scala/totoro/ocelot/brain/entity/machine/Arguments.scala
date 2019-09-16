@@ -4,8 +4,8 @@ import java.util
 
 import com.google.common.base.Charsets
 
-import scala.collection.convert.WrapAsJava._
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
 /**
   * This interface provides access to arguments passed to a [[Callback]].
@@ -49,7 +49,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
   def checkAny(index: Int): AnyRef = {
     checkIndex(index, "value")
     args(index) match {
-      case Unit | None => null
+      case None => null
       case arg => arg
     }
   }
@@ -163,8 +163,8 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     checkIndex(index, "table")
     args(index) match {
       case value: java.util.Map[_, _] => value
-      case value: Map[_, _] => value
-      case value: mutable.Map[_, _] => value
+      case value: Map[_, _] => value.asJava
+      case value: mutable.Map[_, _] => value.asJava
       case value => throw typeError(index, value, "table")
     }
   }
@@ -426,7 +426,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
       s"bad argument #${index + 1} ($want expected, got ${typeName(have)})")
 
   private def typeName(value: AnyRef): String = value match {
-    case null | Unit | None => "nil"
+    case null | None => "nil"
     case _: java.lang.Boolean => "boolean"
     case _: java.lang.Number => "double"
     case _: java.lang.String => "string"

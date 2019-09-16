@@ -3,7 +3,7 @@ package totoro.ocelot.brain.entity.machine.luac
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.network.Component
 
-import scala.collection.convert.WrapAsScala._
+import scala.jdk.CollectionConverters._
 
 class ComponentAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
   def initialize() {
@@ -16,7 +16,7 @@ class ComponentAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
 
       def matches(name: String) = if (exact) name == filter.get else name.contains(filter.get)
 
-      for ((address, name) <- components) {
+      for ((address, name) <- components.asScala) {
         if (filter.isEmpty || matches(name)) {
           lua.pushString(address)
           lua.pushString(name)
@@ -57,7 +57,7 @@ class ComponentAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     lua.pushScalaFunction(lua => {
       withComponent(lua.checkString(1), component => {
         lua.newTable()
-        for ((name, annotation) <- machine.methods(component.host)) {
+        for ((name, annotation) <- machine.methods(component.host).asScala) {
           lua.pushString(name)
           lua.newTable()
           lua.pushBoolean(annotation.direct)

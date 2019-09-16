@@ -169,7 +169,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
           result(bytes)
         }
         else {
-          result(Unit)
+          result(())
         }
       case _ => throw new IOException("bad file descriptor")
     }
@@ -277,7 +277,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
     nbt.getTagList("owners", NBT.TAG_COMPOUND).foreach((ownerNbt: NBTTagCompound) => {
       val address = ownerNbt.getString("address")
       if (address != "") {
-        owners += address -> ownerNbt.getIntArray("handles").to[mutable.Set]
+        owners += address -> mutable.HashSet.from(ownerNbt.getIntArray("handles"))
       }
     })
 

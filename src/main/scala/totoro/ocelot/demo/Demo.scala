@@ -2,7 +2,7 @@ package totoro.ocelot.demo
 
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.traits.{Entity, Environment}
-import totoro.ocelot.brain.entity.{CPU, Cable, Case, EEPROM, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
+import totoro.ocelot.brain.entity.{CPU, Cable, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -76,56 +76,56 @@ object Demo extends App {
   Custom EEPROM can be created like this:
   **/
 
-  val eeprom = new EEPROM()
-  eeprom.codeData =
-    """
-      |local gpu = component.proxy((component.list("gpu", true)()))
-      |local fs
-      |
-      |for address in component.list("filesystem", true) do
-      |  if component.invoke(address, "getLabel") == "init" then
-      |    fs = component.proxy(address)
-      |    break
-      |  end
-      |end
-      |
-      |assert(fs, "no init filesystem found")
-      |
-      |gpu.bind((component.list("screen", true)()))
-      |gpu.set(1, 1, "Running script from [59aef805]/init.lua")
-      |
-      |local w, h = gpu.getResolution()
-      |
-      |local file = fs.open("/init.lua", "r")
-      |
-      |local chunk = assert(load(function()
-      |  return fs.read(file, math.huge)
-      |end, "/init.lua", "t"))
-      |
-      |fs.close(file)
-      |gpu.fill(1, 1, w, h, " ")
-      |
-      |local returnValues = table.pack(xpcall(chunk, debug.traceback, ...))
-      |local success = table.remove(returnValues, 1)
-      |
-      |if not success then
-      |  error(returnValues[1], 0)
-      |else
-      |  local data = {}
-      |
-      |  for i = 1, returnValues.n, 1 do
-      |    table.insert(data, tostring(returnValues[i]))
-      |  end
-      |
-      |  gpu.set(1, 1, table.concat(data, ", "))
-      |end
-      |
-      |computer.shutdown()
-    """.stripMargin.getBytes("UTF-8")
-  eeprom.label = "Test BIOS"
-  computer.add(eeprom)
+//  val eeprom = new EEPROM()
+//  eeprom.codeData =
+//    """
+//      |local gpu = component.proxy((component.list("gpu", true)()))
+//      |local fs
+//      |
+//      |for address in component.list("filesystem", true) do
+//      |  if component.invoke(address, "getLabel") == "init" then
+//      |    fs = component.proxy(address)
+//      |    break
+//      |  end
+//      |end
+//      |
+//      |assert(fs, "no init filesystem found")
+//      |
+//      |gpu.bind((component.list("screen", true)()))
+//      |gpu.set(1, 1, "Running script from [59aef805]/init.lua")
+//      |
+//      |local w, h = gpu.getResolution()
+//      |
+//      |local file = fs.open("/init.lua", "r")
+//      |
+//      |local chunk = assert(load(function()
+//      |  return fs.read(file, math.huge)
+//      |end, "/init.lua", "t"))
+//      |
+//      |fs.close(file)
+//      |gpu.fill(1, 1, w, h, " ")
+//      |
+//      |local returnValues = table.pack(xpcall(chunk, debug.traceback, ...))
+//      |local success = table.remove(returnValues, 1)
+//      |
+//      |if not success then
+//      |  error(returnValues[1], 0)
+//      |else
+//      |  local data = {}
+//      |
+//      |  for i = 1, returnValues.n, 1 do
+//      |    table.insert(data, tostring(returnValues[i]))
+//      |  end
+//      |
+//      |  gpu.set(1, 1, table.concat(data, ", "))
+//      |end
+//      |
+//      |computer.shutdown()
+//    """.stripMargin.getBytes("UTF-8")
+//  eeprom.label = "Test BIOS"
+//  computer.add(eeprom)
 
-  // computer.add(Loot.AdvLoaderEEPROM.create())
+  computer.add(Loot.OpenOsEEPROM.create())
   computer.add(Loot.OpenOsFloppy.create())
 
   val screen = workspace.add(new Screen(Tier.One))

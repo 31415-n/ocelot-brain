@@ -36,9 +36,9 @@ trait GenericGPU extends Environment with Tiered {
 
   private var screenInstance: Option[TextBuffer] = None
 
-  private def screen(f: TextBuffer => Array[AnyRef]) = screenInstance match {
+  private def screen(f: TextBuffer => Array[AnyRef]): Array[AnyRef] = screenInstance match {
     case Some(screen) => screen.synchronized(f(screen))
-    case _ => Array(Unit, "no screen")
+    case _ => Array(null, "no screen")
   }
 
   final val setBackgroundCosts = Array(1.0 / 32, 1.0 / 64, 1.0 / 128)
@@ -55,7 +55,7 @@ trait GenericGPU extends Environment with Tiered {
     val address = args.checkString(0)
     val reset = args.optBoolean(1, default = true)
     node.network.node(address) match {
-      case null => result(Unit, "invalid address")
+      case null => result((), "invalid address")
       case node: Node if node.host.isInstanceOf[TextBuffer] =>
         screenAddress = Option(address)
         screenInstance = Some(node.host.asInstanceOf[TextBuffer])
@@ -72,7 +72,7 @@ trait GenericGPU extends Environment with Tiered {
           else context.pause(0) // To discourage outputting "in realtime" to multiple screens using one GPU.
           result(true)
         })
-      case _ => result(Unit, "not a screen")
+      case _ => result((), "not a screen")
     }
   }
 
@@ -94,7 +94,7 @@ trait GenericGPU extends Environment with Tiered {
           (s.getPaletteColor(oldValue), oldValue)
         }
         else {
-          (oldValue, Unit)
+          (oldValue, ())
         }
       s.setBackgroundColor(color, args.optBoolean(1, default = false))
       result(oldColor, oldIndex)
@@ -116,7 +116,7 @@ trait GenericGPU extends Environment with Tiered {
           (s.getPaletteColor(oldValue), oldValue)
         }
         else {
-          (oldValue, Unit)
+          (oldValue, ())
         }
       s.setForegroundColor(color, args.optBoolean(1, default = false))
       result(oldColor, oldIndex)
@@ -226,7 +226,7 @@ trait GenericGPU extends Environment with Tiered {
           (s.getPaletteColor(fgValue), fgValue)
         }
         else {
-          (fgValue, Unit)
+          (fgValue, ())
         }
 
       val bgValue = s.getBackgroundColor(x, y)
@@ -235,7 +235,7 @@ trait GenericGPU extends Environment with Tiered {
           (s.getPaletteColor(bgValue), bgValue)
         }
         else {
-          (bgValue, Unit)
+          (bgValue, ())
         }
 
       result(s.get(x, y), fgColor, bgColor, fgIndex, bgIndex)

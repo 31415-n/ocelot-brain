@@ -4,9 +4,9 @@ import java.util
 
 import totoro.ocelot.brain.Ocelot
 
-import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.jdk.CollectionConverters._
 import scala.math.ScalaNumber
 
 object Registry {
@@ -36,7 +36,7 @@ object Registry {
 
   def convert(value: Array[AnyRef]): Array[AnyRef] = if (value != null) value.map(arg => convertRecursively(arg, new util.IdentityHashMap())) else null
 
-  def convertRecursively(value: Any, memo: util.IdentityHashMap[AnyRef, AnyRef], force: Boolean = false): AnyRef = {
+  def convertRecursively(value: Any, memo: util.IdentityHashMap[Any, AnyRef], force: Boolean = false): AnyRef = {
     val valueRef = value match {
       case number: ScalaNumber => number.underlying
       case reference: AnyRef => reference
@@ -47,7 +47,7 @@ object Registry {
       memo.get(valueRef)
     }
     else valueRef match {
-      case null | Unit | None => null
+      case null | () | None => null
 
       case arg: java.lang.Boolean => arg
       case arg: java.lang.Byte => arg
@@ -78,19 +78,19 @@ object Registry {
 
       case arg: Map[_, _] => convertMap(arg, arg, memo)
       case arg: mutable.Map[_, _] => convertMap(arg, arg.toMap, memo)
-      case arg: java.util.Map[_, _] => convertMap(arg, arg.toMap, memo)
+      case arg: java.util.Map[_, _] => convertMap(arg, arg.asScala.toMap, memo)
 
-      case arg: Iterable[_] => convertList(arg, arg.zipWithIndex.toIterator, memo)
-      case arg: java.lang.Iterable[_] => convertList(arg, arg.zipWithIndex.iterator, memo)
+      case arg: Iterable[_] => convertList(arg, arg.zipWithIndex.iterator, memo)
+      case arg: java.lang.Iterable[_] => convertList(arg, arg.asScala.zipWithIndex.iterator, memo)
 
       case arg =>
         val converted = new util.HashMap[AnyRef, AnyRef]()
-        memo += arg -> converted
+        memo.put(arg, converted)
         converters.foreach(converter => try converter.convert(arg, converted) catch {
           case t: Throwable => Ocelot.log.warn("Type converter threw an exception.", t)
         })
         if (converted.isEmpty) {
-          memo += arg -> arg.toString
+          memo.put(arg, arg.toString)
           arg.toString
         }
         else {
@@ -102,12 +102,12 @@ object Registry {
           // - convertRecursively(M) encounters A in the memoization map, uses M.
           //   That M is then 'wrong', as in not fully converted. Hence the clear
           //   plus copy action afterwards.
-          memo += converted -> converted // Makes convertMap re-use the map.
+          memo.put(converted, converted) // Makes convertMap re-use the map.
           convertRecursively(converted, memo, force = true)
-          memo -= converted
+          memo.remove(converted)
           if (converted.size == 1 && converted.containsKey("oc:flatten")) {
             val value = converted.get("oc:flatten")
-            memo += arg -> value // Update memoization map.
+            memo.put(arg, value) // Update memoization map.
             value
           }
           else {
@@ -117,23 +117,24 @@ object Registry {
     }
   }
 
-  def convertList(obj: AnyRef, list: Iterator[(Any, Int)], memo: util.IdentityHashMap[AnyRef, AnyRef]): Array[AnyRef] = {
+  def convertList(obj: Any, list: Iterator[(Any, Int)], memo: util.IdentityHashMap[Any, AnyRef]): Array[AnyRef] = {
     val converted = mutable.ArrayBuffer.empty[AnyRef]
-    memo += obj -> converted
+    memo.put(obj, converted)
     for ((value, _) <- list) {
       converted += convertRecursively(value, memo)
     }
     converted.toArray
   }
 
-  def convertMap(obj: AnyRef, map: Map[_, _], memo: util.IdentityHashMap[AnyRef, AnyRef]): AnyRef = {
-    val converted = memo.getOrElseUpdate(obj, mutable.Map.empty[AnyRef, AnyRef]) match {
+  def convertMap(obj: AnyRef, map: Map[_, _], memo: util.IdentityHashMap[Any, AnyRef]): AnyRef = {
+    val converted = memo.asScala.getOrElseUpdate(obj, mutable.Map.empty[AnyRef, AnyRef]) match {
       case map: mutable.Map[AnyRef, AnyRef]@unchecked => map
-      case map: java.util.Map[AnyRef, AnyRef]@unchecked => mapAsScalaMap(map)
+      case map: java.util.Map[AnyRef, AnyRef]@unchecked => map.asScala
     }
-    map.collect {
+    val fn: PartialFunction[(_, _), Unit] = {
       case (key: AnyRef, value: AnyRef) => converted += convertRecursively(key, memo) -> convertRecursively(value, memo)
     }
+    map.collect(fn)
     memo.get(obj)
   }
 }

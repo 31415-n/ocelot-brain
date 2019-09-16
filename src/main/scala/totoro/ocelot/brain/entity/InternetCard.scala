@@ -14,8 +14,8 @@ import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.ThreadPoolFactory
 import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 
-import scala.collection.convert.WrapAsScala._
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
 
 class InternetCard extends Entity with Environment with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Network).
@@ -47,18 +47,18 @@ class InternetCard extends Entity with Environment with DeviceInfo {
     checkOwner(context)
     val address = args.checkString(0)
     if (!Settings.get.httpEnabled) {
-      return result(Unit, "http requests are unavailable")
+      return result((), "http requests are unavailable")
     }
     if (connections.size >= Settings.get.maxConnections) {
       throw new IOException("too many open connections")
     }
     val post = if (args.isString(1)) Option(args.checkString(1)) else None
-    val headers = if (args.isTable(2)) args.checkTable(2).collect {
+    val headers: Map[String, String] = if (args.isTable(2)) args.checkTable(2).asScala.collect {
       case (key: String, value: AnyRef) => (key, value.toString)
     }.toMap
     else Map.empty[String, String]
     if (!Settings.get.httpHeadersEnabled && headers.nonEmpty) {
-      return result(Unit, "http request headers are unavailable")
+      return result((), "http request headers are unavailable")
     }
     val method = if (args.isString(3)) Option(args.checkString(3)) else None
     val request = new InternetCard.HTTPRequest(this, checkAddress(address), post, headers, method)
@@ -75,7 +75,7 @@ class InternetCard extends Entity with Environment with DeviceInfo {
     val address = args.checkString(0)
     val port = args.optInteger(1, -1)
     if (!Settings.get.tcpEnabled) {
-      return result(Unit, "tcp connections are unavailable")
+      return result((), "tcp connections are unavailable")
     }
     if (connections.size >= Settings.get.maxConnections) {
       throw new IOException("too many open connections")
@@ -185,17 +185,17 @@ object InternetCard {
 
           selector.select()
 
-          import scala.collection.JavaConversions._
+          import scala.jdk.CollectionConverters._
           val selectedKeys = selector.selectedKeys
           val readableKeys = mutable.HashSet[SelectionKey]()
-          selectedKeys.filter(_.isReadable).foreach(key => {
+          selectedKeys.asScala.filter(_.isReadable).foreach(key => {
             key.attachment.asInstanceOf[() => Unit].apply()
             readableKeys += key
           })
 
           if (readableKeys.nonEmpty) {
             val newSelector = Selector.open()
-            selectedKeys.filter(!readableKeys.contains(_)).foreach(key => {
+            selectedKeys.asScala.filter(!readableKeys.contains(_)).foreach(key => {
               key.channel.register(newSelector, SelectionKey.OP_READ, key.attachment)
             })
             selector.close()
@@ -255,10 +255,10 @@ object InternetCard {
       if (checkConnected()) {
         val buffer = ByteBuffer.allocate(n)
         val read = channel.read(buffer)
-        if (read == -1) result(Unit)
+        if (read == -1) result(())
         else {
           setupSelector()
-          result(buffer.array.view(0, read).toArray)
+          result(buffer.array.view.slice(0, read).toArray)
         }
       }
       else result(Array.empty[Byte])
@@ -370,7 +370,7 @@ object InternetCard {
     def response(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
       response match {
         case Some((code, message, headers)) => result(code, message, headers)
-        case _ => result(Unit)
+        case _ => result(())
       }
     }
 
@@ -378,7 +378,7 @@ object InternetCard {
     def read(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
       val n = math.min(Settings.get.maxReadBuffer, math.max(0, args.optInteger(0, Int.MaxValue)))
       if (checkResponse()) {
-        if (eof && queue.isEmpty) result(Unit)
+        if (eof && queue.isEmpty) result(())
         else {
           val buffer = ByteBuffer.allocate(n)
           var read = 0
@@ -389,7 +389,7 @@ object InternetCard {
           if (read == 0) {
             readMore()
           }
-          result(buffer.array.view(0, read).toArray)
+          result(buffer.array.view.slice(0, read).toArray)
         }
       }
       else result(Array.empty[Byte])

@@ -43,7 +43,7 @@ class FloppyDiskDrive extends Entity with Environment with ComponentInventory wi
   @Callback(doc = """function(): string -- Return the internal floppy disk address""")
   def media(context: Context, args: Arguments): Array[AnyRef] = {
     if (filesystemNode.isEmpty)
-      result(Unit, "drive is empty")
+      result((), "drive is empty")
     else
       result(filesystemNode.head.address)
   }

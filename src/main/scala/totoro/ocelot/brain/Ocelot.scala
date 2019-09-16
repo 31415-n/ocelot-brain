@@ -9,16 +9,16 @@ import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
 import totoro.ocelot.brain.entity.traits.{Disk, Environment, Tiered}
 import totoro.ocelot.brain.loot.Loot
-import totoro.ocelot.brain.nbt.persistence.NBTPersistence.{InstanceConstructor, TieredConstructor}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
+import totoro.ocelot.brain.nbt.persistence.NBTPersistence.{InstanceConstructor, TieredConstructor}
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.util.{FontUtils, Persistable, ThreadPoolFactory}
 
 object Ocelot {
   final val Name = "Ocelot"
   // do not forget to change the version in `build.sbt`
-  final val Version = "0.4.0"
+  final val Version = "0.4.1"
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None

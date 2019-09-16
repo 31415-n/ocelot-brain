@@ -7,8 +7,8 @@ import com.google.common.net.InetAddresses
 import com.typesafe.config._
 import totoro.ocelot.brain.util.ColorDepth
 
-import scala.collection.convert.WrapAsScala._
 import scala.io.{Codec, Source}
+import scala.jdk.CollectionConverters._
 import scala.util.matching.Regex
 
 class Settings(val config: Config) {
@@ -23,14 +23,14 @@ class Settings(val config: Config) {
   val startupDelay: Double = config.getDouble("computer.startupDelay") max 0.05
   val eepromSize: Int = config.getInt("computer.eepromSize") max 0
   val eepromDataSize: Int = config.getInt("computer.eepromDataSize") max 0
-  val cpuComponentSupport: Array[Int] = Array(config.getIntList("computer.cpuComponentCount"): _*) match {
+  val cpuComponentSupport: Array[Int] = Array(config.getIntList("computer.cpuComponentCount").asScala.toArray: _*) match {
     case Array(tier1, tier2, tier3, tierCreative) =>
       Array(tier1: Int, tier2: Int, tier3: Int, tierCreative: Int)
     case _ =>
       Ocelot.log.warn("Bad number of CPU component counts, ignoring.")
       Array(8, 12, 16, 1024)
   }
-  val callBudgets: Array[Double] = Array(config.getDoubleList("computer.callBudgets"): _*) match {
+  val callBudgets: Array[Double] = Array(config.getDoubleList("computer.callBudgets").asScala.toArray: _*) match {
     case Array(tier1, tier2, tier3) =>
       Array(tier1: Double, tier2: Double, tier3: Double)
     case _ =>
@@ -48,7 +48,7 @@ class Settings(val config: Config) {
   val allowGC: Boolean = config.getBoolean("computer.lua.allowGC")
   val enableLua53: Boolean = config.getBoolean("computer.lua.enableLua53")
   val defaultLua53: Boolean = config.getBoolean("computer.lua.defaultLua53")
-  val ramSizes: Array[Int] = Array(config.getIntList("computer.lua.ramSizes"): _*) match {
+  val ramSizes: Array[Int] = Array(config.getIntList("computer.lua.ramSizes").asScala.toArray: _*) match {
     case Array(tier1, tier2, tier3, tier4, tier5, tier6) =>
       Array(tier1: Int, tier2: Int, tier3: Int, tier4: Int, tier5: Int, tier6: Int)
     case _ =>
@@ -62,14 +62,14 @@ class Settings(val config: Config) {
   // filesystem
   val fileCost: Int = config.getInt("filesystem.fileCost") max 0
   val bufferChanges: Boolean = config.getBoolean("filesystem.bufferChanges")
-  val hddSizes: Array[Int] = Array(config.getIntList("filesystem.hddSizes"): _*) match {
+  val hddSizes: Array[Int] = Array(config.getIntList("filesystem.hddSizes").asScala.toArray: _*) match {
     case Array(tier1, tier2, tier3) =>
       Array(tier1: Int, tier2: Int, tier3: Int)
     case _ =>
       Ocelot.log.warn("Bad number of HDD sizes, ignoring.")
       Array(1024, 2048, 4096)
   }
-  val hddPlatterCounts: Array[Int] = Array(config.getIntList("filesystem.hddPlatterCounts"): _*) match {
+  val hddPlatterCounts: Array[Int] = Array(config.getIntList("filesystem.hddPlatterCounts").asScala.toArray: _*) match {
     case Array(tier1, tier2, tier3) =>
       Array(tier1: Int, tier2: Int, tier3: Int)
     case _ =>
@@ -88,8 +88,8 @@ class Settings(val config: Config) {
   val httpEnabled: Boolean = config.getBoolean("internet.enableHttp")
   val httpHeadersEnabled: Boolean = config.getBoolean("internet.enableHttpHeaders")
   val tcpEnabled: Boolean = config.getBoolean("internet.enableTcp")
-  val httpHostBlacklist = Array(config.getStringList("internet.blacklist").map(new Settings.AddressValidator(_)): _*)
-  val httpHostWhitelist = Array(config.getStringList("internet.whitelist").map(new Settings.AddressValidator(_)): _*)
+  val httpHostBlacklist = Array(config.getStringList("internet.blacklist").asScala.toArray.map(new Settings.AddressValidator(_)): _*)
+  val httpHostWhitelist = Array(config.getStringList("internet.whitelist").asScala.toArray.map(new Settings.AddressValidator(_)): _*)
   val httpTimeout: Int = (config.getInt("internet.requestTimeout") max 0) * 1000
   val maxConnections: Int = config.getInt("internet.maxTcpConnections") max 0
   val internetThreads: Int = config.getInt("internet.threads") max 1
@@ -105,14 +105,14 @@ class Settings(val config: Config) {
 
   // ----------------------------------------------------------------------- //
   // hologram
-  val hologramMaxScaleByTier: Array[Double] = Array(config.getDoubleList("hologram.maxScale"): _*) match {
+  val hologramMaxScaleByTier: Array[Double] = Array(config.getDoubleList("hologram.maxScale").asScala.toArray: _*) match {
     case Array(tier1, tier2) =>
       Array((tier1: Double) max 1.0, (tier2: Double) max 1.0)
     case _ =>
       Ocelot.log.warn("Bad number of hologram max scales, ignoring.")
       Array(3.0, 4.0)
   }
-  val hologramMaxTranslationByTier: Array[Double] = Array(config.getDoubleList("hologram.maxTranslation"): _*) match {
+  val hologramMaxTranslationByTier: Array[Double] = Array(config.getDoubleList("hologram.maxTranslation").asScala.toArray: _*) match {
     case Array(tier1, tier2) =>
       Array((tier1: Double) max 0.0, (tier2: Double) max 0.0)
     case _ =>
@@ -127,7 +127,7 @@ class Settings(val config: Config) {
   val maxNetworkPacketSize: Int = config.getInt("misc.maxNetworkPacketSize") max 0
   // Need at least 4 for nanomachine protocol. Because I can!
   val maxNetworkPacketParts: Int = config.getInt("misc.maxNetworkPacketParts") max 4
-  val maxOpenPorts: Array[Int] = Array(config.getIntList("misc.maxOpenPorts"): _*) match {
+  val maxOpenPorts: Array[Int] = Array(config.getIntList("misc.maxOpenPorts").asScala.toArray: _*) match {
     case Array(wired, tier1, tier2) =>
       Array((wired: Int) max 0, (tier1: Int) max 0, (tier2: Int) max 0)
     case _ =>
@@ -136,7 +136,7 @@ class Settings(val config: Config) {
   }
   val geolyzerRange: Int = config.getInt("misc.geolyzerRange")
   val allowItemStackInspection: Boolean = config.getBoolean("misc.allowItemStackInspection")
-  val maxWirelessRange: Array[Double] = Array(config.getDoubleList("misc.maxWirelessRange"): _*) match {
+  val maxWirelessRange: Array[Double] = Array(config.getDoubleList("misc.maxWirelessRange").asScala.toArray: _*) match {
     case Array(tier1, tier2) =>
       Array((tier1: Double) max 0.0, (tier2: Double) max 0.0)
     case _ =>
@@ -193,7 +193,7 @@ object Settings {
   def get: Settings = settings
 
   def load(file: File): Unit = {
-    import scala.compat.Platform.EOL
+    import java.lang.System.{lineSeparator => EOL}
     // typesafe config's internal method for loading the reference.conf file
     // seems to fail on some systems (as does their parseResource method), so
     // we'll have to load the default config manually. This was reported on the
@@ -205,21 +205,20 @@ object Settings {
       in.close()
       ConfigFactory.parseString(config)
     }
-    val config =
-      try {
-        val plain = Source.fromFile(file)(Codec.UTF8).getLines().mkString("", EOL, EOL)
-        val config = ConfigFactory.parseString(plain)
-        settings = new Settings(config.getConfig("opencomputers"))
-        config
-      }
-      catch {
-        case e: Throwable =>
-          if (file.exists()) {
-            Ocelot.log.warn("Failed loading config, using defaults.", e)
-          }
-          settings = new Settings(defaults.getConfig("opencomputers"))
-          defaults
-      }
+    try {
+      val source = Source.fromFile(file)(Codec.UTF8)
+      val plain = source.getLines().mkString("", EOL, EOL)
+      val config = ConfigFactory.parseString(plain)
+      settings = new Settings(config.getConfig("opencomputers"))
+      source.close()
+    }
+    catch {
+      case e: Throwable =>
+        if (file.exists()) {
+          Ocelot.log.warn("Failed loading config, using defaults.", e)
+        }
+        settings = new Settings(defaults.getConfig("opencomputers"))
+    }
   }
 
   val cidrPattern: Regex = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:/(\d{1,2}))""".r
@@ -247,7 +246,6 @@ object Settings {
         (_: InetAddress, _: String) => true
     }
 
-    def apply(inetAddress: InetAddress, host: String) = validator(inetAddress, host)
+    def apply(inetAddress: InetAddress, host: String): Boolean = validator(inetAddress, host)
   }
-
 }

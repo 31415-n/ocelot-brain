@@ -4,8 +4,8 @@ import li.cil.repack.org.luaj.vm2.lib.VarArgFunction
 import li.cil.repack.org.luaj.vm2.{LuaString, LuaValue, Varargs}
 import totoro.ocelot.brain.{Ocelot, Settings}
 
-import scala.collection.convert.WrapAsScala._
 import scala.collection.{immutable, mutable}
+import scala.jdk.CollectionConverters._
 import scala.language.implicitConversions
 import scala.math.ScalaNumber
 import scala.runtime.BoxedUnit
@@ -30,7 +30,7 @@ object ScalaClosure {
       case null => null
       case primitive => primitive.asInstanceOf[AnyRef]
     }) match {
-      case null | Unit | _: BoxedUnit => LuaValue.NIL
+      case null | () | _: BoxedUnit => LuaValue.NIL
       case value: java.lang.Boolean => LuaValue.valueOf(value.booleanValue)
       case value: java.lang.Byte => LuaValue.valueOf(value.byteValue)
       case value: java.lang.Character => LuaValue.valueOf(String.valueOf(value))
@@ -43,9 +43,9 @@ object ScalaClosure {
       case value: Array[Byte] => LuaValue.valueOf(value)
       case value: Array[_] => toLuaList(value)
       case value: Value if Settings.get.allowUserdata => LuaValue.userdataOf(value)
-      case value: Product => toLuaList(value.productIterator.toIterable)
+      case value: Product => toLuaList(value.productIterator.to(Iterable))
       case value: Seq[_] => toLuaList(value)
-      case value: java.util.Map[_, _] => toLuaTable(value.toMap)
+      case value: java.util.Map[_, _] => toLuaTable(value.asScala.toMap)
       case value: Map[_, _] => toLuaTable(value)
       case value: mutable.Map[_, _] => toLuaTable(value.toMap)
       case _ =>
@@ -61,9 +61,9 @@ object ScalaClosure {
   }
 
   def toLuaTable(value: Map[_, _]): LuaValue = {
-    LuaValue.tableOf(value.flatMap {
+    LuaValue.tableOf(value.flatMap((entry: (_, _)) => entry match {
       case (k, v) => Seq(toLuaValue(k), toLuaValue(v))
-    }.toArray)
+    }).toArray)
   }
 
   def toSimpleJavaObject(value: LuaValue): AnyRef = value.`type`() match {

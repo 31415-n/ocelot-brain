@@ -44,7 +44,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
   def set(context: Context, args: Arguments): Array[AnyRef] = {
     if (readonly) {
-      return result(Unit, "storage is readonly")
+      return result((), "storage is readonly")
     }
     val newData = args.optByteArray(0, Array.empty[Byte])
     if (newData.length > Settings.get.eepromSize) throw new IllegalArgumentException("not enough space")
@@ -59,7 +59,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   @Callback(doc = """function(data:string):string -- Set the label of the EEPROM.""")
   def setLabel(context: Context, args: Arguments): Array[AnyRef] = {
     if (readonly) {
-      return result(Unit, "storage is readonly")
+      return result((), "storage is readonly")
     }
     label = args.optString(0, "EEPROM").trim.take(24)
     if (label.length == 0) label = "EEPROM"
@@ -78,7 +78,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
       readonly = true
       result(true)
     }
-    else result(Unit, "incorrect checksum")
+    else result((), "incorrect checksum")
   }
 
   @Callback(direct = true, doc = """function():number -- Get the storage capacity of this EEPROM.""")

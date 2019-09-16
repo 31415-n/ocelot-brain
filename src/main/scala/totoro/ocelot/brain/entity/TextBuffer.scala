@@ -91,7 +91,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
       precisionMode = args.checkBoolean(0)
       result(oldValue)
     }
-    else result(Unit, "unsupported operation")
+    else result((), "unsupported operation")
   }
 
   // ----------------------------------------------------------------------- //
@@ -150,7 +150,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param width  the horizontal size of the physical representation.
     * @param height the vertical size of the physical representation.
     */
-  def setAspectRatio(width: Double, height: Double): Unit = this.synchronized(aspectRatio = (width, height))
+  def setAspectRatio(width: Double, height: Double): Unit = this.synchronized(this.aspectRatio = (width, height))
 
   /**
     * Get the aspect ratio of the buffer.
@@ -702,7 +702,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
       args += player.nickname
     }
 
-    node.sendToReachable("computer.checked_signal", args: _*)
+    node.sendToReachable("computer.checked_signal", args.toSeq: _*)
   }
 
   private def sendToKeyboards(name: String, values: AnyRef*) {

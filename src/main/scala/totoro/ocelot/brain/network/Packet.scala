@@ -34,7 +34,7 @@ class Packet(var source: String, var destination: String, var port: Int, var dat
     if (values.length > Settings.get.maxNetworkPacketParts) throw new IllegalArgumentException("packet has too many parts")
     values.length * 2 + values.foldLeft(0)((acc, arg) => {
       acc + (arg match {
-        case null | Unit | None => 4
+        case null | None => 4
         case _: java.lang.Boolean => 4
         case _: java.lang.Byte => 4
         case _: java.lang.Short => 4
@@ -70,7 +70,7 @@ class Packet(var source: String, var destination: String, var port: Int, var dat
     nbt.setInteger("ttl", ttl)
     nbt.setInteger("dataLength", data.length)
     for (i <- data.indices) data(i) match {
-      case null | Unit | None =>
+      case null | None =>
       case value: java.lang.Boolean => nbt.setBoolean("data" + i, value)
       case value: java.lang.Integer => nbt.setInteger("data" + i, value)
       case value: java.lang.Double => nbt.setDouble("data" + i, value)

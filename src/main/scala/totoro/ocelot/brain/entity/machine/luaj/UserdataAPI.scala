@@ -3,9 +3,9 @@ package totoro.ocelot.brain.entity.machine.luaj
 import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
-import totoro.ocelot.brain.entity.machine.{Arguments, Registry, Value}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Registry, Value}
 
-import scala.collection.convert.WrapAsScala._
+import scala.jdk.CollectionConverters._
 
 class UserdataAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
   override def initialize() {
@@ -42,7 +42,7 @@ class UserdataAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
 
     userdata.set("methods", (args: Varargs) => {
       val value = args.checkuserdata(1, classOf[Value])
-      LuaValue.tableOf(machine.methods(value).flatMap(entry => {
+      LuaValue.tableOf(machine.methods(value).asScala.flatMap((entry: (String, Callback)) => {
         val (name, annotation) = entry
         Seq(LuaValue.valueOf(name), LuaValue.valueOf(annotation.direct))
       }).toArray)
@@ -58,7 +58,7 @@ class UserdataAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
     userdata.set("doc", (args: Varargs) => {
       val value = args.checkuserdata(1, classOf[Value]).asInstanceOf[Value]
       val method = args.checkjstring(2)
-      owner.documentation(() => machine.methods(value)(method).doc)
+      owner.documentation(() => machine.methods(value).get(method).doc)
     })
 
     lua.set("userdata", userdata)

@@ -4,11 +4,11 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, DataInputStream, Da
 
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
-import totoro.ocelot.brain.entity.machine.{Arguments, Registry, Value}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Registry, Value}
 import totoro.ocelot.brain.nbt.{CompressedStreamTools, NBTTagCompound}
 import totoro.ocelot.brain.util.Persistable
 
-import scala.collection.convert.WrapAsScala._
+import scala.jdk.CollectionConverters._
 
 class UserdataAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
   def initialize() {
@@ -83,7 +83,7 @@ class UserdataAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
 
     lua.pushScalaFunction(lua => {
       val value = lua.toJavaObjectRaw(1).asInstanceOf[Value]
-      lua.pushValue(machine.methods(value).map(entry => {
+      lua.pushValue(machine.methods(value).asScala.map((entry: (String, Callback)) => {
         val (name, annotation) = entry
         name -> annotation.direct
       }))
@@ -102,7 +102,7 @@ class UserdataAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     lua.pushScalaFunction(lua => {
       val value = lua.toJavaObjectRaw(1).asInstanceOf[Value]
       val method = lua.checkString(2)
-      owner.documentation(() => machine.methods(value)(method).doc)
+      owner.documentation(() => machine.methods(value).get(method).doc)
     })
     lua.setField(-2, "doc")
 

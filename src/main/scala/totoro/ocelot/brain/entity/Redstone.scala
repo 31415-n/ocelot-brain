@@ -52,9 +52,9 @@ object Redstone {
       var ret: AnyRef = null
       getAssignment(args) match {
         case (side: Direction.Value, value: Int) =>
-          ret = new java.lang.Integer(redstoneOutput(side.id))
+          ret = java.lang.Integer.valueOf(redstoneOutput(side.id))
           redstoneOutput(side.id) = value
-        case (value: Map[Int, Int], _) =>
+        case (value: Map[Int, Int]@unchecked, _) =>
           ret = valuesToMap(redstoneOutput)
           value.foreach(item => redstoneOutput(item._1) = item._2)
       }
@@ -142,7 +142,7 @@ object Redstone {
     }
 
     private def sidesToMap(ar: Array[Array[Int]]): Map[Int, Map[Int, Int]] = {
-      Direction.values.map {
+      Direction.values.unsorted.map {
         case side if side.id < ar.length && ar(side.id).length > 0 => side.id -> colorsToMap(ar(side.id))
       }.toMap
     }
@@ -189,10 +189,10 @@ object Redstone {
         case (side: Int, color: Int, value: Int) =>
           ret = bundledRedstoneOutput(side)(color)
           bundledRedstoneOutput(side)(color) = value
-        case (side: Int, value: Map[Int, Int], _) =>
+        case (side: Int, value: Map[Int, Int]@unchecked, _) =>
           ret = bundledRedstoneOutput(side)
           value.foreach(color => bundledRedstoneOutput(side)(color._1) = color._2)
-        case (value: Map[Int, Map[Int, Int]], _, _) =>
+        case (value: Map[Int, Map[Int, Int]]@unchecked, _, _) =>
           ret = bundledRedstoneOutput
           value.foreach(side => side._2.foreach(color => bundledRedstoneOutput(side._1)(color._1) = color._2))
       }

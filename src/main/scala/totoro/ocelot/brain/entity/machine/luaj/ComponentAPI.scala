@@ -4,7 +4,7 @@ import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
 import totoro.ocelot.brain.network.Component
 
-import scala.collection.convert.WrapAsScala._
+import scala.jdk.CollectionConverters._
 
 class ComponentAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
   override def initialize() {
@@ -16,7 +16,7 @@ class ComponentAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
       val exact = args.optboolean(2, false)
       val table = LuaValue.tableOf(0, components.size)
       def matches(name: String) = if (exact) name == filter.get else name.contains(filter.get)
-      for ((address, name) <- components) {
+      for ((address, name) <- components.asScala) {
         if (filter.isEmpty || matches(name)) {
           table.set(address, name)
         }
@@ -46,7 +46,7 @@ class ComponentAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
     component.set("methods", (args: Varargs) => {
       withComponent(args.checkjstring(1), component => {
         val table = LuaValue.tableOf()
-        for ((name, annotation) <- machine.methods(component.host)) {
+        for ((name, annotation) <- machine.methods(component.host).asScala) {
           table.set(name, LuaValue.tableOf(Array(
             LuaValue.valueOf("direct"),
             LuaValue.valueOf(annotation.direct),
