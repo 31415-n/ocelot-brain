@@ -147,6 +147,9 @@ object Demo extends App {
   EventBus.listenTo(classOf[MachineCrashEvent], { case event: MachineCrashEvent =>
     println(s"[EVENT] Machine crash! (address = ${event.address}, ${event.message})")
   })
+  EventBus.listenTo(classOf[FileSystemActivityEvent], { case event: FileSystemActivityEvent =>
+    println(s"[EVENT] Filesystem activity (address = ${event.address})")
+  })
   EventBus.listenTo(classOf[TextBufferSetEvent], { case event: TextBufferSetEvent =>
     println(s"[EVENT] Text buffer set (address = ${event.address}, ${event.x}, ${event.y}, ${event.value}, ${event.vertical})")
   })

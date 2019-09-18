@@ -6,6 +6,7 @@ import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.result
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment}
+import totoro.ocelot.brain.event.EventBus
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}
 import totoro.ocelot.brain.network._
@@ -75,21 +76,25 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
 
   @Callback(direct = true, doc = """function(path:string):boolean -- Returns whether an object exists at the specified absolute path in the file system.""")
   def exists(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
+    diskActivity()
     result(fileSystem.exists(clean(args.checkString(0))))
   }
 
   @Callback(direct = true, doc = """function(path:string):number -- Returns the size of the object at the specified absolute path in the file system.""")
   def size(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
+    diskActivity()
     result(fileSystem.size(clean(args.checkString(0))))
   }
 
   @Callback(direct = true, doc = """function(path:string):boolean -- Returns whether the object at the specified absolute path in the file system is a directory.""")
   def isDirectory(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
+    diskActivity()
     result(fileSystem.isDirectory(clean(args.checkString(0))))
   }
 
   @Callback(direct = true, doc = """function(path:string):number -- Returns the (real world) timestamp of when the object at the specified absolute path in the file system was modified.""")
   def lastModified(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
+    diskActivity()
     result(fileSystem.lastModified(clean(args.checkString(0))))
   }
 
@@ -97,6 +102,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
   def list(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
     Option(fileSystem.list(clean(args.checkString(0)))) match {
       case Some(list) =>
+        diskActivity()
         Array(list)
       case _ => null
     }
@@ -108,6 +114,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
       (recurse(path.split("/").dropRight(1).mkString("/")) && fileSystem.makeDirectory(path)))
 
     val success = recurse(clean(args.checkString(0)))
+    diskActivity()
     result(success)
   }
 
@@ -117,12 +124,14 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
       fileSystem.list(parent).forall(child => recurse(parent + "/" + child))) && fileSystem.delete(parent)
 
     val success = recurse(clean(args.checkString(0)))
+    diskActivity()
     result(success)
   }
 
   @Callback(doc = """function(from:string, to:string):boolean -- Renames/moves an object from the first specified absolute path in the file system to the second.""")
   def rename(context: Context, args: Arguments): Array[AnyRef] = fileSystem.synchronized {
     val success = fileSystem.rename(clean(args.checkString(0)), clean(args.checkString(1)))
+    diskActivity()
     result(success)
   }
 
@@ -143,6 +152,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
     if (handle > 0) {
       owners.getOrElseUpdate(context.node.address, mutable.Set.empty[Int]) += handle
     }
+    diskActivity()
     result(new HandleValue(node.address, handle))
   }
 
@@ -166,6 +176,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
               Array.copy(buffer, 0, bytes, 0, read)
               bytes
             }
+          diskActivity()
           result(bytes)
         }
         else {
@@ -204,6 +215,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
     Option(fileSystem.getHandle(handle)) match {
       case Some(file) =>
         file.write(value)
+        diskActivity()
         result(true)
       case _ => throw new IOException("bad file descriptor")
     }
@@ -325,4 +337,8 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
   private def checkOwner(owner: String, handle: Int): Unit =
     if (!owners.contains(owner) || !owners(owner).contains(handle))
       throw new IOException("bad file descriptor")
+
+  private def diskActivity(): Unit = {
+    EventBus.sendDiskActivity(node)
+  }
 }

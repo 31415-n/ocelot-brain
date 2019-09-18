@@ -5,6 +5,7 @@ import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import com.google.common.io.Files
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
+import totoro.ocelot.brain.event.EventBus
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.{Ocelot, Settings}
@@ -83,6 +84,7 @@ trait DiskUnmanaged extends Disk {
   def readSector(context: Context, args: Arguments): Array[AnyRef] = this.synchronized {
     context.consumeCallBudget(readSectorCosts(speed))
     val sector = moveToSector(context, checkSector(args, 0))
+    diskActivity()
     val sectorData = new Array[Byte](sectorSize)
     Array.copy(data, sectorOffset(sector), sectorData, 0, sectorSize)
     result(sectorData)
@@ -94,6 +96,7 @@ trait DiskUnmanaged extends Disk {
     context.consumeCallBudget(writeSectorCosts(speed))
     val sectorData = args.checkByteArray(1)
     val sector = moveToSector(context, checkSector(args, 0))
+    diskActivity()
     Array.copy(sectorData, 0, data, sectorOffset(sector), math.min(sectorSize, sectorData.length))
     null
   }
@@ -103,6 +106,7 @@ trait DiskUnmanaged extends Disk {
     context.consumeCallBudget(readByteCosts(speed))
     val offset = args.checkInteger(0) - 1
     moveToSector(context, checkSector(offset))
+    diskActivity()
     result(data(offset))
   }
 
@@ -113,6 +117,7 @@ trait DiskUnmanaged extends Disk {
     val offset = args.checkInteger(0) - 1
     val value = args.checkInteger(1).toByte
     moveToSector(context, checkSector(offset))
+    diskActivity()
     data(offset) = value
     null
   }
@@ -197,5 +202,11 @@ trait DiskUnmanaged extends Disk {
     if (label != null) {
       label.save(nbt)
     }
+  }
+
+  // ----------------------------------------------------------------------- //
+
+  private def diskActivity(): Unit = {
+    EventBus.sendDiskActivity(node)
   }
 }
