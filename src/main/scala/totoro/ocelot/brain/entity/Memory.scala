@@ -15,7 +15,7 @@ class Memory(override var tier: Int) extends Entity with Environment with Device
     DeviceAttribute.Description -> "Memory bank",
     DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
     DeviceAttribute.Product -> ("MRAM 1x" + tier.toString),
-    DeviceAttribute.Clock -> (Settings.get.callBudgets(tier) * 1000).toInt.toString
+    DeviceAttribute.Clock -> (Settings.get.callBudgets(tier / 2) * 1000).toInt.toString
   )
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
