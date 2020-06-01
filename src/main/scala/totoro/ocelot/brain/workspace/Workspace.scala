@@ -6,10 +6,10 @@ import totoro.ocelot.brain.entity.traits.{Entity, Environment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
 import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
-import totoro.ocelot.brain.network.{Component, Network, Visibility}
+import totoro.ocelot.brain.network.Network
 import totoro.ocelot.brain.util.Persistable
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.util.Random
@@ -40,15 +40,6 @@ class Workspace(val name: String = UUID.randomUUID().toString) extends Persistab
     ingameTimePaused = paused
   }
 
-  // Networks
-  // ----------------------------------------------------------------------- //
-  /**
-    * This default network is used for all freshly added entities
-    * That does not mean that all new entities will be interconnected -
-    * they will just exist in the same network, until specified otherwise.
-    */
-  val DefaultNetwork = new Network()
-
   // Entities
   // ----------------------------------------------------------------------- //
   /**
@@ -61,19 +52,6 @@ class Workspace(val name: String = UUID.randomUUID().toString) extends Persistab
     entities += entity
     entity match {
       case wa: WorkspaceAware => wa.workspace = this
-      case _ =>
-    }
-    entity match {
-      case environment: Environment =>
-        if (environment.node.network == null) DefaultNetwork.connect(environment)
-        // TODO: this is a hack to re-add the component to all machines. Need something better here.
-        environment.node match {
-          case component: Component =>
-            val v = component.visibility
-            component.setVisibility(Visibility.None)
-            component.setVisibility(v)
-          case _ =>
-        }
       case _ =>
     }
     entity

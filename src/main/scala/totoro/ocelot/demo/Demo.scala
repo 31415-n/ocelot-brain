@@ -32,25 +32,14 @@ object Demo extends App {
   val workspace = new Workspace()
 
   /**
-    * We choose the cable to be the base of our demo setup.
-    * (But we can use any other component actually.)
-    */
-  val cable = workspace.add(new Cable())
-
-  /**
-    * Then we create a new entity - computer case.
+    * Now we create a new entity - computer case.
+    * Straight off we add it to the workspace.
     */
   var computer = workspace.add(new Case(Tier.Four))
 
   /**
-    * The cable and the computer case still exist separately. They are in the same workspace,
-    * but not connected.
-    */
-  cable.connect(computer)
-
-  /**
     * Computer components do not need to be added to the workspace explicitly,
-    * because they are a part of Case entity.
+    * because they are added to the Case internal inventory (and the case is added to the workspace).
     */
   val cpu = new CPU(Tier.Three)
   computer.add(cpu)
@@ -129,7 +118,7 @@ object Demo extends App {
   computer.add(Loot.OpenOsFloppy.create())
 
   val screen = workspace.add(new Screen(Tier.One))
-  cable.connect(screen)
+  computer.connect(screen)
 
   /**
     * Here we add some custom NBT data to the computer.

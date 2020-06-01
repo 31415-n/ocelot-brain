@@ -18,7 +18,6 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
   def this(node: Node) = {
     this()
     addNew(node)
-    node.onConnect(node)
   }
 
   data.values.foreach(node => {

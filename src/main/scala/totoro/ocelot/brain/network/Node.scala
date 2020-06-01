@@ -65,7 +65,7 @@ trait Node {
     * This will always be set automatically by the network manager. Do not
     * change this value and do not return anything that it wasn't set to.
     */
-  final var network: Network = _
+  final var network: Network = new Network(this)
 
   /**
     * Checks whether this node can be reached from the specified node.
@@ -174,7 +174,9 @@ trait Node {
 
   def onConnect(node: Node) {
     try
-      host.onConnect(node)
+      if (host != null) {
+        host.onConnect(node)
+      }
     catch {
       case e: Throwable => Ocelot.log.warn(s"A component of type '${host.getClass.getName}' threw an error while being connected to the component network.", e)
     }
