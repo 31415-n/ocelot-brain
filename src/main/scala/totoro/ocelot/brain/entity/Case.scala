@@ -8,6 +8,8 @@ import totoro.ocelot.brain.util.Tier
 
 class Case(override var tier: Int) extends Computer with Entity with DeviceInfo with Tiered {
 
+  machine.onConnect(machine.node)
+
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.System,
     DeviceAttribute.Description -> "Computer",

@@ -33,7 +33,7 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
     // meaning there may be other tile entities that also have not re-joined
     // the network. We skip the update this round to allow other tile entities
     // to join the network, too, avoiding issues of missing nodes (e.g. in the
-    // GPU which would otherwise loose track of its screen).
+    // GPU which would otherwise lose track of its screen).
     if (isConnected) {
       machine.update()
     }
