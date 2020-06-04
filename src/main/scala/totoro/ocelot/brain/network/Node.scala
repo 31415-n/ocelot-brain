@@ -2,8 +2,9 @@ package totoro.ocelot.brain.network
 
 import com.google.common.base.Strings
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.traits.Environment
+import totoro.ocelot.brain.entity.traits.{Environment, SidedEnvironment}
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.util.Direction
 
 /**
   * A single node in a [[Network]].
@@ -130,6 +131,9 @@ trait Node {
     * @throws NullPointerException if `network` is `null`.
     */
   def connect(environment: Environment): Unit = network.connect(this, environment.node)
+
+  def connect(sidedEnvironment: SidedEnvironment, side: Direction.Value): Unit =
+    if (sidedEnvironment.canConnect(side)) network.connect(sidedEnvironment.sidedNode(side))
 
   /**
     * Connects the specified node to this node.

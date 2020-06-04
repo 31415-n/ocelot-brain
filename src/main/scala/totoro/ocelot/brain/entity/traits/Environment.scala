@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Message, Network, Node}
-import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.util.{Direction, Persistable}
 
 /**
   * The environment of a node.
@@ -61,6 +61,9 @@ trait Environment extends Persistable with LifeCycle {
     */
   def connect(environment: Environment): Unit = node.network.connect(this, environment)
 
+  def connect(sidedEnvironment: SidedEnvironment, side: Direction.Value): Unit =
+    if (sidedEnvironment.canConnect(side)) node.network.connect(node, sidedEnvironment.sidedNode(side))
+
   /**
     * Connects the node of specified environment to the node of this environment.
     *
@@ -86,6 +89,9 @@ trait Environment extends Persistable with LifeCycle {
     * @throws NullPointerException if `network` is `null`.
     */
   def disconnect(environment: Environment): Unit = node.network.disconnect(this, environment)
+
+  def disconnect(sidedEnvironment: SidedEnvironment, side: Direction.Value): Unit =
+    if (sidedEnvironment.canConnect(side)) node.network.disconnect(node, sidedEnvironment.sidedNode(side))
 
   /**
     * Disconnects the node of specified environment from the node of this environment.

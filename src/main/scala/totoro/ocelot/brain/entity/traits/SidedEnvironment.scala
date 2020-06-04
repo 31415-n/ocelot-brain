@@ -34,4 +34,23 @@ trait SidedEnvironment {
     * @return whether the environment provides a node for the specified side.
     */
   def canConnect(side: Direction.Value): Boolean
+
+  // convenience connection methods
+  def connect(sourceSide: Direction.Value, target: SidedEnvironment, targetSide: Direction.Value): Unit =
+    if (canConnect(sourceSide) && target.canConnect(targetSide)) sidedNode(sourceSide).connect(target.sidedNode(targetSide))
+
+  def connect(sourceSide: Direction.Value, target: Environment): Unit =
+    if (canConnect(sourceSide)) sidedNode(sourceSide).connect(target.node)
+
+  def connect(sourceSide: Direction.Value, target: Node): Unit =
+    if (canConnect(sourceSide)) sidedNode(sourceSide).connect(target)
+
+  def disconnect(sourceSide: Direction.Value, target: SidedEnvironment, targetSide: Direction.Value): Unit =
+    if (canConnect(sourceSide) && target.canConnect(targetSide)) sidedNode(sourceSide).disconnect(target.sidedNode(targetSide))
+
+  def disconnect(sourceSide: Direction.Value, target: Environment): Unit =
+    if (canConnect(sourceSide)) sidedNode(sourceSide).disconnect(target.node)
+
+  def disconnect(sourceSide: Direction.Value, target: Node): Unit =
+    if (canConnect(sourceSide)) sidedNode(sourceSide).disconnect(target)
 }
