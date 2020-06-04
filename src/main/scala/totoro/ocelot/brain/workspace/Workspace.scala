@@ -28,12 +28,20 @@ class Workspace(val name: String = UUID.randomUUID().toString) extends Persistab
   private var ingameTime: Int = 0
   private var ingameTimePaused: Boolean = false
 
+  /**
+    * @return workspace time in ticks
+    */
   def getIngameTime: Int = ingameTime
 
   def setIngameTime(ticks: Int): Unit = {
     ingameTime = ticks
   }
 
+  /**
+    * Usually the internal workspace time gets updates by one tick
+    * for every call of `workspace.update()`.
+    * But you can "pause" the time, and then it will remain the same, regardless of `update()` calls.
+    */
   def isIngameTimePaused: Boolean = ingameTimePaused
 
   def setIngameTimePaused(paused: Boolean): Unit = {

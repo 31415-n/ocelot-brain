@@ -1,6 +1,7 @@
 package totoro.ocelot.brain.nbt
 
 import com.google.common.base.Charsets
+import totoro.ocelot.brain.util.Direction
 
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
@@ -206,6 +207,20 @@ object ExtendedNBT {
     }
 
     def setNewTagList(name: String, values: NBTBase*): NBTTagCompound = setNewTagList(name, values)
+
+    def getDirection(name: String): Option[Direction.Value] = {
+      nbt.getByte(name) match {
+        case id if id < 0 || id > Direction.values.size => None
+        case id => Option(Direction(id))
+      }
+    }
+
+    def setDirection(name: String, d: Option[Direction.Value]): Unit = {
+      d match {
+        case Some(side) => nbt.setByte(name, side.id.toByte)
+        case _ => nbt.setByte(name, -1: Byte)
+      }
+    }
 
     def getBooleanArray(name: String): Array[Boolean] = nbt.getByteArray(name).map(_ == 1)
 
