@@ -18,7 +18,7 @@ import totoro.ocelot.brain.util.{FontUtils, Persistable, ThreadPoolFactory}
 object Ocelot {
   final val Name = "Ocelot"
   // do not forget to change the version in `build.sbt`
-  final val Version = "0.5.0"
+  final val Version = "0.5.1"
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
