@@ -59,6 +59,10 @@ class Settings(val config: Config) {
   val maxTotalRam: Int = config.getInt("computer.lua.maxTotalRam") max 0
 
   // ----------------------------------------------------------------------- //
+  // power.buffer
+  val bufferComputer: Double = config.getDouble("power.buffer.computer")
+
+  // ----------------------------------------------------------------------- //
   // filesystem
   val fileCost: Int = config.getInt("filesystem.fileCost") max 0
   val bufferChanges: Boolean = config.getBoolean("filesystem.bufferChanges")

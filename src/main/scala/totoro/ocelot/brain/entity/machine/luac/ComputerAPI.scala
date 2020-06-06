@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.entity.machine.luac
 
+import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.entity.machine.MachineAPI
 import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
@@ -94,13 +95,13 @@ class ComputerAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     lua.setField(-2, "removeUser")
 
     lua.pushScalaFunction(lua => {
-      lua.pushNumber(Double.PositiveInfinity)
+      lua.pushNumber(Settings.get.bufferComputer)
       1
     })
     lua.setField(-2, "energy")
 
     lua.pushScalaFunction(lua => {
-      lua.pushNumber(Double.PositiveInfinity)
+      lua.pushNumber(Settings.get.bufferComputer)
       1
     })
     lua.setField(-2, "maxEnergy")

@@ -1,6 +1,7 @@
 package totoro.ocelot.brain.entity.machine.luaj
 
 import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
+import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.MachineAPI
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
 import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
@@ -45,10 +46,9 @@ class ComputerAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
 
     computer.set("removeUser", (args: Varargs) => LuaValue.valueOf(machine.removeUser(args.checkjstring(1))))
 
-    val infinity: Double = Double.PositiveInfinity
-    computer.set("energy", (_: Varargs) => LuaValue.valueOf(infinity))
+    computer.set("energy", (_: Varargs) => LuaValue.valueOf(Settings.get.bufferComputer))
 
-    computer.set("maxEnergy", (_: Varargs) => LuaValue.valueOf(infinity))
+    computer.set("maxEnergy", (_: Varargs) => LuaValue.valueOf(Settings.get.bufferComputer))
 
     computer.set("getArchitectures", (_: Varargs) => {
       machine.host.inventory.collectFirst {
