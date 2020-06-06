@@ -48,6 +48,35 @@ trait GenericGPU extends Environment with Tiered {
   final val copyCosts = Array(1.0 / 16, 1.0 / 32, 1.0 / 64)
   final val fillCosts = Array(1.0 / 32, 1.0 / 64, 1.0 / 128)
 
+  /**
+   * Binds the GPU to some Screen node.
+   * WARNING! Use with caution. This may disrupt the normal emulation flow.
+   */
+  def forceBind(node: Node, reset: Boolean = false): Unit = {
+    node.host match {
+      case buffer: TextBuffer =>
+        screenAddress = Option(node.address)
+        screenInstance = Some(buffer)
+        screen(s => {
+          if (reset) {
+            val (gmw, gmh) = maxResolution
+            val smw = s.getMaximumWidth
+            val smh = s.getMaximumHeight
+            s.setResolution(math.min(gmw, smw), math.min(gmh, smh))
+            s.setColorDepth(ColorDepth(math.min(maxDepth.id, s.getMaximumColorDepth.id)))
+            s.setForegroundColor(0xFFFFFF)
+            s.setBackgroundColor(0x000000)
+          }
+          Array.empty
+        })
+      case _ =>
+    }
+  }
+
+  def isBindedTo(address: String): Boolean = screenAddress.contains(address)
+
+  def getScreenAddress: String = screenAddress.orNull
+
   // ----------------------------------------------------------------------- //
 
   @Callback(doc = """function(address:string[, reset:boolean=true]):boolean -- Binds the GPU to the screen with the specified address and resets screen settings if `reset` is true.""")
