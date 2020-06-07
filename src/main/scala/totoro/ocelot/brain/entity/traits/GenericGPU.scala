@@ -73,7 +73,7 @@ trait GenericGPU extends Environment with Tiered {
     }
   }
 
-  def isBindedTo(address: String): Boolean = screenAddress.contains(address)
+  def isBoundTo(address: String): Boolean = screenAddress.contains(address)
 
   def getScreenAddress: String = screenAddress.orNull
 
