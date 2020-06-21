@@ -18,3 +18,5 @@ libraryDependencies ++= Seq(
 )
 
 assemblyJarName := s"ocelot-brain-${version.value}.jar"
+
+Global / fileInputExcludeFilter := NothingFilter.toNio
