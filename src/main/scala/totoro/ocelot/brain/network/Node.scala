@@ -66,7 +66,7 @@ trait Node {
     * This will always be set automatically by the network manager. Do not
     * change this value and do not return anything that it wasn't set to.
     */
-  final var network: Network = new Network(this)
+  final var network: Network = _ //new Network(this)
 
   /**
     * Checks whether this node can be reached from the specified node.
@@ -146,7 +146,10 @@ trait Node {
     * @param node the node to connect to this node.
     * @throws NullPointerException if `network` is `null`.
     */
-  def connect(node: Node): Unit = network.connect(this, node)
+  def connect(node: Node): Unit = {
+    if (network == null) new Network(this)
+    network.connect(this, node)
+  }
 
   /**
     * Disconnects the specified node from this node.

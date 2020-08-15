@@ -436,7 +436,7 @@ object Network {
     * @param reachability the reachability of the node.
     * @return a new node builder.
     */
-  def newNode(host: Environment, reachability: Visibility) = new NodeBuilder(host, reachability)
+  def newNode(host: Environment, reachability: Visibility, address: String = null) = new NodeBuilder(host, reachability, address)
 
   /**
     * Creates a new network packet as it would be sent or received by a
@@ -487,7 +487,7 @@ object Network {
     new Packet(source, destination, port, data, ttl)
   }
 
-  class NodeBuilder(val _host: Environment, val _reachability: Visibility) extends Builder.NodeBuilder {
+  class NodeBuilder(val _host: Environment, val _reachability: Visibility, _address: String) extends Builder.NodeBuilder {
 
     def withComponent(name: String, visibility: Visibility) =
       new Network.ComponentBuilder(_host, _reachability, name, visibility)
@@ -497,6 +497,7 @@ object Network {
     def create(): Node = new Node {
       val host: Environment = _host
       val reachability: Visibility = _reachability
+      this.address = _address
     }
   }
 
