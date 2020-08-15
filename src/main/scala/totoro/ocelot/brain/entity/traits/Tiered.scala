@@ -23,7 +23,7 @@ trait Tiered extends Persistable {
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)
-    tier = nbt.getByte(Tiered.TierTag) max 0 min 3
+    tier = nbt.getByte(Tiered.TierTag)
   }
 
   override def save(nbt: NBTTagCompound) {
