@@ -23,17 +23,15 @@ object LuaStateFactory {
     lua52 || lua53
   }
 
-  def include52: Boolean = {
-    Lua52.isAvailable && !Settings.get.forceLuaJ
-  }
+  def luajRequested: Boolean = Settings.get.forceLuaJ || Settings.get.registerLuaJArchitecture
 
-  def include53: Boolean = {
-    Lua53.isAvailable && Settings.get.enableLua53
-  }
+  def includeLuaJ: Boolean = !isAvailable || luajRequested
 
-  def default53: Boolean = {
-    include53 && Settings.get.defaultLua53
-  }
+  def include52: Boolean = Lua52.isAvailable && !Settings.get.forceLuaJ
+
+  def include53: Boolean = Lua53.isAvailable && Settings.get.enableLua53 && !Settings.get.forceLuaJ
+
+  def default53: Boolean = include53 && Settings.get.defaultLua53
 
   object Lua52 extends LuaStateFactory {
     override def version: String = "lua52"
