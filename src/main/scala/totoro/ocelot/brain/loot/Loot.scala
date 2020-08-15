@@ -27,11 +27,11 @@ object Loot {
     // Floppies
     NetworkFloppy = new FloppyFactory("Network (Network Stack)", DyeColor.LIME, "network")
     Plan9kFloppy = new FloppyFactory("Plan9k (Operating System)", DyeColor.RED, "plan9k")
-    IrcFloppy = new FloppyFactory("OpenIRC (IRC Client)", DyeColor.LIGHT_BLUE, "irc.usr.bin")
+    IrcFloppy = new FloppyFactory("OpenIRC (IRC Client)", DyeColor.LIGHT_BLUE, "irc")
     OpenLoaderFloppy = new FloppyFactory("OpenLoader (Boot Loader)", DyeColor.MAGENTA, "openloader")
     OpenOsFloppy = new FloppyFactory("OpenOS (Operating System)", DyeColor.GREEN, "openos")
     OPPMFloppy = new FloppyFactory("OPPM (Package Manager)", DyeColor.CYAN, "oppm")
-    DataFloppy = new FloppyFactory("Data Card Software", DyeColor.PINK, "data.usr")
+    DataFloppy = new FloppyFactory("Data Card Software", DyeColor.PINK, "data")
   }
 
   // ----------------------------------------------------------------------- //
