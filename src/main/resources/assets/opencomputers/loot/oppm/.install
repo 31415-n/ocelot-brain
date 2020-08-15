@@ -14,4 +14,3 @@ if not require("filesystem").isDirectory(etc_path) then
 end
 
 os.execute(install.from:gsub("//","/") .. "usr/bin/oppm install --iKnowWhatIAmDoing -f oppm " .. to_path .. install.root:gsub("//","/"))
-
