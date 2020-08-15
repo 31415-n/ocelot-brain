@@ -18,7 +18,7 @@ import scala.util.Random
   * A separated spacetime plane with networks and entities.
   * Can be put on pause. Can be serialized to a NBT tag.
   */
-class Workspace(val name: String = UUID.randomUUID().toString) extends Persistable {
+class Workspace(var name: String = UUID.randomUUID().toString) extends Persistable {
 
   private val random = new Random(System.currentTimeMillis())
   def rand: Random = random
