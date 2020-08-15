@@ -6,7 +6,7 @@ import totoro.ocelot.brain.entity.traits.{Entity, Environment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
 import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
-import totoro.ocelot.brain.network.Network
+import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.util.Persistable
 
 import scala.jdk.CollectionConverters._
@@ -92,13 +92,20 @@ class Workspace(var name: String = UUID.randomUUID().toString) extends Persistab
 
   // Persistence
   // ----------------------------------------------------------------------- //
-  private def collectNetworks(): mutable.Set[Network] = {
-    val networks: mutable.Set[Network] = mutable.Set.empty
-    entities.foreach { case e: Environment =>
-      if (e.node != null && e.node.network != null) networks += e.node.network
+  private def collectEdges(): ListBuffer[NBTBase] = {
+    entities.flatMap {
+      case e:Environment =>
+        e.node.neighbors.map((n: Node) => {
+          val edgeNbt = new NBTTagCompound()
+          edgeNbt.setString(LeftTag, e.node.address)
+          edgeNbt.setString(RightTag, n.address)
+          edgeNbt
+        })
     }
-    networks
   }
+
+  private val LeftTag = "left"
+  private val RightTag = "right"
 
   private val TimeTag = "time"
   private val TimePausedTag = "time_paused"
@@ -110,17 +117,15 @@ class Workspace(var name: String = UUID.randomUUID().toString) extends Persistab
     nbt.setInteger(TimeTag, ingameTime)
     nbt.setBoolean(TimePausedTag, ingameTimePaused)
 
-    // save network relations
-    val nbtEdges: List[NBTBase] = collectNetworks().toList.flatMap(network => {
-      network.save()
-    })
-    nbt.setTagList(EdgesTag, nbtEdges.asJava)
-
     // save entities
     val nbtEntities: ListBuffer[NBTBase] = entities.map(entity => {
       NBTPersistence.save(entity)
     })
     nbt.setTagList(EntitiesTag, nbtEntities.asJava)
+
+    // save network relations
+    val nbtEdges: ListBuffer[NBTBase] = collectEdges()
+    nbt.setTagList(EdgesTag, nbtEdges.asJava)
   }
 
   override def load(nbt: NBTTagCompound): Unit = {
@@ -136,10 +141,12 @@ class Workspace(var name: String = UUID.randomUUID().toString) extends Persistab
 
     // load network relations
     nbt.getTagList(EdgesTag, NBT.TAG_COMPOUND).map((nbt: NBTTagCompound) => {
-      val left = entityByAddress(nbt.getString(Network.LeftTag))
-      val right = entityByAddress(nbt.getString(Network.RightTag))
+      val left = entityByAddress(nbt.getString(LeftTag))
+      val right = entityByAddress(nbt.getString(RightTag))
       if (left.isDefined && right.isDefined) {
-        left.get.asInstanceOf[Environment].connect(right.get.asInstanceOf[Environment])
+        val a = left.get.asInstanceOf[Environment]
+        val b = right.get.asInstanceOf[Environment]
+        if (!a.node.isNeighborOf(b.node)) a.connect(b)
       }
     })
   }

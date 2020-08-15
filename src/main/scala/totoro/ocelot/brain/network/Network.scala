@@ -34,6 +34,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
         while (data.contains(node.data.address)) {
           node.data.address = java.util.UUID.randomUUID().toString
         }
+        new Network(node.data)
         if (neighbors.isEmpty)
           addNew(node.data)
         else
@@ -130,7 +131,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
   def remove(node: Node): Boolean = {
     data.remove(node.address) match {
       case Some(entry) =>
-        node.network = null
+        new Network(node)
         val subGraphs = entry.remove()
         val targets = Iterable(node) ++ (entry.data.reachability match {
           case Visibility.None => Iterable.empty[Node]
@@ -347,19 +348,6 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
     val message = new Message(source, name, Array(args: _*))
     targets.foreach(_.host.onMessage(message))
   }
-
-  // Persistence
-  // ----------------------------------------------------------------------- //
-  def save(): mutable.Iterable[NBTTagCompound] = {
-    data.flatMap { case (_, node) =>
-      node.edges.map(edge => {
-        val edgeNbt = new NBTTagCompound()
-        edgeNbt.setString(Network.LeftTag, edge.left.data.address)
-        edgeNbt.setString(Network.RightTag, edge.right.data.address)
-        edgeNbt
-      })
-    }
-  }
 }
 
 
@@ -568,9 +556,4 @@ object Network {
       }
     }) filter (_.nonEmpty) map (_.get)
   }
-
-  // ----------------------------------------------------------------------- //
-
-  val LeftTag = "left"
-  val RightTag = "right"
 }

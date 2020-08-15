@@ -66,7 +66,7 @@ trait Inventory extends Persistable {
     nbt.getTagList(InventoryTag, NBT.TAG_COMPOUND).foreach { nbt: NBTTagCompound =>
       NBTPersistence.load(nbt) match {
         case entity: Entity =>
-          inventory += entity
+          add(entity)
         case _ =>
           Ocelot.log.error("Some problems parsing an entity from NBT tag: " + nbt)
       }

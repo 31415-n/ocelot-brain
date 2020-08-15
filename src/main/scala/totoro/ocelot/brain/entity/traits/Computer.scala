@@ -82,5 +82,4 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
       nbt.setNewCompoundTag(ComputerTag, machine.save)
     }
   }
-
 }

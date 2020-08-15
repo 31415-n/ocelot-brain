@@ -179,7 +179,7 @@ object Demo extends App {
     */
   println("... Creating snapshot ...")
 
-  val nbt = new NBTTagCompound()
+  var nbt = new NBTTagCompound()
   workspace.save(nbt)
   println(nbt)
 
@@ -206,10 +206,17 @@ object Demo extends App {
 
   if (computer != null) println("Successfully loaded the snapshot. Continuing the execution...")
 
-  while (computer != null && computer.machine.isRunning) {
+  while (loadedWorkspace.getIngameTime < 100) {
     loadedWorkspace.update()
     Thread.sleep(50)
   }
+
+  println("... Creating snapshot ...")
+  nbt = new NBTTagCompound()
+  loadedWorkspace.save(nbt)
+  println(nbt)
+
+  println("... Turning the computer off ...")
 
   computer.turnOff()
 
