@@ -50,10 +50,20 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   // ----------------------------------------------------------------------- //
 
+  override def onEntityAdded(entity: Entity) {
+    super.onEntityAdded(entity)
+    entity match {
+      case _: Memory => machine.onHostChanged()
+      case _ =>
+    }
+  }
+
   override def onEntityRemoved(entity: Entity) {
     super.onEntityRemoved(entity)
     entity match {
       case _: Processor => machine.stop()
+      case _: Memory => machine.onHostChanged()
+      case _ =>
     }
   }
 
