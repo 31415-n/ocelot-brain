@@ -59,10 +59,16 @@ trait Environment extends Persistable with LifeCycle {
     * @param environment the environment to connect it's node to this environment's node.
     * @throws NullPointerException if `network` is `null`.
     */
-  def connect(environment: Environment): Unit = node.network.connect(this, environment)
+  def connect(environment: Environment): Unit = {
+    if (node.network == null) new Network(node)
+    node.network.connect(this, environment)
+  }
 
   def connect(sidedEnvironment: SidedEnvironment, side: Direction.Value): Unit =
-    if (sidedEnvironment.canConnect(side)) node.network.connect(node, sidedEnvironment.sidedNode(side))
+    if (sidedEnvironment.canConnect(side)) {
+      if (node.network == null) new Network(node)
+      node.network.connect(node, sidedEnvironment.sidedNode(side))
+    }
 
   /**
     * Connects the node of specified environment to the node of this environment.
@@ -75,7 +81,10 @@ trait Environment extends Persistable with LifeCycle {
     * @param node the node to connect to this environment's node.
     * @throws NullPointerException if `network` is `null`.
     */
-  def connect(node: Node): Unit = this.node.network.connect(this.node, node)
+  def connect(node: Node): Unit = {
+    if (this.node.network == null) new Network(node)
+    this.node.network.connect(this.node, node)
+  }
 
   /**
     * Disconnects the node of specified environment from the node of this environment.
@@ -88,10 +97,15 @@ trait Environment extends Persistable with LifeCycle {
     * @param environment the environment to disconnect it's node from this environment's node.
     * @throws NullPointerException if `network` is `null`.
     */
-  def disconnect(environment: Environment): Unit = node.network.disconnect(this, environment)
+  def disconnect(environment: Environment): Unit =
+    if (node.network != null)
+      node.network.disconnect(this, environment)
 
   def disconnect(sidedEnvironment: SidedEnvironment, side: Direction.Value): Unit =
-    if (sidedEnvironment.canConnect(side)) node.network.disconnect(node, sidedEnvironment.sidedNode(side))
+    if (sidedEnvironment.canConnect(side)) {
+      if (node.network != null)
+        node.network.disconnect(node, sidedEnvironment.sidedNode(side))
+    }
 
   /**
     * Disconnects the node of specified environment from the node of this environment.
@@ -104,7 +118,9 @@ trait Environment extends Persistable with LifeCycle {
     * @param node the node to disconnect from this environment's node.
     * @throws NullPointerException if `network` is `null`.
     */
-  def disconnect(node: Node): Unit = this.node.network.disconnect(this.node, node)
+  def disconnect(node: Node): Unit =
+    if (node.network != null)
+      this.node.network.disconnect(this.node, node)
 
   /**
     * This is called when a node is added to a network.

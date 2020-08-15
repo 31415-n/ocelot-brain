@@ -130,10 +130,16 @@ trait Node {
     * @param environment the environment to connect it's node to this node.
     * @throws NullPointerException if `network` is `null`.
     */
-  def connect(environment: Environment): Unit = network.connect(this, environment.node)
+  def connect(environment: Environment): Unit = {
+    if (network == null) new Network(this)
+    network.connect(this, environment.node)
+  }
 
   def connect(sidedEnvironment: SidedEnvironment, side: Direction.Value): Unit =
-    if (sidedEnvironment.canConnect(side)) network.connect(sidedEnvironment.sidedNode(side))
+    if (sidedEnvironment.canConnect(side)) {
+      if (network == null) new Network(this)
+      network.connect(sidedEnvironment.sidedNode(side))
+    }
 
   /**
     * Connects the specified node to this node.
