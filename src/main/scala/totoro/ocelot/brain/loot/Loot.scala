@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.loot
 
-import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI, ReadWriteLabel}
+import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI}
 import totoro.ocelot.brain.entity.traits.Entity
 import totoro.ocelot.brain.entity.{EEPROM, FloppyManaged}
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -40,30 +40,27 @@ object Loot {
     def create(): Entity
   }
 
-  class LootFloppy(var name: String, var color: DyeColor, var path: String, var external: Boolean = false) extends FloppyManaged(null, name) {
-    def this() = this(null, DyeColor.BLACK, null, false)
+  class LootFloppy(name: String, color: DyeColor, var path: String, var external: Boolean = false) extends FloppyManaged(null, name, color) {
+    def this() = this("noname", DyeColor.BLACK, null, false)
 
     override protected def generateEnvironment(): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
         if (external) FileSystemAPI.asReadOnly(FileSystemAPI.fromSaveDirectory("loot/" + path, 0, buffered = false))
         else FileSystemAPI.fromClass(Ocelot.getClass, Settings.resourceDomain, "loot/" + path),
-        new ReadWriteLabel(name)
+        label
       )
     }
 
     private val PathTag = "path"
-    private val ColorTag = "color"
 
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
       nbt.setString(PathTag, path)
-      nbt.setInteger(ColorTag, color.code)
     }
 
     override def load(nbt: NBTTagCompound): Unit = {
       super.load(nbt)
       path = nbt.getString(PathTag)
-      color = DyeColor.byCode(nbt.getInteger(ColorTag))
     }
   }
 
