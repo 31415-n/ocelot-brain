@@ -10,7 +10,14 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 object Loot {
   var OpenOsEEPROM: LootFactory = _
   var AdvLoaderEEPROM: LootFactory = _
+
+  var NetworkFloppy: LootFactory = _
+  var Plan9kFloppy: LootFactory = _
+  var IrcFloppy: LootFactory = _
+  var OpenLoaderFloppy: LootFactory = _
   var OpenOsFloppy: LootFactory = _
+  var OPPMFloppy: LootFactory = _
+  var DataFloppy: LootFactory = _
 
   def init(): Unit = {
     // EEPROM
@@ -18,7 +25,13 @@ object Loot {
     AdvLoaderEEPROM = new EEPROMFactory("advancedLoader", "advLoader.lua")
 
     // Floppies
-    OpenOsFloppy = new FloppyFactory("OpenOS (Installation Floppy)", "openos", DyeColor.GREEN)
+    NetworkFloppy = new FloppyFactory("Network (Network Stack)", DyeColor.LIME, "network")
+    Plan9kFloppy = new FloppyFactory("Plan9k (Operating System)", DyeColor.RED, "plan9k")
+    IrcFloppy = new FloppyFactory("OpenIRC (IRC Client)", DyeColor.LIGHT_BLUE, "irc.usr.bin")
+    OpenLoaderFloppy = new FloppyFactory("OpenLoader (Boot Loader)", DyeColor.MAGENTA, "openloader")
+    OpenOsFloppy = new FloppyFactory("OpenOS (Operating System)", DyeColor.GREEN, "openos")
+    OPPMFloppy = new FloppyFactory("OPPM (Package Manager)", DyeColor.CYAN, "oppm")
+    DataFloppy = new FloppyFactory("Data Card Software", DyeColor.PINK, "data.usr")
   }
 
   // ----------------------------------------------------------------------- //
@@ -27,8 +40,8 @@ object Loot {
     def create(): Entity
   }
 
-  class LootFloppy(var name: String, var path: String, var external: Boolean = false) extends FloppyManaged(null, name) {
-    def this() = this(null, null, false)
+  class LootFloppy(var name: String, var color: DyeColor, var path: String, var external: Boolean = false) extends FloppyManaged(null, name) {
+    def this() = this(null, DyeColor.BLACK, null, false)
 
     override protected def generateEnvironment(): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
@@ -39,21 +52,24 @@ object Loot {
     }
 
     private val PathTag = "path"
+    private val ColorTag = "color"
 
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
       nbt.setString(PathTag, path)
+      nbt.setInteger(ColorTag, color.code)
     }
 
     override def load(nbt: NBTTagCompound): Unit = {
       super.load(nbt)
       path = nbt.getString(PathTag)
+      color = DyeColor.byCode(nbt.getInteger(ColorTag))
     }
   }
 
-  class FloppyFactory(name: String, path: String, color: DyeColor, external: Boolean = false) extends LootFactory {
+  class FloppyFactory(name: String, color: DyeColor, path: String, external: Boolean = false) extends LootFactory {
     override def create(): Entity = {
-      new LootFloppy(name, path, external)
+      new LootFloppy(name, color, path, external)
     }
   }
 
