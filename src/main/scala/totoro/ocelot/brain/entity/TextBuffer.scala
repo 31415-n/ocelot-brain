@@ -31,9 +31,10 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
 
   private var isDisplaying = true
 
-  val data = new GenericTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
+  var _data = new GenericTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
+  def data: GenericTextBuffer = _data
 
-  var viewport: (Int, Int) = data.size
+  var viewport: (Int, Int) = _data.size
 
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Display,
@@ -47,7 +48,12 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   override def getDeviceInfo: Map[String, String] = deviceInfo
 
   override def tier: Int = bufferTier
-  override def tier_=(value: Int): Unit = bufferTier = value
+  override def tier_=(value: Int): Unit = {
+    bufferTier = value
+    maxResolution = Settings.screenResolutionsByTier(bufferTier)
+    maxDepth = Settings.screenDepthsByTier(bufferTier)
+    _data = new GenericTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
+  }
 
   // ----------------------------------------------------------------------- //
 
@@ -176,7 +182,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     EventBus.send(TextBufferSetResolutionEvent(this.node.address, width, height))
     // Force set viewport to new resolution. This is partially for
     // backwards compatibility, and partially to enforce a valid one.
-    val sizeChanged = data.size = (width, height)
+    val sizeChanged = _data.size = (width, height)
     val viewportChanged = setViewport(width, height)
     if (sizeChanged || viewportChanged) {
       if (!viewportChanged && node != null) node.sendToReachable("computer.signal", "screen_resized", Int.box(width), Int.box(height))
@@ -190,14 +196,14 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     *
     * @see `setResolution(int, int)`
     */
-  def getWidth: Int = data.width
+  def getWidth: Int = _data.width
 
   /**
     * Get the current vertical resolution.
     *
     * @see `setResolution(int, int)`
     */
-  def getHeight: Int = data.height
+  def getHeight: Int = _data.height
 
   /**
     * Set the buffer's active viewport resolution.
@@ -210,7 +216,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @see `setResolution(int, int)`
     */
   def setViewport(width: Int, height: Int): Boolean = {
-    val (mw, mh) = data.size
+    val (mw, mh) = _data.size
     if (width < 1 || height < 1 || width > mw || height > mh)
       throw new IllegalArgumentException("unsupported viewport resolution")
     EventBus.send(TextBufferSetViewportEvent(this.node.address, width, height))
@@ -264,13 +270,13 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     if (depth.id > maxDepth.id)
       throw new IllegalArgumentException("unsupported depth")
     EventBus.send(TextBufferSetColorDepthEvent(this.node.address, depth.id))
-    data.format = PackedColor.Depth.format(depth)
+    _data.format = PackedColor.Depth.format(depth)
   }
 
   /**
     * Get the active color depth of this buffer.
     */
-  def getColorDepth: ColorDepth.Value = data.format.depth
+  def getColorDepth: ColorDepth.Value = _data.format.depth
 
   /**
     * Set the color of the active color palette at the specified index.
@@ -280,7 +286,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param index the index at which to set the color.
     * @param color the color to set for the specified index.
     */
-  def setPaletteColor(index: Int, color: Int): Unit = data.format match {
+  def setPaletteColor(index: Int, color: Int): Unit = _data.format match {
     case palette: PackedColor.MutablePaletteFormat =>
       palette(index) = color
       EventBus.send(TextBufferSetPaletteColorEvent(this.node.address, index, color))
@@ -295,7 +301,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param index the index at which to get the color.
     * @return the color in the active palette at the specified index.
     */
-  def getPaletteColor(index: Int): Int = data.format match {
+  def getPaletteColor(index: Int): Int = _data.format match {
     case palette: PackedColor.MutablePaletteFormat => palette(index)
     case _ => throw new Exception("palette not available")
   }
@@ -323,23 +329,23 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     */
   def setForegroundColor(color: Int, isFromPalette: Boolean) {
     val value = PackedColor.Color(color, isFromPalette)
-    if (data.foreground != value) {
-      data.foreground = value
-      EventBus.send(TextBufferSetForegroundColorEvent(this.node.address, data.format.inflate(data.format.deflate(value) & 0xFF)))
+    if (_data.foreground != value) {
+      _data.foreground = value
+      EventBus.send(TextBufferSetForegroundColorEvent(this.node.address, _data.format.inflate(_data.format.deflate(value) & 0xFF)))
     }
   }
 
   /**
     * The active foreground color.
     */
-  def getForegroundColor: Int = data.foreground.value
+  def getForegroundColor: Int = _data.foreground.value
 
   /**
     * `true` if the foreground color is from the color palette, meaning
     * the value returned from `getForegroundColor()` is the color
     * palette index.
     */
-  def isForegroundFromPalette: Boolean = data.foreground.isPalette
+  def isForegroundFromPalette: Boolean = _data.foreground.isPalette
 
   /**
     * Set the active background color, not using a palette.
@@ -364,23 +370,23 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     */
   def setBackgroundColor(color: Int, isFromPalette: Boolean) {
     val value = PackedColor.Color(color, isFromPalette)
-    if (data.background != value) {
-      data.background = value
-      EventBus.send(TextBufferSetBackgroundColorEvent(this.node.address, data.format.inflate(data.format.deflate(value) & 0xFF)))
+    if (_data.background != value) {
+      _data.background = value
+      EventBus.send(TextBufferSetBackgroundColorEvent(this.node.address, _data.format.inflate(_data.format.deflate(value) & 0xFF)))
     }
   }
 
   /**
     * The active background color.
     */
-  def getBackgroundColor: Int = data.background.value
+  def getBackgroundColor: Int = _data.background.value
 
   /**
     * `true` if the background color is from the color palette, meaning
     * the value returned from `getBackgroundColor()` is the color
     * palette index.
     */
-  def isBackgroundFromPalette: Boolean = data.background.isPalette
+  def isBackgroundFromPalette: Boolean = _data.background.isPalette
 
   /**
     * Copy a portion of the text buffer.
@@ -395,7 +401,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param verticalTranslation   the vertical offset, relative to the starting row to copy the are to.
     */
   def copy(column: Int, row: Int, width: Int, height: Int, horizontalTranslation: Int, verticalTranslation: Int): Unit =
-    if (data.copy(column, row, width, height, horizontalTranslation, verticalTranslation))
+    if (_data.copy(column, row, width, height, horizontalTranslation, verticalTranslation))
       EventBus.send(TextBufferCopyEvent(this.node.address, column, row, width, height, horizontalTranslation, verticalTranslation))
 
   /**
@@ -410,7 +416,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param value  the character to fill the area with.
     */
   def fill(column: Int, row: Int, width: Int, height: Int, value: Char): Unit =
-    if (data.fill(column, row, width, height, value))
+    if (_data.fill(column, row, width, height, value))
       EventBus.send(TextBufferFillEvent(this.node.address, column, row, width, height, value))
 
   /**
@@ -424,15 +430,15 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param vertical `true` if the string should be written vertically instead of horizontally.
     */
   def set(column: Int, row: Int, value: String, vertical: Boolean): Unit =
-    if (column < data.width && (column >= 0 || -column < value.length)) {
+    if (column < _data.width && (column >= 0 || -column < value.length)) {
       // Make sure the string isn't longer than it needs to be, in particular to
       // avoid sending too much data to our clients.
       val (x, y, truncated) =
       if (vertical) if (row < 0) (column, 0, value.substring(-row))
-      else (column, row, value.substring(0, math.min(value.length, data.height - row)))
+      else (column, row, value.substring(0, math.min(value.length, _data.height - row)))
       else if (column < 0) (0, row, value.substring(-column))
-      else (column, row, value.substring(0, math.min(value.length, data.width - column)))
-      if (data.set(x, y, truncated, vertical))
+      else (column, row, value.substring(0, math.min(value.length, _data.width - column)))
+      if (_data.set(x, y, truncated, vertical))
         EventBus.send(TextBufferSetEvent(this.node.address, x, y, truncated, vertical))
     }
 
@@ -443,7 +449,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param row    the vertical index.
     * @return the character at that index.
     */
-  def get(column: Int, row: Int): Char = data.get(column, row)
+  def get(column: Int, row: Int): Char = _data.get(column, row)
 
   /**
     * Get the foreground color of the text buffer at the specified location.
@@ -456,7 +462,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     */
   def getForegroundColor(column: Int, row: Int): Int =
     if (isForegroundFromPalette(column, row)) PackedColor.extractForeground(color(column, row))
-    else PackedColor.unpackForeground(color(column, row), data.format)
+    else PackedColor.unpackForeground(color(column, row), _data.format)
 
   /**
     * Whether the foreground color of the text buffer at the specified
@@ -467,7 +473,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @return whether the foreground at that index is from the palette.
     */
   def isForegroundFromPalette(column: Int, row: Int): Boolean =
-    data.format.isFromPalette(PackedColor.extractForeground(color(column, row)))
+    _data.format.isFromPalette(PackedColor.extractForeground(color(column, row)))
 
   /**
     * Get the background color of the text buffer at the specified location.
@@ -480,7 +486,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     */
   def getBackgroundColor(column: Int, row: Int): Int =
     if (isBackgroundFromPalette(column, row)) PackedColor.extractBackground(color(column, row))
-    else PackedColor.unpackBackground(color(column, row), data.format)
+    else PackedColor.unpackBackground(color(column, row), _data.format)
 
   /**
     * Whether the background color of the text buffer at the specified
@@ -491,7 +497,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @return whether the background at that index is from the palette.
     */
   def isBackgroundFromPalette(column: Int, row: Int): Boolean =
-    data.format.isFromPalette(PackedColor.extractBackground(color(column, row)))
+    _data.format.isFromPalette(PackedColor.extractBackground(color(column, row)))
 
   /**
     * Overwrites a portion of the text in raw mode.
@@ -513,9 +519,9 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param text   the text to write.
     */
   def rawSetText(column: Int, row: Int, text: Array[Array[Char]]): Unit = {
-    for (y <- row until ((row + text.length) min data.height)) {
+    for (y <- row until ((row + text.length) min _data.height)) {
       val line = text(y - row)
-      Array.copy(line, 0, data.buffer(y), column, line.length min data.width)
+      Array.copy(line, 0, _data.buffer(y), column, line.length min _data.width)
     }
   }
 
@@ -540,12 +546,12 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param color  the foreground color data to write.
     */
   def rawSetForeground(column: Int, row: Int, color: Array[Array[Int]]): Unit = {
-    for (y <- row until ((row + color.length) min data.height)) {
+    for (y <- row until ((row + color.length) min _data.height)) {
       val line = color(y - row)
-      for (x <- column until ((column + line.length) min data.width)) {
-        val packedBackground = data.format.deflate(PackedColor.Color(line(x - column))) & 0x00FF
-        val packedForeground = data.color(row)(column) & 0xFF00
-        data.color(row)(column) = (packedForeground | packedBackground).toShort
+      for (x <- column until ((column + line.length) min _data.width)) {
+        val packedBackground = _data.format.deflate(PackedColor.Color(line(x - column))) & 0x00FF
+        val packedForeground = _data.color(row)(column) & 0xFF00
+        _data.color(row)(column) = (packedForeground | packedBackground).toShort
       }
     }
   }
@@ -571,12 +577,12 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param color  the background color data to write.
     */
   def rawSetBackground(column: Int, row: Int, color: Array[Array[Int]]): Unit = {
-    for (y <- row until ((row + color.length) min data.height)) {
+    for (y <- row until ((row + color.length) min _data.height)) {
       val line = color(y - row)
-      for (x <- column until ((column + line.length) min data.width)) {
-        val packedBackground = data.color(row)(column) & 0x00FF
-        val packedForeground = (data.format.deflate(PackedColor.Color(line(x - column))) << PackedColor.ForegroundShift) & 0xFF00
-        data.color(row)(column) = (packedForeground | packedBackground).toShort
+      for (x <- column until ((column + line.length) min _data.width)) {
+        val packedBackground = _data.color(row)(column) & 0x00FF
+        val packedForeground = (_data.format.deflate(PackedColor.Color(line(x - column))) << PackedColor.ForegroundShift) & 0xFF00
+        _data.color(row)(column) = (packedForeground | packedBackground).toShort
       }
     }
   }
@@ -584,7 +590,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   private def color(column: Int, row: Int) = {
     if (column < 0 || column >= getWidth || row < 0 || row >= getHeight)
       throw new IndexOutOfBoundsException()
-    else data.color(row)(column)
+    else _data.color(row)(column)
   }
 
   /**
@@ -722,8 +728,8 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)
 
-    if (nbt.hasKey(Node.BufferTag)) {
-      data.load(nbt.getCompoundTag(Node.BufferTag))
+    if (nbt.hasKey(DataTag)) {
+      _data.load(nbt.getCompoundTag(DataTag))
     }
 
     if (nbt.hasKey(IsOnTag)) {
@@ -739,9 +745,9 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     if (nbt.hasKey(ViewportWidthTag)) {
       val vpw = nbt.getInteger(ViewportWidthTag)
       val vph = nbt.getInteger(ViewportHeightTag)
-      viewport = (vpw min data.width max 1, vph min data.height max 1)
+      viewport = (vpw min _data.width max 1, vph min _data.height max 1)
     } else {
-      viewport = data.size
+      viewport = _data.size
     }
   }
 
@@ -765,7 +771,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     }
 
     val dataNbt = new NBTTagCompound()
-    data.save(dataNbt)
+    _data.save(dataNbt)
     nbt.setTag(DataTag, dataNbt)
 
     nbt.setBoolean(IsOnTag, isDisplaying)

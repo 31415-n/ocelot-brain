@@ -290,6 +290,5 @@ trait Node {
 object Node {
   final val NodeTag = "node"
   final val AddressTag = "address"
-  final val BufferTag = "buffer"
   final val VisibilityTag = "visibility"
 }
