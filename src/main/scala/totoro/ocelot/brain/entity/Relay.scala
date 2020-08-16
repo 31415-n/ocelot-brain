@@ -4,9 +4,9 @@ import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.{Entity, Hub}
 import totoro.ocelot.brain.event.{EventBus, RelayActivityEvent}
-import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
-import totoro.ocelot.brain.network.{Component, Network, Node, Packet, QuantumNetwork, Visibility, WirelessEndpoint}
+import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
+import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.{Direction, Tier}
 
 class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.QuantumNode {

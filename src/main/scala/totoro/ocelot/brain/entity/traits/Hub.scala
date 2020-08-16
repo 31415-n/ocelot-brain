@@ -1,10 +1,10 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
-import totoro.ocelot.brain.network.{Message, Network, Node, Packet, Visibility}
-import totoro.ocelot.brain.util.{Direction, MovingAverage, Persistable}
+import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
+import totoro.ocelot.brain.network._
+import totoro.ocelot.brain.util.{Direction, MovingAverage}
 
 import scala.collection.mutable
 

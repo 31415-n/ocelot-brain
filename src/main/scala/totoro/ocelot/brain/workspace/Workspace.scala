@@ -9,9 +9,9 @@ import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.util.Persistable
 
-import scala.jdk.CollectionConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.jdk.CollectionConverters._
 import scala.util.Random
 
 /**
