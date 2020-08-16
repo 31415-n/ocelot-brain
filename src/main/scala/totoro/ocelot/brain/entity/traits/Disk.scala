@@ -1,6 +1,5 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.entity.fs.Label
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
 
@@ -8,7 +7,6 @@ import totoro.ocelot.brain.util.Persistable
   * Basic trait for all data disks
   */
 trait Disk extends Environment with Persistable {
-  def label: Label
   def capacity: Int
   def speed: Int
 
@@ -39,17 +37,14 @@ trait Disk extends Environment with Persistable {
     lockInfo = if (nbt.hasKey(Disk.LockTag)) {
       nbt.getString(Disk.LockTag)
     } else ""
-    label.setLabel(nbt.getString(Disk.LabelTag))
   }
 
   override def save(nbt: NBTTagCompound) {
     super.save(nbt)
     nbt.setString(Disk.LockTag, lockInfo)
-    nbt.setString(Disk.LabelTag, label.getLabel)
   }
 }
 
 object Disk {
   final val LockTag = "lock"
-  final val LabelTag = "label"
 }

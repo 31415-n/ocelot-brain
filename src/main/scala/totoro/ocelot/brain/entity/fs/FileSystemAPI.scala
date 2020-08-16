@@ -201,6 +201,9 @@ object FileSystemAPI extends {
   def asManagedEnvironment(fileSystem: FileSystemTrait, label: Label, speed: Int): FileSystem =
     Option(fileSystem).flatMap(fs => Some(new FileSystem(fs, label, (speed - 1) max 0 min 5))).orNull
 
+  def asManagedEnvironment(address: String, fileSystem: FileSystemTrait, label: Label, speed: Int): FileSystem =
+    Option(fileSystem).flatMap(fs => Some(new FileSystem(address, fs, label, (speed - 1) max 0 min 5))).orNull
+
   /**
     * Creates a network node that makes the specified file system available via
     * the common file system driver.

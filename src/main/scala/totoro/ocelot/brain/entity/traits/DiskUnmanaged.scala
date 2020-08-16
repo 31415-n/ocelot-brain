@@ -4,6 +4,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import com.google.common.io.Files
+import totoro.ocelot.brain.entity.fs.Label
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.event.EventBus
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -14,6 +15,8 @@ import totoro.ocelot.brain.{Ocelot, Settings}
   * Basic trait for all unmanaged-disk-like entities.
   */
 trait DiskUnmanaged extends Disk {
+  def label: Label
+
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("drive", Visibility.Neighbors).
     create()

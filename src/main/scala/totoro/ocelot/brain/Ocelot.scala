@@ -54,19 +54,7 @@ object Ocelot {
     NBTPersistence.registerConstructor(classOf[CPU].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[Memory].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[GraphicsCard].getName, tieredConstructor)
-
-    val diskConstructor = new InstanceConstructor {
-      override def construct(nbt: NBTTagCompound, className: String): Persistable = {
-        val tier = nbt.getInteger(Tiered.TierTag)
-        val label = nbt.getString(Disk.LabelTag)
-        val node = nbt.getCompoundTag(Environment.NodeTag)
-        val address = node.getString(Node.AddressTag)
-        val hdd = new HDDManaged(address, tier, label)
-        hdd.load(nbt)
-        hdd
-      }
-    }
-    NBTPersistence.registerConstructor(classOf[HDDManaged].getName, diskConstructor)
+    NBTPersistence.registerConstructor(classOf[HDDManaged].getName, tieredConstructor)
 
     FontUtils.init()
 

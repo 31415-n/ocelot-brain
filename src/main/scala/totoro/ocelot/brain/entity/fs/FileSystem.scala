@@ -17,6 +17,11 @@ import scala.collection.mutable
 class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: Int)
   extends Environment with DeviceInfo {
 
+  def this(address: String, fileSystem: FileSystemTrait, label: Label, speed: Int) = {
+    this(fileSystem, label, speed)
+    node.address = address
+  }
+
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("filesystem", Visibility.Neighbors).
     create()

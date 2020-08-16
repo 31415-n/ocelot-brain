@@ -40,10 +40,12 @@ object Loot {
     def create(): Entity
   }
 
-  class LootFloppy(name: String, color: DyeColor, var path: String, var external: Boolean = false) extends FloppyManaged(null, name, color) {
+  class LootFloppy(name: String, color: DyeColor, var path: String, var external: Boolean = false)
+    extends FloppyManaged(name, color) {
+
     def this() = this("noname", DyeColor.BLACK, null, false)
 
-    override protected def generateEnvironment(): FileSystem = {
+    override protected def generateEnvironment(address: String): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
         if (external) FileSystemAPI.asReadOnly(FileSystemAPI.fromSaveDirectory("loot/" + path, 0, buffered = false))
         else FileSystemAPI.fromClass(Ocelot.getClass, Settings.resourceDomain, "loot/" + path),
@@ -59,8 +61,10 @@ object Loot {
     }
 
     override def load(nbt: NBTTagCompound): Unit = {
-      super.load(nbt)
+      // important: we need to load path first to be able to use it later
+      //            to initialize the filesystem
       path = nbt.getString(PathTag)
+      super.load(nbt)
     }
   }
 

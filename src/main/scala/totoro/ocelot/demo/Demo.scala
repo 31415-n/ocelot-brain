@@ -58,7 +58,7 @@ object Demo extends App {
     * If you will leave it `null`, then new random UUID will be used.
     */
 
-  val hdd = new HDDManaged("59aef805-4085-485f-b92c-163b3f0426da", Tier.One, "init")
+  val hdd = new HDDManaged(Tier.One)
   computer.add(hdd)
 
   /**

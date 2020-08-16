@@ -5,7 +5,7 @@ import totoro.ocelot.brain.entity.fs.{Label, ReadWriteLabel}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.DyeColor
 
-abstract class Floppy(var address: String, private var name: String, var color: DyeColor) extends Entity with Disk {
+abstract class Floppy(private var name: String, var color: DyeColor) extends Entity with Disk {
   val label: Label = new ReadWriteLabel(name)
   val capacity: Int = Settings.get.floppySize * 1024
   val speed: Int = 1
