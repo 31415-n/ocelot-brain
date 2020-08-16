@@ -744,6 +744,10 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
     nbt.setTag(ComponentsTag, componentsNbt)
 
+    val tmpNbt = new NBTTagCompound
+    tmp.foreach(fs => fs.save(tmpNbt))
+    nbt.setTag(TmpTag, tmpNbt)
+
     if (state.top != MachineAPI.State.Stopped) try {
       architecture.save(nbt)
 
