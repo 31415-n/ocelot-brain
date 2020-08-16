@@ -52,6 +52,7 @@ object Ocelot {
     NBTPersistence.registerConstructor(classOf[Memory].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[GraphicsCard].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[HDDManaged].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[Screen].getName, tieredConstructor)
 
     FontUtils.init()
 

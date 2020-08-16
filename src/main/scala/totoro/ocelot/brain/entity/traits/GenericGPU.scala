@@ -26,11 +26,9 @@ trait GenericGPU extends Environment with Tiered {
     withComponent("gpu").
     create()
 
-  def gpuTier: Int = tier
+  protected def maxResolution: (Int, Int) = Settings.screenResolutionsByTier(tier)
 
-  protected val maxResolution: (Int, Int) = Settings.screenResolutionsByTier(gpuTier)
-
-  protected val maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(gpuTier)
+  protected def maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(tier)
 
   private var screenAddress: Option[String] = None
 
@@ -114,7 +112,7 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(value:number[, palette:boolean]):number, number or nil -- Sets the background color to the specified value. Optionally takes an explicit palette index. Returns the old value and if it was from the palette its palette index.""")
   def setBackground(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(setBackgroundCosts(gpuTier))
+    context.consumeCallBudget(setBackgroundCosts(tier))
     val color = args.checkInteger(0)
     screen(s => {
       val oldValue = s.getBackgroundColor
@@ -136,7 +134,7 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(value:number[, palette:boolean]):number, number or nil -- Sets the foreground color to the specified value. Optionally takes an explicit palette index. Returns the old value and if it was from the palette its palette index.""")
   def setForeground(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(setForegroundCosts(gpuTier))
+    context.consumeCallBudget(setForegroundCosts(tier))
     val color = args.checkInteger(0)
     screen(s => {
       val oldValue = s.getForegroundColor
@@ -162,7 +160,7 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(index:number, color:number):number -- Set the palette color at the specified palette index. Returns the previous value.""")
   def setPaletteColor(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(setPaletteColorCosts(gpuTier))
+    context.consumeCallBudget(setPaletteColorCosts(tier))
     val index = args.checkInteger(0)
     val color = args.checkInteger(1)
     context.pause(0.1)
@@ -273,7 +271,7 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(x:number, y:number, value:string[, vertical:boolean]):boolean -- Plots a string value to the screen at the specified position. Optionally writes the string vertically.""")
   def set(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(setCosts(gpuTier))
+    context.consumeCallBudget(setCosts(tier))
     val x = args.checkInteger(0) - 1
     val y = args.checkInteger(1) - 1
     val value = args.checkString(2)
@@ -287,7 +285,7 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(x:number, y:number, width:number, height:number, tx:number, ty:number):boolean -- Copies a portion of the screen from the specified location with the specified size by the specified translation.""")
   def copy(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(copyCosts(gpuTier))
+    context.consumeCallBudget(copyCosts(tier))
     val x = args.checkInteger(0) - 1
     val y = args.checkInteger(1) - 1
     val w = math.max(0, args.checkInteger(2))
@@ -302,7 +300,7 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(x:number, y:number, width:number, height:number, char:string):boolean -- Fills a portion of the screen at the specified position with the specified size with the specified character.""")
   def fill(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(fillCosts(gpuTier))
+    context.consumeCallBudget(fillCosts(tier))
     val x = args.checkInteger(0) - 1
     val y = args.checkInteger(1) - 1
     val w = math.max(0, args.checkInteger(2))
