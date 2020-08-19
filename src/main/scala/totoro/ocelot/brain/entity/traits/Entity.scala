@@ -3,6 +3,7 @@ package totoro.ocelot.brain.entity.traits
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
 import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * Represents a single persistable object, which may be created
@@ -29,10 +30,10 @@ trait Entity extends Persistable with LifeCycle {
     }
   }
 
-  override def load(nbt: NBTTagCompound): Unit = {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
     if (nbt.hasKey(CustomDataTag)) {
-      setCustomData(NBTPersistence.load(nbt.getCompoundTag(CustomDataTag)))
+      setCustomData(NBTPersistence.load(nbt.getCompoundTag(CustomDataTag), workspace))
     }
   }
 }

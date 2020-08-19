@@ -5,6 +5,7 @@ import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.{Direction, MovingAverage}
+import totoro.ocelot.brain.workspace.Workspace
 
 import scala.collection.mutable
 
@@ -112,8 +113,8 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
   private final val SideTag = "side"
   private final val RelayCooldownTag = "relayCooldown"
 
-  override def load(nbt: NBTTagCompound): Unit = {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
     nbt.getTagList(PlugsTag, NBT.TAG_COMPOUND).toArray[NBTTagCompound].
       zipWithIndex.foreach {
       case (tag, index) => plugs(Direction(index)).node.load(tag)

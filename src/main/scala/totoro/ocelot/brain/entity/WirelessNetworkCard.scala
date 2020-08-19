@@ -5,6 +5,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.language.implicitConversions
@@ -77,8 +78,8 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
 
   private final val StrengthTag = "strength"
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     if (nbt.hasKey(StrengthTag)) {
       strength = nbt.getDouble(StrengthTag) max 0 min maxWirelessRange
     }

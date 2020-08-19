@@ -9,6 +9,7 @@ import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.event.EventBus
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 /**
@@ -157,8 +158,8 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
 
   private final val HeadPosTag = "headPos"
 
-  override def load(nbt: NBTTagCompound): Unit = this.synchronized {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = this.synchronized {
+    super.load(nbt, workspace)
 
     if (node.address != null) try {
       val path = savePath
@@ -180,7 +181,7 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
     headPos = nbt.getInteger(HeadPosTag) max 0 min sectorToHeadPos(sectorCount)
 
     if (label != null) {
-      label.load(nbt)
+      label.load(nbt, workspace)
     }
   }
 

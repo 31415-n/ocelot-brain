@@ -5,6 +5,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.entity.traits.{Computer, DeviceInfo, Entity, Tiered}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.workspace.Workspace
 
 class Case(override var tier: Int) extends Computer with Entity with DeviceInfo with Tiered {
 
@@ -29,5 +30,5 @@ class Case(override var tier: Int) extends Computer with Entity with DeviceInfo 
   }
 
   override def save(nbt: NBTTagCompound): Unit = super.save(nbt)
-  override def load(nbt: NBTTagCompound): Unit = super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = super.load(nbt, workspace)
 }

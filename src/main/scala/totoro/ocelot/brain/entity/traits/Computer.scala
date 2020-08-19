@@ -4,6 +4,7 @@ import totoro.ocelot.brain.entity.machine.{Machine, MachineAPI}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
+import totoro.ocelot.brain.workspace.Workspace
 
 trait Computer extends Environment with MachineHost with ComponentInventory {
 
@@ -71,9 +72,9 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   private final val ComputerTag = "computer"
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
-    machine.load(nbt.getCompoundTag(ComputerTag))
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
+    machine.load(nbt.getCompoundTag(ComputerTag), workspace)
   }
 
   override def save(nbt: NBTTagCompound) {

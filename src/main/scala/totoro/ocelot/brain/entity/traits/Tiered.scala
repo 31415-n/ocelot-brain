@@ -2,6 +2,7 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * This is implemented by most things that are tiered in some way.
@@ -21,8 +22,8 @@ trait Tiered extends Persistable {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     tier = nbt.getByte(Tiered.TierTag)
   }
 

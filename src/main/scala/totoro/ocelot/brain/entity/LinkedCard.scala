@@ -5,6 +5,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, WakeMessageAware}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode with WakeMessageAware with DeviceInfo {
@@ -70,8 +71,8 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
 
   private final val TunnelTag = "tunnel"
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     if (nbt.hasKey(TunnelTag)) {
       tunnel = nbt.getString(TunnelTag)
     }

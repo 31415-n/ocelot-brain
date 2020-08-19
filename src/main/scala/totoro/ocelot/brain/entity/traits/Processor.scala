@@ -4,6 +4,7 @@ import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.machine.Architecture
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * Use this interface to implement item drivers extending the number of
@@ -36,8 +37,8 @@ trait Processor extends CallBudget with Persistable {
     */
   def architecture: Class[_ <: Architecture] = _architecture
 
-  override def load(nbt: NBTTagCompound): Unit = {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
     if (nbt.hasKey(Processor.ArchTag)) {
       val archClass = nbt.getString(Processor.ArchTag)
       if (!archClass.isEmpty) try

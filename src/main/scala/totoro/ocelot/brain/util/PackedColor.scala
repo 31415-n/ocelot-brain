@@ -2,6 +2,7 @@ package totoro.ocelot.brain.util
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.workspace.Workspace
 
 object PackedColor {
 
@@ -44,10 +45,6 @@ object PackedColor {
     def deflate(value: Color): Byte
 
     def isFromPalette(value: Int): Boolean = false
-
-    override def load(nbt: NBTTagCompound) {}
-
-    override def save(nbt: NBTTagCompound) {}
   }
 
   class SingleBitFormat(val color: Int) extends ColorFormat {
@@ -96,18 +93,20 @@ object PackedColor {
 
     def update(index: Int, value: Int): Unit = palette(index) = value
 
-    protected val palette = Array(
+    protected val palette: Array[Int] = Array(
       0xFFFFFF, 0xFFCC33, 0xCC66CC, 0x6699FF,
       0xFFFF33, 0x33CC33, 0xFF6699, 0x333333,
       0xCCCCCC, 0x336699, 0x9933CC, 0x333399,
       0x663300, 0x336600, 0xFF3333, 0x000000)
 
-    override def load(nbt: NBTTagCompound) {
+    override def load(nbt: NBTTagCompound, workspace: Workspace) {
+      super.load(nbt, workspace)
       val loaded = nbt.getIntArray("palette")
       Array.copy(loaded, 0, palette, 0, math.min(loaded.length, palette.length))
     }
 
     override def save(nbt: NBTTagCompound) {
+      super.save(nbt)
       nbt.setIntArray("palette", palette)
     }
   }

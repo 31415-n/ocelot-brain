@@ -6,6 +6,7 @@ import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, WakeM
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
@@ -129,8 +130,8 @@ class NetworkCard extends Entity with Environment with WakeMessageAware with Dev
   private final val WakeMessageTag = "wakeMessage"
   private final val WakeMessageFuzzyTag = "wakeMessageFuzzy"
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     assert(openPorts.isEmpty)
     openPorts ++= nbt.getIntArray(OpenPortsTag)
     loadWakeMessage(nbt)

@@ -8,6 +8,7 @@ import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.{Direction, Tier}
+import totoro.ocelot.brain.workspace.Workspace
 
 class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.QuantumNode {
   protected var cpuTier: Int = Tier.None // from Tier.None to Tier.Three
@@ -191,8 +192,8 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
   private final val TunnelTag = "tunnel"
   private final val IsLinkedEnabledTag = "isLinkedEnabled"
 
-  override def load(nbt: NBTTagCompound): Unit = {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
 
     if (nbt.hasKey(StrengthTag)) {
       strength = nbt.getDouble(StrengthTag) max 0 min maxWirelessRange

@@ -5,6 +5,7 @@ import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.{Entity, Tiered}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.user.User
+import totoro.ocelot.brain.workspace.Workspace
 
 class Screen(tier: Int) extends TextBuffer(tier) with Entity with Tiered {
 
@@ -40,8 +41,8 @@ class Screen(tier: Int) extends TextBuffer(tier) with Entity with Tiered {
 
   private final val InvertTouchModeTag = "invertTouchMode"
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     invertTouchMode = nbt.getBoolean(InvertTouchModeTag)
   }
 

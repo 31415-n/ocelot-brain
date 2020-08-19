@@ -4,6 +4,7 @@ import java.io
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.workspace.Workspace
 
 trait Capacity extends OutputStreamFileSystem {
   private var used = computeSize("/")
@@ -51,10 +52,10 @@ trait Capacity extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
     try {
       ignoreCapacity = true
-      super.load(nbt)
+      super.load(nbt, workspace)
     } finally {
       ignoreCapacity = false
     }

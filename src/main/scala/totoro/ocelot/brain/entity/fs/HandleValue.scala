@@ -2,6 +2,7 @@ package totoro.ocelot.brain.entity.fs
 
 import totoro.ocelot.brain.entity.machine.{AbstractValue, Context}
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.workspace.Workspace
 
 final class HandleValue extends AbstractValue {
   def this(owner: String, handle: Int) = {
@@ -30,8 +31,8 @@ final class HandleValue extends AbstractValue {
   private val OwnerTag = "owner"
   private val HandleTag = "handle"
 
-  override def load(nbt: NBTTagCompound): Unit = {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
     owner = nbt.getString(OwnerTag)
     handle = nbt.getInteger(HandleTag)
   }

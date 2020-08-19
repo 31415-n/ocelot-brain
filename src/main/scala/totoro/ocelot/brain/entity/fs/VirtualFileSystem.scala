@@ -4,6 +4,7 @@ import java.io
 import java.io.{FileNotFoundException, InputStream}
 
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagList}
+import totoro.ocelot.brain.workspace.Workspace
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -121,9 +122,9 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound): Unit = {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     if (!this.isInstanceOf[Buffered]) root.load(nbt)
-    super.load(nbt) // Last to ensure streams can be re-opened.
+    super.load(nbt, workspace) // Last to ensure streams can be re-opened.
   }
 
   override def save(nbt: NBTTagCompound): Unit = {

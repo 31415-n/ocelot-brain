@@ -7,7 +7,7 @@ import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
 import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
 import totoro.ocelot.brain.network.Node
-import totoro.ocelot.brain.util.{Direction, Persistable}
+import totoro.ocelot.brain.util.Direction
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -19,7 +19,7 @@ import scala.util.Random
   * Can be put on pause. Can be serialized to a NBT tag.
  *  Keeps a `path` to save files (for things that cannot be serialized to NBT, like hard drives).
   */
-class Workspace(var path: Path) extends Persistable {
+class Workspace(var path: Path) {
 
   private val random = new Random(System.currentTimeMillis())
   def rand: Random = random
@@ -139,7 +139,7 @@ class Workspace(var path: Path) extends Persistable {
   private val EdgesTag = "edges"
   private val EntitiesTag = "entities"
 
-  override def save(nbt: NBTTagCompound): Unit = {
+  def save(nbt: NBTTagCompound): Unit = {
     // save global state
     nbt.setInteger(TimeTag, ingameTime)
     nbt.setBoolean(TimePausedTag, ingameTimePaused)
@@ -155,14 +155,14 @@ class Workspace(var path: Path) extends Persistable {
     nbt.setTagList(EdgesTag, nbtEdges.asJava)
   }
 
-  override def load(nbt: NBTTagCompound): Unit = {
+  def load(nbt: NBTTagCompound): Unit = {
     ingameTime = nbt.getInteger(TimeTag)
     ingameTimePaused = nbt.getBoolean(TimePausedTag)
 
     // load entities
     entities.clear()
     nbt.getTagList(EntitiesTag, NBT.TAG_COMPOUND).foreach((nbt: NBTTagCompound) => {
-      val entity = NBTPersistence.load(nbt).asInstanceOf[Entity]
+      val entity = NBTPersistence.load(nbt, this).asInstanceOf[Entity]
       add(entity)
     })
 

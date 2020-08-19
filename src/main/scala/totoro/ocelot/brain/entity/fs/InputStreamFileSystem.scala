@@ -6,6 +6,7 @@ import java.nio.channels.ReadableByteChannel
 
 import totoro.ocelot.brain.entity.fs
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagList}
+import totoro.ocelot.brain.workspace.Workspace
 
 import scala.collection.mutable
 
@@ -54,7 +55,8 @@ trait InputStreamFileSystem extends FileSystemTrait {
   private final val PathTag = "path"
   private final val PositionTag = "position"
 
-  override def load(nbt: NBTTagCompound) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     val handlesNbt = nbt.getTagList(InputTag, NBT.TAG_COMPOUND)
     (0 until handlesNbt.tagCount).map(handlesNbt.getCompoundTagAt).foreach(handleNbt => {
       val handle = handleNbt.getInteger(HandleTag)
@@ -71,6 +73,7 @@ trait InputStreamFileSystem extends FileSystemTrait {
   }
 
   override def save(nbt: NBTTagCompound): Unit = this.synchronized {
+    super.save(nbt)
     val handlesNbt = new NBTTagList()
     for (file <- handles.values) {
       assert(file.channel.isOpen)

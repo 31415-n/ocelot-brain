@@ -2,6 +2,7 @@ package totoro.ocelot.brain.util
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.nbt._
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * This stores chars in a 2D-Array and provides some manipulation functions.
@@ -221,7 +222,7 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
     }
   }
 
-  def load(nbt: NBTTagCompound): Unit = {
+  def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     val maxResolution = math.max(Settings.screenResolutionsByTier.last._1, Settings.screenResolutionsByTier.last._2)
     val w = nbt.getInteger("width") min maxResolution max 1
     val h = nbt.getInteger("height") min maxResolution max 1
@@ -235,7 +236,7 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
 
     val depth = ColorDepth(nbt.getInteger("depth") min ColorDepth.maxId max 0)
     _format = PackedColor.Depth.format(depth)
-    _format.load(nbt)
+    _format.load(nbt, workspace)
     foreground = PackedColor.Color(nbt.getInteger("foreground"), nbt.getBoolean("foregroundIsPalette"))
     background = PackedColor.Color(nbt.getInteger("background"), nbt.getBoolean("backgroundIsPalette"))
 

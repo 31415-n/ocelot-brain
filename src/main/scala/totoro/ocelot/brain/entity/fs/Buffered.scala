@@ -9,6 +9,7 @@ import org.apache.commons.io.FileUtils
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.{SafeThreadPool, ThreadPoolFactory}
+import totoro.ocelot.brain.workspace.Workspace
 
 import scala.collection.mutable
 
@@ -43,7 +44,7 @@ trait Buffered extends OutputStreamFileSystem {
 
   private var saving: Option[Future[_]] = None
 
-  override def load(nbt: NBTTagCompound): Unit = {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     saving.foreach(f => try {
       f.get(120L, TimeUnit.SECONDS)
     } catch {
@@ -51,7 +52,7 @@ trait Buffered extends OutputStreamFileSystem {
       case _: CancellationException => // NO-OP
     })
     loadFiles(nbt)
-    super.load(nbt)
+    super.load(nbt, workspace)
   }
 
   private def loadFiles(nbt: NBTTagCompound): Unit = this.synchronized {

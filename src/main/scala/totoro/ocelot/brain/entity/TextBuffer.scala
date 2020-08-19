@@ -8,6 +8,7 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor, Tier}
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
@@ -725,11 +726,11 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   private final val ViewportWidthTag = "viewportWidth"
   private final val ViewportHeightTag = "viewportHeight"
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
 
     if (nbt.hasKey(DataTag)) {
-      _data.load(nbt.getCompoundTag(DataTag))
+      _data.load(nbt.getCompoundTag(DataTag), workspace)
     }
 
     if (nbt.hasKey(IsOnTag)) {

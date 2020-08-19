@@ -1,6 +1,7 @@
 package totoro.ocelot.brain.util
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * An object that can be persisted to an NBT tag and restored back from it.
@@ -11,7 +12,7 @@ trait Persistable {
     *
     * @param nbt the tag to read the state from.
     */
-  def load(nbt: NBTTagCompound): Unit = {}
+  def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {}
 
   /**
     * Saves the current state of the object into the specified NBT tag.

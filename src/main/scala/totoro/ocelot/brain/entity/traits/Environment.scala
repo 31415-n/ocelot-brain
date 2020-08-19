@@ -3,6 +3,7 @@ package totoro.ocelot.brain.entity.traits
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Message, Network, Node}
 import totoro.ocelot.brain.util.{Direction, Persistable}
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * The environment of a node.
@@ -185,7 +186,7 @@ trait Environment extends Persistable with LifeCycle {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound): Unit = {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     if (node != null) node.load(nbt.getCompoundTag(Environment.NodeTag))
   }
 

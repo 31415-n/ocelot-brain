@@ -10,6 +10,7 @@ import totoro.ocelot.brain.event.EventBus
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}
 import totoro.ocelot.brain.network._
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
@@ -288,8 +289,8 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
 
     nbt.getTagList("owners", NBT.TAG_COMPOUND).foreach((ownerNbt: NBTTagCompound) => {
       val address = ownerNbt.getString("address")
@@ -299,9 +300,9 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
     })
 
     if (label != null) {
-      label.load(nbt)
+      label.load(nbt, workspace)
     }
-    fileSystem.load(nbt.getCompoundTag("fs"))
+    fileSystem.load(nbt.getCompoundTag("fs"), workspace)
   }
 
   override def save(nbt: NBTTagCompound): Unit = fileSystem.synchronized {

@@ -36,7 +36,7 @@ class UserdataAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
         val bais = new ByteArrayInputStream(data)
         val dis = new DataInputStream(bais)
         val nbt = CompressedStreamTools.read(dis)
-        persistable.load(nbt)
+        persistable.load(nbt, null)
         lua.pushJavaObjectRaw(persistable)
         1
       }

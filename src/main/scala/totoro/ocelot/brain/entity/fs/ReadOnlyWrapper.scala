@@ -3,6 +3,7 @@ package totoro.ocelot.brain.entity.fs
 import java.io.FileNotFoundException
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.workspace.Workspace
 
 private class ReadOnlyWrapper(val fileSystem: FileSystemTrait) extends FileSystemTrait {
   override def isReadOnly = true
@@ -39,7 +40,7 @@ private class ReadOnlyWrapper(val fileSystem: FileSystemTrait) extends FileSyste
 
   override def close(): Unit = fileSystem.close()
 
-  override def load(nbt: NBTTagCompound): Unit = fileSystem.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = fileSystem.load(nbt, workspace)
 
   override def save(nbt: NBTTagCompound): Unit = fileSystem.save(nbt)
 }

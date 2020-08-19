@@ -5,6 +5,7 @@ import totoro.ocelot.brain.entity.traits.Entity
 import totoro.ocelot.brain.entity.{EEPROM, FloppyManaged}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.DyeColor
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 object Loot {
@@ -59,11 +60,11 @@ object Loot {
       nbt.setString(PathTag, path)
     }
 
-    override def load(nbt: NBTTagCompound): Unit = {
+    override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
       // important: we need to load path first to be able to use it later
       //            to initialize the filesystem
       path = nbt.getString(PathTag)
-      super.load(nbt)
+      super.load(nbt, workspace)
     }
   }
 

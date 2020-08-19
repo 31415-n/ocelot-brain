@@ -2,6 +2,7 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.entity.machine.Machine
 import totoro.ocelot.brain.network.Node
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * This interface has to be implemented by 'hosts' of machine instances.
@@ -61,6 +62,14 @@ trait MachineHost extends Inventory with WorkspaceAware {
     super.onEntityAdded(entity)
     entity match {
       case e: WorkspaceAware => e.workspace = null
+      case _ =>
+    }
+  }
+
+  override def onWorkspaceChange(newWorkspace: Workspace): Unit = {
+    super.onWorkspaceChange(newWorkspace)
+    inventory.foreach {
+      case e: WorkspaceAware => e.workspace = newWorkspace
       case _ =>
     }
   }

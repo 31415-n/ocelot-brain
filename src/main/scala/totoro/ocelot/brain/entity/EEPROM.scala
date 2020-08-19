@@ -6,6 +6,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 class EEPROM extends Entity with Environment with DeviceInfo {
@@ -103,8 +104,8 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   private final val ReadonlyTag = "readonly"
   private final val UserdataTag = "userdata"
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     codeData = nbt.getByteArray(EEPROMTag)
     if (nbt.hasKey(LabelTag)) {
       label = nbt.getString(LabelTag)

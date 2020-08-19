@@ -2,6 +2,7 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * Basic trait for all data disks
@@ -32,8 +33,8 @@ trait Disk extends Environment with Persistable {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     lockInfo = if (nbt.hasKey(Disk.LockTag)) {
       nbt.getString(Disk.LockTag)
     } else ""

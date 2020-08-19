@@ -16,6 +16,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
+import totoro.ocelot.brain.workspace.Workspace
 
 abstract class DataCard extends Entity with Environment with DeviceInfo {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
@@ -293,13 +294,15 @@ object DataCard {
     private final val TypeTag = "Type"
     private final val DataTag = "Data"
 
-    override def load(nbt: NBTTagCompound): Unit = {
+    override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+      super.load(nbt, workspace)
       val keyType = nbt.getString(TypeTag)
       val data = nbt.getByteArray(DataTag)
       value = ECUserdata.deserializeKey(keyType, data)
     }
 
     override def save(nbt: NBTTagCompound): Unit = {
+      super.save(nbt)
       nbt.setString(TypeTag, keyType)
       nbt.setByteArray(DataTag, value.getEncoded)
     }

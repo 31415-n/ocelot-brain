@@ -12,6 +12,7 @@ import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.ResultWrapper.result
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 import scala.collection.mutable
@@ -649,12 +650,12 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   private final val CPUTimeTag = "cpuTime"
   private final val RemainingPauseTag = "remainingPause"
 
-  override def load(nbt: NBTTagCompound): Unit = Machine.this.synchronized(state.synchronized {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = Machine.this.synchronized(state.synchronized {
     assert(state.top == MachineAPI.State.Stopped || state.top == MachineAPI.State.Paused)
     close()
     state.clear()
 
-    super.load(nbt)
+    super.load(nbt, workspace)
 
     state.pushAll(nbt.getIntArray(StateTag).reverseMap(MachineAPI.State(_)))
     nbt.getTagList(UsersTag, NBT.TAG_STRING).foreach((tag: NBTTagString) => _users += tag.getString)
@@ -666,7 +667,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
       tag.getString(AddressTag) -> tag.getString(NameTag))
 
     tmp.foreach(fs => {
-      if (nbt.hasKey(TmpTag)) fs.load(nbt.getCompoundTag(TmpTag))
+      if (nbt.hasKey(TmpTag)) fs.load(nbt.getCompoundTag(TmpTag), workspace)
     })
 
     if (state.nonEmpty && isRunning && init()) try {

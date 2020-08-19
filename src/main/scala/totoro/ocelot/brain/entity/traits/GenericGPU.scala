@@ -6,6 +6,7 @@ import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context, Machine
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Message, Network, Node, Visibility}
 import totoro.ocelot.brain.util.{ColorDepth, PackedColor}
+import totoro.ocelot.brain.workspace.Workspace
 
 import scala.util.matching.Regex
 
@@ -382,8 +383,8 @@ trait GenericGPU extends Environment with Tiered {
 
   private final val ScreenTag = "screen"
 
-  override def load(nbt: NBTTagCompound) {
-    super.load(nbt)
+  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
 
     if (nbt.hasKey(ScreenTag)) {
       nbt.getString(ScreenTag) match {

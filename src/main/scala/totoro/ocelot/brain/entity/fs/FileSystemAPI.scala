@@ -6,6 +6,7 @@ import java.nio.file.Path
 import java.util.UUID
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 import scala.util.Try
@@ -235,9 +236,10 @@ object FileSystemAPI extends {
 
     private final val LabelTag = "fs.label"
 
-    override def load(nbt: NBTTagCompound) {}
+    override def load(nbt: NBTTagCompound, workspace: Workspace) { super.load(nbt, workspace) }
 
     override def save(nbt: NBTTagCompound) {
+      super.save(nbt)
       if (label != null) {
         nbt.setString(LabelTag, label)
       }

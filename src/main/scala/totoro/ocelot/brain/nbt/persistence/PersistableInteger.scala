@@ -2,6 +2,7 @@ package totoro.ocelot.brain.nbt.persistence
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.workspace.Workspace
 
 class PersistableInteger(var value: Int) extends Persistable {
   def this() = this(0)
@@ -12,7 +13,7 @@ class PersistableInteger(var value: Int) extends Persistable {
     nbt.setInteger(Tag, value)
   }
 
-  override def load(nbt: NBTTagCompound): Unit = {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     if (nbt.hasKey(Tag)) value = nbt.getInteger(Tag)
   }
 }

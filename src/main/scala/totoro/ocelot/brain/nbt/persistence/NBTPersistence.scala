@@ -3,6 +3,7 @@ package totoro.ocelot.brain.nbt.persistence
 import totoro.ocelot.brain.entity.traits.Tiered
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.workspace.Workspace
 
 import scala.collection.mutable
 
@@ -51,33 +52,42 @@ object NBTPersistence {
     nbt
   }
 
-  def load(nbt: NBTTagCompound): Persistable = {
+  def load(nbt: NBTTagCompound, workspace: Workspace): Persistable = {
     val className = nbt.getString(TypeTag)
     val persistable = if (constructors.contains(className)) {
-      constructors(className).construct(nbt, className)
+      constructors(className).construct(nbt, className, workspace)
     } else {
       val clazz = Class.forName(className)
       val constructor = clazz.getConstructor()
       constructor.newInstance().asInstanceOf[Persistable]
     }
-    load(nbt, persistable)
+    load(nbt, persistable, workspace)
   }
 
-  def load(nbt: NBTTagCompound, persistable: Persistable): Persistable = {
-    persistable.load(nbt.getCompoundTag(DataTag))
+  def load(nbt: NBTTagCompound, persistable: Persistable, workspace: Workspace): Persistable = {
+    persistable.load(nbt.getCompoundTag(DataTag), workspace)
     persistable
   }
 
   trait InstanceConstructor {
-    def construct(nbt: NBTTagCompound, className: String): Persistable
+    def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable
   }
 
   class TieredConstructor extends InstanceConstructor {
-    override def construct(nbt: NBTTagCompound, className: String): Persistable = {
+    override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
       val clazz = Class.forName(className)
       val constructor = clazz.getConstructors()(0)
       val tier: Int = nbt.getInteger(Tiered.TierTag)
       constructor.newInstance(tier.asInstanceOf[Object]).asInstanceOf[Persistable]
+    }
+  }
+
+  class WorkspaceAwareConstructor extends InstanceConstructor {
+    override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
+      val clazz = Class.forName(className)
+      val constructor = clazz.getConstructors()(0)
+      val tier: Int = nbt.getInteger(Tiered.TierTag)
+      constructor.newInstance(tier, workspace).asInstanceOf[Persistable]
     }
   }
 }

@@ -6,6 +6,7 @@ import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI, FileSystemTrait, ReadWriteLabel}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
+import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * Basic trait for all managed-disk-like entities.
@@ -53,7 +54,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
         // regenerate filesystem instance
         _fileSystem = generateEnvironment(fileSystem.node.address)
         // restore parameters
-        _fileSystem.load(nbt)
+        _fileSystem.load(nbt, workspace)
       }
     }
   }
@@ -71,15 +72,16 @@ trait DiskManaged extends Disk with WorkspaceAware {
     }
   }
 
-  override def load(nbt: NBTTagCompound): Unit = {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     envLock = true
-    super.load(nbt)
+    super.load(nbt, workspace)
+    this.workspace = workspace
     if (nbt.hasKey(FileSystemTag)) {
       val nodeNbt = nbt.getCompoundTag(Environment.NodeTag)
       val address = nodeNbt.getString(Node.AddressTag)
       val fsNbt = nbt.getCompoundTag(FileSystemTag)
       _fileSystem = generateEnvironment(address)
-      _fileSystem.load(fsNbt)
+      _fileSystem.load(fsNbt, workspace)
     }
     envLock = false
   }
