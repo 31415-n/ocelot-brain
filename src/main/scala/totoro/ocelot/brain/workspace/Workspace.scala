@@ -2,12 +2,12 @@ package totoro.ocelot.brain.workspace
 
 import java.util.UUID
 
-import totoro.ocelot.brain.entity.traits.{Entity, Environment, WorkspaceAware}
+import totoro.ocelot.brain.entity.traits.{Entity, Environment, SidedEnvironment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
 import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
 import totoro.ocelot.brain.network.Node
-import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.util.{Direction, Persistable}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -90,22 +90,43 @@ class Workspace(var name: String = UUID.randomUUID().toString) extends Persistab
     entities.find { case e: Environment => e.node.address == address }
   }
 
-  // Persistence
-  // ----------------------------------------------------------------------- //
-  private def collectEdges(): ListBuffer[NBTBase] = {
-    entities.flatMap {
-      case e:Environment =>
-        e.node.neighbors.map((n: Node) => {
-          val edgeNbt = new NBTTagCompound()
-          edgeNbt.setString(LeftTag, e.node.address)
-          edgeNbt.setString(RightTag, n.address)
-          edgeNbt
-        })
+  def nodeByAddress(address: String): Option[Node] = {
+    for (entity <- entities) {
+      entity match {
+        case se: SidedEnvironment =>
+          val result = Direction.values.unsorted.find(dir => se.sidedNode(dir).address == address).map(dir => se.sidedNode(dir))
+          if (result.nonEmpty) return result
+        case e: Environment if e.node.address == address => return Some(e.node)
+        case _ =>
+      }
     }
+    None
   }
 
+  // Persistence
+  // ----------------------------------------------------------------------- //
   private val LeftTag = "left"
   private val RightTag = "right"
+
+  private def buildEdgeNbt(address1: String, address2: String): NBTTagCompound = {
+    val edgeNbt = new NBTTagCompound()
+    edgeNbt.setString(LeftTag, address1)
+    edgeNbt.setString(RightTag, address2)
+    edgeNbt
+  }
+
+  private def collectEdges(): ListBuffer[NBTBase] = {
+    entities.flatMap {
+      case s: SidedEnvironment =>
+        Direction.values.unsorted.flatMap { d: Direction.Value =>
+          val node = s.sidedNode(d)
+          if (node != null) node.neighbors.map(n => buildEdgeNbt(node.address, n.address))
+          else Seq.empty
+        }
+      case e: Environment =>
+        e.node.neighbors.map(n => buildEdgeNbt(e.node.address, n.address))
+    }
+  }
 
   private val TimeTag = "time"
   private val TimePausedTag = "time_paused"
@@ -141,12 +162,11 @@ class Workspace(var name: String = UUID.randomUUID().toString) extends Persistab
 
     // load network relations
     nbt.getTagList(EdgesTag, NBT.TAG_COMPOUND).map((nbt: NBTTagCompound) => {
-      val left = entityByAddress(nbt.getString(LeftTag))
-      val right = entityByAddress(nbt.getString(RightTag))
+      val left = nodeByAddress(nbt.getString(LeftTag))
+      val right = nodeByAddress(nbt.getString(RightTag))
       if (left.isDefined && right.isDefined) {
-        val a = left.get.asInstanceOf[Environment]
-        val b = right.get.asInstanceOf[Environment]
-        if (!a.node.isNeighborOf(b.node)) a.connect(b)
+        if (!left.get.isNeighborOf(right.get))
+          left.get.connect(right.get)
       }
     })
   }

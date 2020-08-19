@@ -17,7 +17,7 @@ trait SidedEnvironment {
     * method.
     *
     * @param side the side to get the node for.
-    * @return the node for the specified side.
+    * @return the node for the specified side (or null in case of an error).
     * @see [[Environment.node]]
     */
   def sidedNode(side: Direction.Value): Node
