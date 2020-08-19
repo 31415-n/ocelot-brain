@@ -11,6 +11,7 @@ import scala.collection.mutable
 trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
   implicit def ordering[A <: Plug]: Ordering[A] = Ordering.by(_.node.address)
 
+  @Deprecated
   override def node: Node = null
 
   override def isConnected: Boolean = plugs.values.exists(plug =>

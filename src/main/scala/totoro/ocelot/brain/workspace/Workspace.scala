@@ -87,14 +87,19 @@ class Workspace(var name: String = UUID.randomUUID().toString) extends Persistab
   }
 
   def entityByAddress(address: String): Option[Entity] = {
-    entities.find { case e: Environment => e.node.address == address }
+    entities.find {
+      case se: SidedEnvironment => Direction.values.unsorted
+        .exists(dir => se.sidedNode(dir) != null && se.sidedNode(dir).address == address)
+      case e: Environment => e.node.address == address
+    }
   }
 
   def nodeByAddress(address: String): Option[Node] = {
     for (entity <- entities) {
       entity match {
         case se: SidedEnvironment =>
-          val result = Direction.values.unsorted.find(dir => se.sidedNode(dir).address == address).map(dir => se.sidedNode(dir))
+          val result = Direction.values.unsorted
+            .find(dir => se.sidedNode(dir) != null && se.sidedNode(dir).address == address).map(dir => se.sidedNode(dir))
           if (result.nonEmpty) return result
         case e: Environment if e.node.address == address => return Some(e.node)
         case _ =>
