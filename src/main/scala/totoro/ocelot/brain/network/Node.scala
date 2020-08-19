@@ -54,7 +54,7 @@ trait Node {
     * they have is to *not* have an address, which can be useful for "dummy"
     * nodes, such as cables. In that case they may ignore the address being set.
     */
-  final var address: String = _
+  final var address: String = java.util.UUID.randomUUID().toString
 
   /**
     * The network this node is currently in.
