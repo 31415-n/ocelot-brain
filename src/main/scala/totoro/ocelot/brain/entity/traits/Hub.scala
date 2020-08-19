@@ -183,5 +183,5 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
     }
   }
 
-  protected def createNode(plug: Plug): Node = Network.newNode(plug, Visibility.Network).create()
+  protected def createNode(plug: Plug): Node = Network.newNode(plug, Visibility.Network, java.util.UUID.randomUUID().toString).create()
 }
