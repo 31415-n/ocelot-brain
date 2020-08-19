@@ -14,7 +14,7 @@ import scala.collection.mutable.ListBuffer
   * Describes an entity with internal container, which can hold other entities.
   * Such as computer case.
   */
-trait Inventory extends Persistable {
+trait Inventory extends WorkspaceAware with Persistable {
   /**
     * Returns the collection of entites indide of the container
     */
@@ -52,12 +52,30 @@ trait Inventory extends Persistable {
   /**
     * Is called any time new entity is added to the inventory
     */
-  def onEntityAdded(entity: Entity): Unit = {}
+  def onEntityAdded(entity: Entity): Unit = {
+    entity match {
+      case e: WorkspaceAware => e.workspace = workspace
+      case _ =>
+    }
+  }
 
   /**
-    * Is called any time new entity is removed from the inventory
-    */
-  def onEntityRemoved(entity: Entity): Unit = {}
+   * Is called any time new entity is removed from the inventory
+   */
+  def onEntityRemoved(entity: Entity): Unit = {
+    entity match {
+      case e: WorkspaceAware => e.workspace = null
+      case _ =>
+    }
+  }
+
+  override def onWorkspaceChange(newWorkspace: Workspace): Unit = {
+    super.onWorkspaceChange(newWorkspace)
+    inventory.foreach {
+      case e: WorkspaceAware => e.workspace = newWorkspace
+      case _ =>
+    }
+  }
 
   // ----------------------------------------------------------------------- //
 

@@ -4,9 +4,7 @@ import totoro.ocelot.brain.Constants
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{ComponentInventory, DeviceInfo, Entity, Environment}
-import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
-import totoro.ocelot.brain.workspace.Workspace
 
 class FloppyDiskDrive extends Entity with Environment with ComponentInventory with DeviceInfo {
   val node: Component = Network.newNode(this, Visibility.Network).
@@ -58,24 +56,6 @@ class FloppyDiskDrive extends Entity with Environment with ComponentInventory wi
         case component: Component => component.setVisibility(Visibility.Network)
       }
       case _ =>
-    }
-  }
-
-  // ----------------------------------------------------------------------- //
-
-  private final val DiskTag = "disk"
-
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
-    super.load(nbt, workspace)
-    if (nbt.hasKey(DiskTag)) {
-      // TODO: read the floppy from NBT here
-    }
-  }
-
-  override def save(nbt: NBTTagCompound) {
-    super.save(nbt)
-    if (inventory.nonEmpty) {
-      // TODO: save the floppy to NBT here
     }
   }
 }
