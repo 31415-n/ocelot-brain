@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity.fs
 
 import java.io
-import java.io.FileNotFoundException
+import java.io.{FileNotFoundException, InputStream}
 
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagList}
 
@@ -170,7 +170,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
     override def size: Long = data.length
 
-    def openInputStream() = Some(new VirtualFileInputStream(this))
+    def openInputStream(): Option[InputStream] = Some(new VirtualFileInputStream(this))
 
     def openOutputHandle(owner: OutputStreamFileSystem, id: Int, path: String, mode: Mode.Value): Option[OutputHandle] =
       if (handle.isDefined) None
@@ -308,7 +308,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
         if (count == 0) -1
         else {
           val n = math.min(len, count)
-          file.data.view(position, file.data.length).copyToArray(b, off, n)
+          file.data.view.slice(position, file.data.length).copyToArray(b, off, n)
           position += n
           n
         }

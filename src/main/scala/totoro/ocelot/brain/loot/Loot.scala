@@ -40,15 +40,14 @@ object Loot {
     def create(): Entity
   }
 
-  class LootFloppy(name: String, color: DyeColor, var path: String, var external: Boolean = false)
+  class LootFloppy(name: String, color: DyeColor, var path: String)
     extends FloppyManaged(name, color) {
 
-    def this() = this("noname", DyeColor.BLACK, null, false)
+    def this() = this("noname", DyeColor.BLACK, null)
 
     override protected def generateEnvironment(address: String): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
-        if (external) FileSystemAPI.asReadOnly(FileSystemAPI.fromSaveDirectory("loot/" + path, 0, buffered = false))
-        else FileSystemAPI.fromClass(Ocelot.getClass, Settings.resourceDomain, "loot/" + path),
+        FileSystemAPI.fromClass(Ocelot.getClass, Settings.resourceDomain, "loot/" + path),
         label
       )
     }
@@ -68,9 +67,9 @@ object Loot {
     }
   }
 
-  class FloppyFactory(name: String, color: DyeColor, path: String, external: Boolean = false) extends LootFactory {
+  class FloppyFactory(name: String, color: DyeColor, path: String) extends LootFactory {
     override def create(): Entity = {
-      new LootFloppy(name, color, path, external)
+      new LootFloppy(name, color, path)
     }
   }
 

@@ -10,7 +10,7 @@ import totoro.ocelot.brain.network.Node
 /**
   * Basic trait for all managed-disk-like entities.
   */
-trait DiskManaged extends Disk {
+trait DiskManaged extends Disk with WorkspaceAware {
   protected var envLock = false // refactor later
 
   def fileSystem: FileSystem = {
@@ -33,7 +33,7 @@ trait DiskManaged extends Disk {
 
   protected def generateEnvironment(address: String): FileSystem = {
     val finalAddress = if (address == null) UUID.randomUUID().toString else address
-    var fs: FileSystemTrait = FileSystemAPI.fromSaveDirectory(finalAddress, capacity max 0, Settings.get.bufferChanges)
+    var fs: FileSystemTrait = FileSystemAPI.fromSaveDirectory(workspace.path, finalAddress, capacity max 0, Settings.get.bufferChanges)
     if (isLocked) {
       fs = FileSystemAPI.asReadOnly(fs)
     }

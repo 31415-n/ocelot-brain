@@ -107,10 +107,10 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
 
   // ----------------------------------------------------------------------- //
 
-  private final val PlugsTag = Settings.namespace + "plugs"
-  private final val QueueTag = Settings.namespace + "queue"
+  private final val PlugsTag = "plugs"
+  private final val QueueTag = "queue"
   private final val SideTag = "side"
-  private final val RelayCooldownTag = Settings.namespace + "relayCooldown"
+  private final val RelayCooldownTag = "relayCooldown"
 
   override def load(nbt: NBTTagCompound): Unit = {
     super.load(nbt)

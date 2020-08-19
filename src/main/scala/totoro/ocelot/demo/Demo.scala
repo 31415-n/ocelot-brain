@@ -1,5 +1,7 @@
 package totoro.ocelot.demo
 
+import java.nio.file.Files
+
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.traits.{Entity, Environment}
 import totoro.ocelot.brain.entity.{CPU, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
@@ -29,7 +31,7 @@ object Demo extends App {
     * Entities then will be managed by this workspace.
     * Entities still can form connections between workspaces, and exchange data.
     */
-  val workspace = new Workspace()
+  val workspace = new Workspace(Files.createTempDirectory("ocelot-1"))
 
   /**
     * Now we create a new entity - computer case.
@@ -188,10 +190,9 @@ object Demo extends App {
   /**
     * Load workspace from snapshot
     */
-  val loadedWorkspace = new Workspace()
+  val loadedWorkspace = new Workspace(Files.createTempDirectory("ocelot-2"))
   loadedWorkspace.load(nbt)
 
-  println("Loaded.Name: " + loadedWorkspace.name)
   loadedWorkspace.getEntitiesIter.foreach { case environment: Environment =>
       println("Loaded.Entity.Address: " + environment.node.address)
   }

@@ -68,7 +68,7 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
 
   // ----------------------------------------------------------------------- //
 
-  private final val TunnelTag = Settings.namespace + "tunnel"
+  private final val TunnelTag = "tunnel"
 
   override def load(nbt: NBTTagCompound) {
     super.load(nbt)

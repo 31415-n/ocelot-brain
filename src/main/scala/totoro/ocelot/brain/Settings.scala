@@ -92,8 +92,10 @@ class Settings(val config: Config) {
   val httpEnabled: Boolean = config.getBoolean("internet.enableHttp")
   val httpHeadersEnabled: Boolean = config.getBoolean("internet.enableHttpHeaders")
   val tcpEnabled: Boolean = config.getBoolean("internet.enableTcp")
-  val httpHostBlacklist = Array(config.getStringList("internet.blacklist").asScala.toArray.map(new Settings.AddressValidator(_)): _*)
-  val httpHostWhitelist = Array(config.getStringList("internet.whitelist").asScala.toArray.map(new Settings.AddressValidator(_)): _*)
+  val httpHostBlacklist: Array[Settings.AddressValidator] =
+    Array(config.getStringList("internet.blacklist").asScala.toArray.map(new Settings.AddressValidator(_)): _*)
+  val httpHostWhitelist: Array[Settings.AddressValidator] =
+    Array(config.getStringList("internet.whitelist").asScala.toArray.map(new Settings.AddressValidator(_)): _*)
   val httpTimeout: Int = (config.getInt("internet.requestTimeout") max 0) * 1000
   val maxConnections: Int = config.getInt("internet.maxTcpConnections") max 0
   val internetThreads: Int = config.getInt("internet.threads") max 1
@@ -180,13 +182,10 @@ class Settings(val config: Config) {
 
 object Settings {
   val resourceDomain = "opencomputers"
-  val namespace = "oc:"
-  val saveRootDirectory = "save/"
-  val savePath = "opencomputers/"
   val scriptPath: String = "/assets/" + resourceDomain + "/lua/"
-  val screenResolutionsByTier = Array((50, 16), (80, 25), (160, 50))
-  val screenDepthsByTier = Array(ColorDepth.OneBit, ColorDepth.FourBit, ColorDepth.EightBit)
-  val deviceComplexityByTier = Array(12, 24, 32, 9001)
+  val screenResolutionsByTier: Array[(Int, Int)] = Array((50, 16), (80, 25), (160, 50))
+  val screenDepthsByTier: Array[ColorDepth.Value] = Array(ColorDepth.OneBit, ColorDepth.FourBit, ColorDepth.EightBit)
+  val deviceComplexityByTier: Array[Int] = Array(12, 24, 32, 9001)
   var rTreeDebugRenderer = false
   var blockRenderId: Int = -1
 

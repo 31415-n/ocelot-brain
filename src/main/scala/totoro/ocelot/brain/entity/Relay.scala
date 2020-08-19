@@ -180,16 +180,16 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
 
   // ----------------------------------------------------------------------- //
 
-  private final val StrengthTag = Settings.namespace + "strength"
-  private final val IsRepeaterTag = Settings.namespace + "isRepeater"
-  private final val ComponentNodesTag = Settings.namespace + "componentNodes"
+  private final val StrengthTag = "strength"
+  private final val IsRepeaterTag = "isRepeater"
+  private final val ComponentNodesTag = "componentNodes"
 
-  private final val CpuTierTag = Settings.namespace + "cpuTier"
-  private final val MemoryTierTag = Settings.namespace + "memoryTier"
-  private final val HDDTierTag = Settings.namespace + "hddTier"
-  private final val WirelessTierTag = Settings.namespace + "wirelessTier"
-  private final val TunnelTag = Settings.namespace + "tunnel"
-  private final val IsLinkedEnabledTag = Settings.namespace + "isLinkedEnabled"
+  private final val CpuTierTag = "cpuTier"
+  private final val MemoryTierTag = "memoryTier"
+  private final val HDDTierTag = "hddTier"
+  private final val WirelessTierTag = "wirelessTier"
+  private final val TunnelTag = "tunnel"
+  private final val IsLinkedEnabledTag = "isLinkedEnabled"
 
   override def load(nbt: NBTTagCompound): Unit = {
     super.load(nbt)

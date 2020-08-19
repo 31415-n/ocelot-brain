@@ -14,14 +14,14 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 /**
   * Basic trait for all unmanaged-disk-like entities.
   */
-trait DiskUnmanaged extends Disk {
+trait DiskUnmanaged extends Disk with WorkspaceAware {
   def label: Label
 
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("drive", Visibility.Neighbors).
     create()
 
-  protected def savePath = new File(Settings.saveRootDirectory, Settings.savePath + node.address + ".bin")
+  protected def savePath = new File(workspace.path.toFile, node.address + ".bin")
 
   /**
     * Number of physical platters to pretend a disk has in unmanaged mode. This

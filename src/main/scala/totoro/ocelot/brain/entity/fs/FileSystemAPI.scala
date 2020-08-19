@@ -2,6 +2,7 @@ package totoro.ocelot.brain.entity.fs
 
 import java.io
 import java.net.{MalformedURLException, URISyntaxException, URL}
+import java.nio.file.Path
 import java.util.UUID
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -10,10 +11,10 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 import scala.util.Try
 
 object FileSystemAPI extends {
-  lazy val isCaseInsensitive: Boolean = Settings.get.forceCaseInsensitive || (try {
+  def isCaseInsensitive(path: io.File): Boolean = Settings.get.forceCaseInsensitive || (try {
     val uuid = UUID.randomUUID().toString
-    val lowerCase = new io.File(Settings.saveRootDirectory, uuid + "oc_rox")
-    val upperCase = new io.File(Settings.saveRootDirectory, uuid + "OC_ROX")
+    val lowerCase = new io.File(path, uuid + "oc_rox")
+    val upperCase = new io.File(path, uuid + "OC_ROX")
     // This should NEVER happen but could also lead to VERY weird bugs, so we
     // make sure the files don't exist.
     lowerCase.exists() && lowerCase.delete()
@@ -132,8 +133,8 @@ object FileSystemAPI extends {
     * @param buffered whether data should only be written to disk when saving.
     * @return a file system wrapping the specified folder.
     */
-  def fromSaveDirectory(root: String, capacity: Long, buffered: Boolean): Capacity = {
-    val path = new io.File(Settings.saveRootDirectory, Settings.savePath + root)
+  def fromSaveDirectory(saveDirectory: Path, root: String, capacity: Long, buffered: Boolean): Capacity = {
+    val path = new io.File(saveDirectory.toFile, root)
     if (!path.isDirectory) path.delete()
     path.mkdirs()
     if (path.exists() && path.isDirectory) if (buffered) new BufferedFileSystem(path, capacity)
@@ -232,7 +233,7 @@ object FileSystemAPI extends {
 
     def getLabel: String = label
 
-    private final val LabelTag = Settings.namespace + "fs.label"
+    private final val LabelTag = "fs.label"
 
     override def load(nbt: NBTTagCompound) {}
 
@@ -263,7 +264,7 @@ object FileSystemAPI extends {
       with Capacity {
     protected override def segments(path: String): Array[String] = {
       val parts = super.segments(path)
-      if (isCaseInsensitive) toCaseInsensitive(parts) else parts
+      if (isCaseInsensitive(fileRoot)) toCaseInsensitive(parts) else parts
     }
 
     private def toCaseInsensitive(path: Array[String]): Array[String] = {

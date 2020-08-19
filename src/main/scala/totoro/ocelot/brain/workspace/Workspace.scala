@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.workspace
 
-import java.util.UUID
+import java.nio.file.Path
 
 import totoro.ocelot.brain.entity.traits.{Entity, Environment, SidedEnvironment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
@@ -17,8 +17,9 @@ import scala.util.Random
 /**
   * A separated spacetime plane with networks and entities.
   * Can be put on pause. Can be serialized to a NBT tag.
+ *  Keeps a `path` to save files (for things that cannot be serialized to NBT, like hard drives).
   */
-class Workspace(var name: String = UUID.randomUUID().toString) extends Persistable {
+class Workspace(var path: Path) extends Persistable {
 
   private val random = new Random(System.currentTimeMillis())
   def rand: Random = random

@@ -47,4 +47,21 @@ trait MachineHost extends Inventory with WorkspaceAware {
     * @param node the node that was disconnected from the network.
     */
   def onMachineDisconnect(node: Node): Unit
+
+
+  override def onEntityAdded(entity: Entity): Unit = {
+    super.onEntityAdded(entity)
+    entity match {
+      case e: WorkspaceAware => e.workspace = workspace
+      case _ =>
+    }
+  }
+
+  override def onEntityRemoved(entity: Entity): Unit = {
+    super.onEntityAdded(entity)
+    entity match {
+      case e: WorkspaceAware => e.workspace = null
+      case _ =>
+    }
+  }
 }
