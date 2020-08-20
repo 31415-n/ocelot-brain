@@ -7,7 +7,7 @@ import totoro.ocelot.brain.entity.traits.{ComponentInventory, DeviceInfo, Entity
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
 
 class FloppyDiskDrive extends Entity with Environment with ComponentInventory with DeviceInfo {
-  val node: Component = Network.newNode(this, Visibility.Network).
+  override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("disk_drive").
     create()
 

@@ -82,6 +82,7 @@ trait Inventory extends WorkspaceAware with Persistable {
   private final val InventoryTag = "inventory"
 
   override def load(nbt: NBTTagCompound, workspace: Workspace) {
+    super.load(nbt, workspace)
     nbt.getTagList(InventoryTag, NBT.TAG_COMPOUND).foreach { nbt: NBTTagCompound =>
       NBTPersistence.load(nbt, workspace) match {
         case entity: Entity =>
@@ -93,6 +94,7 @@ trait Inventory extends WorkspaceAware with Persistable {
   }
 
   override def save(nbt: NBTTagCompound) {
+    super.save(nbt)
     nbt.setNewTagList(InventoryTag,
       inventory.map { entity =>
         NBTPersistence.save(entity)
