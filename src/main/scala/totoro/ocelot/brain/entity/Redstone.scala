@@ -1,5 +1,7 @@
 package totoro.ocelot.brain.entity
 
+import java.util
+
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
@@ -28,8 +30,8 @@ object Redstone {
 
     // ----------------------------------------------------------------------- //
 
-    val redstoneOutput = new Array[Int](6)
-    val redstoneInput = new Array[Int](6)
+    val redstoneOutput: Array[Int] = Array.fill(6)(0)
+    val redstoneInput: Array[Int] = Array.fill(6)(-1)
 
     @Callback(direct = true, doc = """function([side:number]):number or table -- Get the redstone input (all sides, or optionally on the specified side)""")
     def getInput(context: Context, args: Arguments): Array[AnyRef] = {
@@ -54,9 +56,16 @@ object Redstone {
         case (side: Direction.Value, value: Int) =>
           ret = java.lang.Integer.valueOf(redstoneOutput(side.id))
           redstoneOutput(side.id) = value
-        case (value: Map[Int, Int]@unchecked, _) =>
+        case (value: util.Map[_, _], _) =>
           ret = valuesToMap(redstoneOutput)
-          value.foreach(item => redstoneOutput(item._1) = item._2)
+          Direction.values.foreach(side => {
+            val sideIndex = side.id
+            // due to a bug in our jnlua layer, I cannot loop the map
+            valueToInt(getObjectFuzzy(value, sideIndex)) match {
+              case Some(num: Int) => redstoneOutput(sideIndex) = num
+              case _ =>
+            }
+          })
       }
       if (Settings.get.redstoneDelay > 0)
         context.pause(Settings.get.redstoneDelay)
@@ -71,9 +80,30 @@ object Redstone {
 
     protected def getOptionalSide(args: Arguments): Option[Int] = {
       if (args.count == 1)
-        Option(checkSide(args, 0))
+        Option(checkSide(args, 0).id)
       else
         None
+    }
+
+    protected def getObjectFuzzy(map: util.Map[_, _], key: Int): Option[AnyRef] = {
+      val refMap: util.Map[AnyRef, AnyRef] = map.asInstanceOf[util.Map[AnyRef, AnyRef]]
+      if (refMap.containsKey(key))
+        Option(refMap.get(key))
+      else if (refMap.containsKey(new Integer(key)))
+        Option(refMap.get(new Integer(key)))
+      else if (refMap.containsKey(new Integer(key) * 1.0))
+        Option(refMap.get(new Integer(key) * 1.0))
+      else if (refMap.containsKey(key * 1.0))
+        Option(refMap.get(key * 1.0))
+      else
+        None
+    }
+
+    protected def valueToInt(value: AnyRef): Option[Int] = {
+      value match {
+        case Some(num: Number) => Option(num.intValue)
+        case _ => None
+      }
     }
 
     protected def getAssignment(args: Arguments): (Any, Any) = {
@@ -84,11 +114,11 @@ object Redstone {
       }
     }
 
-    protected def checkSide(args: Arguments, index: Int): Int = {
+    protected def checkSide(args: Arguments, index: Int): Direction.Value = {
       val side = args.checkInteger(index)
       if (side < 0 || side > 5)
         throw new IllegalArgumentException("invalid side")
-      side
+      Direction(side)
     }
 
     private def valuesToMap(ar: Array[Int]): Map[Int, Int] =
@@ -122,8 +152,8 @@ object Redstone {
 
     private def getBundleKey(args: Arguments): (Option[Int], Option[Int]) = {
       args.count() match {
-        case 2 => (Option(checkSide(args, 0)), Option(checkColor(args, 1)))
-        case 1 => (Option(checkSide(args, 0)), None)
+        case 2 => (Option(checkSide(args, 0).id), Option(checkColor(args, 1)))
+        case 1 => (Option(checkSide(args, 0).id), None)
         case 0 => (None, None)
         case _ => throw new Exception("too many arguments, expected 0, 1, or 2")
       }
