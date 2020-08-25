@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit
 
 import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI}
 import totoro.ocelot.brain.entity.machine.Callbacks.InnerCallback
-import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, Environment, MachineHost, Processor}
+import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, DiskActivityAware, Environment, MachineHost, Processor}
 import totoro.ocelot.brain.event.{BeepEvent, BeepPatternEvent, EventBus, MachineCrashEvent}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt._
@@ -18,7 +18,7 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
-class Machine(val host: MachineHost) extends Environment with Context with Runnable with DeviceInfo {
+class Machine(val host: MachineHost) extends Environment with Context with Runnable with DeviceInfo with DiskActivityAware {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("computer", Visibility.Neighbors).
     create()
