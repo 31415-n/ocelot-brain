@@ -5,7 +5,7 @@ import java.io.{FileNotFoundException, IOException}
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.result
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, DiskActivityAware, Environment}
 import totoro.ocelot.brain.event.EventBus
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}
@@ -271,6 +271,15 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
     }
   }
 
+  private var container: DiskActivityAware = _
+
+  override def onConnect(node: Node) {
+    node.host match {
+      case x: DiskActivityAware => container = x
+      case _ =>
+    }
+  }
+
   override def onDisconnect(node: Node): Unit = fileSystem.synchronized {
     super.onDisconnect(node)
     if (node == this.node) {
@@ -284,6 +293,9 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
         }
       }
       owners.remove(node.address)
+    }
+    if (container != null) {
+      if (node.host == container) container = null
     }
   }
 
@@ -346,5 +358,6 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
 
   private def diskActivity(): Unit = {
     EventBus.sendDiskActivity(node)
+    if (container != null) container.lastDiskAccess = System.currentTimeMillis()
   }
 }

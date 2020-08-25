@@ -8,7 +8,7 @@ import totoro.ocelot.brain.entity.fs.Label
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.event.EventBus
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.network.{Component, Network, Visibility}
+import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
@@ -210,7 +210,23 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
 
   // ----------------------------------------------------------------------- //
 
+  private var container: DiskActivityAware = _
+
+  override def onConnect(node: Node) {
+    node.host match {
+      case x: DiskActivityAware => container = x
+      case _ =>
+    }
+  }
+
+  override def onDisconnect(node: Node) {
+    if (container != null) {
+      if (node.host == container) container = null
+    }
+  }
+
   private def diskActivity(): Unit = {
     EventBus.sendDiskActivity(node)
+    if (container != null) container.lastDiskAccess = System.currentTimeMillis()
   }
 }

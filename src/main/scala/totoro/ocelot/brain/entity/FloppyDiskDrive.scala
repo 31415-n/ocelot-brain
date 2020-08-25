@@ -3,10 +3,10 @@ package totoro.ocelot.brain.entity
 import totoro.ocelot.brain.Constants
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{ComponentInventory, DeviceInfo, Entity, Environment}
+import totoro.ocelot.brain.entity.traits.{ComponentInventory, DeviceInfo, DiskActivityAware, Entity, Environment}
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
 
-class FloppyDiskDrive extends Entity with Environment with ComponentInventory with DeviceInfo {
+class FloppyDiskDrive extends Entity with Environment with ComponentInventory with DeviceInfo with DiskActivityAware {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("disk_drive").
     create()
