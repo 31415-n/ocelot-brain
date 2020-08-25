@@ -275,7 +275,9 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
 
   override def onConnect(node: Node) {
     node.host match {
-      case x: DiskActivityAware => container = x
+      case x: DiskActivityAware =>
+        if (node.isNeighborOf(this.node))
+          container = x
       case _ =>
     }
   }

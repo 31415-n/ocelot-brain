@@ -214,7 +214,9 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
 
   override def onConnect(node: Node) {
     node.host match {
-      case x: DiskActivityAware => container = x
+      case x: DiskActivityAware =>
+        if (node.isNeighborOf(this.node))
+          container = x
       case _ =>
     }
   }
