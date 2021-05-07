@@ -78,7 +78,7 @@ object Loot {
     }
   }
 
-  class EEPROMFactory(label: String, file: String, readonly: Boolean = true) extends LootFactory {
+  class EEPROMFactory(label: String, file: String, readonly: Boolean = false) extends LootFactory {
     private val code = new Array[Byte](4 * 1024)
     private val count = Ocelot.getClass.getResourceAsStream(Settings.scriptPath + file).read(code)
     private val codeData = code.take(count)
