@@ -49,6 +49,7 @@ object Ocelot {
     val tieredConstructor = new TieredConstructor()
     NBTPersistence.registerConstructor(classOf[Case].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[CPU].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[APU].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[Memory].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[GraphicsCard].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[HDDManaged].getName, tieredConstructor)
