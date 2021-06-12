@@ -532,8 +532,6 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
       case _ => // Nothing special to do, just avoid match errors.
     }
 
-    _latestMemoryUsage.set(architecture.freeMemory.toLong << 32 | architecture.totalMemory.toLong & 0xFFFFFFFFL)
-
     // Finally check if we should stop the computer. We cannot lock the state
     // because we may have to wait for the executor thread to finish, which
     // might turn into a deadlock depending on where it currently is.
@@ -958,6 +956,8 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
         Ocelot.log.warn("Architecture's runThreaded threw an error. This should never happen!", e)
         crash("Error.InternalError")
     }
+
+    _latestMemoryUsage.set(architecture.freeMemory.toLong << 32 | architecture.totalMemory.toLong & 0xFFFFFFFFL)
 
     // Keep track of time spent executing the computer.
     cpuTotal += System.nanoTime() - cpuStart
