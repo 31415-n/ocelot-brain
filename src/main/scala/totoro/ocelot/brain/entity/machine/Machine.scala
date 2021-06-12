@@ -71,9 +71,10 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   private val maxSignalQueueSize = Settings.get.maxSignalQueueSize
 
-  private val _latestInfo = new AtomicReference[LatestInfo](LatestInfo(0, 0, 0, 0))
+  private val _latestInfo = new AtomicReference[LatestInfo](LatestInfo(0, 0, 0, 0, 0, 0))
 
-  private case class LatestInfo(executionStart: Long, executionEnd: Long, freeMemory: Int, totalMemory: Int)
+  private case class LatestInfo(executionStart: Long, executionEnd: Long, freeMemory: Int, totalMemory: Int,
+                                callBudget: Double, maxCallBudget: Double)
 
   // ----------------------------------------------------------------------- //
 
@@ -147,6 +148,11 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   def latestExecutionInfo: (Long, Long) = {
     val info = _latestInfo.get()
     (info.executionStart, info.executionEnd)
+  }
+
+  def latestCallBudget: (Double, Double) = {
+    val info = _latestInfo.get()
+    (info.callBudget, info.maxCallBudget)
   }
 
   // ----------------------------------------------------------------------- //
@@ -968,7 +974,9 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     _latestInfo.getAndUpdate(info => info.copy(
       freeMemory = architecture.freeMemory,
       totalMemory = architecture.totalMemory,
-      executionEnd = System.nanoTime()
+      executionEnd = System.nanoTime(),
+      callBudget = callBudget,
+      maxCallBudget = maxCallBudget
     ))
 
     // Keep track of time spent executing the computer.
