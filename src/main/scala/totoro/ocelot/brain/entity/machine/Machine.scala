@@ -14,7 +14,7 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 
 import java.util
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicLong
+import java.util.concurrent.atomic.AtomicReference
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
@@ -71,7 +71,9 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   private val maxSignalQueueSize = Settings.get.maxSignalQueueSize
 
-  private val _latestMemoryUsage = new AtomicLong(0)
+  private val _latestInfo = new AtomicReference[LatestInfo](LatestInfo(0, 0, 0, 0))
+
+  private case class LatestInfo(executionStart: Long, executionEnd: Long, freeMemory: Int, totalMemory: Int)
 
   // ----------------------------------------------------------------------- //
 
@@ -138,8 +140,13 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   def cpuTime: Double = (cpuTotal + (System.nanoTime() - cpuStart)) * 10e-10
 
   def latestMemoryUsage: (Int, Int) = {
-    val v = _latestMemoryUsage.get()
-    ((v >> 32).toInt, v.toInt)
+    val info = _latestInfo.get()
+    (info.freeMemory, info.totalMemory)
+  }
+
+  def latestExecutionInfo: (Long, Long) = {
+    val info = _latestInfo.get()
+    (info.executionStart, info.executionEnd)
   }
 
   // ----------------------------------------------------------------------- //
@@ -888,6 +895,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
 
     cpuStart = System.nanoTime()
+    _latestInfo.getAndUpdate(info => info.copy(executionStart = cpuStart))
 
     try {
       val result = architecture.runThreaded(isSynchronizedReturn)
@@ -957,7 +965,11 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
         crash("Error.InternalError")
     }
 
-    _latestMemoryUsage.set(architecture.freeMemory.toLong << 32 | architecture.totalMemory.toLong & 0xFFFFFFFFL)
+    _latestInfo.getAndUpdate(info => info.copy(
+      freeMemory = architecture.freeMemory,
+      totalMemory = architecture.totalMemory,
+      executionEnd = System.nanoTime()
+    ))
 
     // Keep track of time spent executing the computer.
     cpuTotal += System.nanoTime() - cpuStart
