@@ -1,8 +1,5 @@
 package totoro.ocelot.brain.entity.machine
 
-import java.util
-import java.util.concurrent.TimeUnit
-
 import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI}
 import totoro.ocelot.brain.entity.machine.Callbacks.InnerCallback
 import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, DiskActivityAware, Environment, MachineHost, Processor}
@@ -15,6 +12,9 @@ import totoro.ocelot.brain.util.ResultWrapper.result
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
+import java.util
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicLong
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
@@ -70,6 +70,8 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   private var message: Option[String] = None // For error messages.
 
   private val maxSignalQueueSize = Settings.get.maxSignalQueueSize
+
+  private val _latestMemoryUsage = new AtomicLong(0)
 
   // ----------------------------------------------------------------------- //
 
@@ -134,6 +136,11 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   }
 
   def cpuTime: Double = (cpuTotal + (System.nanoTime() - cpuStart)) * 10e-10
+
+  def latestMemoryUsage: (Int, Int) = {
+    val v = _latestMemoryUsage.get()
+    ((v >> 32).toInt, v.toInt)
+  }
 
   // ----------------------------------------------------------------------- //
 
@@ -524,6 +531,8 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
         }
       case _ => // Nothing special to do, just avoid match errors.
     }
+
+    _latestMemoryUsage.set(architecture.freeMemory.toLong << 32 | architecture.totalMemory.toLong & 0xFFFFFFFFL)
 
     // Finally check if we should stop the computer. We cannot lock the state
     // because we may have to wait for the executor thread to finish, which
