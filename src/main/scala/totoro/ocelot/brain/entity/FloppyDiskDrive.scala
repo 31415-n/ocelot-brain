@@ -11,8 +11,8 @@ class FloppyDiskDrive extends Entity with Environment with ComponentInventory wi
     withComponent("disk_drive").
     create()
 
-  def filesystemNode: Option[Node] = inventory.head match {
-    case environment: Environment => Option(environment.node)
+  def filesystemNode: Option[Node] = inventory.headOption match {
+    case Some(environment: Environment) => Option(environment.node)
     case _ => None
   }
 
