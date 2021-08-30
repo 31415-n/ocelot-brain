@@ -9,18 +9,18 @@ import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 object Loot {
-  var OpenOsEEPROM: LootFactory = _
-  var AdvLoaderEEPROM: LootFactory = _
-  var CyanBIOSEEPROM: LootFactory = _
-  var MineOSEFIEEPROM: LootFactory = _
+  var OpenOsEEPROM: LootFactory[EEPROM] = _
+  var AdvLoaderEEPROM: LootFactory[EEPROM] = _
+  var CyanBIOSEEPROM: LootFactory[EEPROM] = _
+  var MineOSEFIEEPROM: LootFactory[EEPROM] = _
 
-  var NetworkFloppy: LootFactory = _
-  var Plan9kFloppy: LootFactory = _
-  var IrcFloppy: LootFactory = _
-  var OpenLoaderFloppy: LootFactory = _
-  var OpenOsFloppy: LootFactory = _
-  var OPPMFloppy: LootFactory = _
-  var DataFloppy: LootFactory = _
+  var NetworkFloppy: LootFactory[LootFloppy] = _
+  var Plan9kFloppy: LootFactory[LootFloppy] = _
+  var IrcFloppy: LootFactory[LootFloppy] = _
+  var OpenLoaderFloppy: LootFactory[LootFloppy] = _
+  var OpenOsFloppy: LootFactory[LootFloppy] = _
+  var OPPMFloppy: LootFactory[LootFloppy] = _
+  var DataFloppy: LootFactory[LootFloppy] = _
 
   def init(): Unit = {
     // EEPROM
@@ -41,8 +41,8 @@ object Loot {
 
   // ----------------------------------------------------------------------- //
 
-  abstract class LootFactory {
-    def create(): Entity
+  abstract class LootFactory[T <: Entity] {
+    def create(): T
   }
 
   class LootFloppy(name: String, color: DyeColor, var path: String)
@@ -72,18 +72,16 @@ object Loot {
     }
   }
 
-  class FloppyFactory(name: String, color: DyeColor, path: String) extends LootFactory {
-    override def create(): Entity = {
-      new LootFloppy(name, color, path)
-    }
+  class FloppyFactory(name: String, color: DyeColor, path: String) extends LootFactory[LootFloppy] {
+    override def create() = new LootFloppy(name, color, path)
   }
 
-  class EEPROMFactory(label: String, file: String, readonly: Boolean = false) extends LootFactory {
+  class EEPROMFactory(label: String, file: String, readonly: Boolean = false) extends LootFactory[EEPROM] {
     private val code = new Array[Byte](4 * 1024)
     private val count = Ocelot.getClass.getResourceAsStream(Settings.scriptPath + file).read(code)
     private val codeData = code.take(count)
 
-    override def create(): Entity = {
+    override def create(): EEPROM = {
       val eeprom = new EEPROM()
       eeprom.label = label
       eeprom.codeData = codeData
