@@ -78,6 +78,22 @@ trait GenericGPU extends Environment with Tiered {
 
   // ----------------------------------------------------------------------- //
 
+  private def getViewportOverlapSize(s: TextBuffer, x1: Int, y1: Int, x2: Int, y2: Int): Int = {
+    val width = s.getViewportWidth
+    val height = s.getViewportHeight
+    val left = math.min(x1, x2);
+    val right = math.max(x1, x2);
+    val top = math.min(y1, y2);
+    val bottom = math.max(y1, y2);
+    if (right < 0 || left >= width || top >= height || bottom < 0)
+      return 0
+    val box_left = math.max(0, left)
+    val box_right = math.min(width - 1, right)
+    val box_top = math.max(0, top)
+    val box_bottom = math.min(height - 1, bottom)
+    (box_right - box_left + 1) * (box_bottom - box_top + 1)
+  }
+
   @Callback(doc = """function(address:string[, reset:boolean=true]):boolean -- Binds the GPU to the screen with the specified address and resets screen settings if `reset` is true.""")
   def bind(context: Context, args: Arguments): Array[AnyRef] = {
     val address = args.checkString(0)
@@ -272,13 +288,16 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(x:number, y:number, value:string[, vertical:boolean]):boolean -- Plots a string value to the screen at the specified position. Optionally writes the string vertically.""")
   def set(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(setCosts(tier))
     val x = args.checkInteger(0) - 1
     val y = args.checkInteger(1) - 1
     val value = args.checkString(2)
     val vertical = args.optBoolean(3, default = false)
 
     screen(s => {
+      val x2 = if (vertical) x else x + value.length - 1
+      val y2 = if (!vertical) y else y + value.length - 1
+      val overlap: Int = getViewportOverlapSize(s, x, y, x2, y2)
+      if (overlap != 0) context.consumeCallBudget(setCosts(tier))
       s.set(x, y, value, vertical)
       result(true)
     })
@@ -286,7 +305,6 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(x:number, y:number, width:number, height:number, tx:number, ty:number):boolean -- Copies a portion of the screen from the specified location with the specified size by the specified translation.""")
   def copy(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(copyCosts(tier))
     val x = args.checkInteger(0) - 1
     val y = args.checkInteger(1) - 1
     val w = math.max(0, args.checkInteger(2))
@@ -294,6 +312,8 @@ trait GenericGPU extends Environment with Tiered {
     val tx = args.checkInteger(4)
     val ty = args.checkInteger(5)
     screen(s => {
+      val overlap: Int = getViewportOverlapSize(s, x + tx, y + ty, x + tx + w - 1, y + ty + h - 1)
+      if (overlap != 0) context.consumeCallBudget(copyCosts(tier))
       s.copy(x, y, w, h, tx, ty)
       result(true)
     })
@@ -301,13 +321,14 @@ trait GenericGPU extends Environment with Tiered {
 
   @Callback(direct = true, doc = """function(x:number, y:number, width:number, height:number, char:string):boolean -- Fills a portion of the screen at the specified position with the specified size with the specified character.""")
   def fill(context: Context, args: Arguments): Array[AnyRef] = {
-    context.consumeCallBudget(fillCosts(tier))
     val x = args.checkInteger(0) - 1
     val y = args.checkInteger(1) - 1
     val w = math.max(0, args.checkInteger(2))
     val h = math.max(0, args.checkInteger(3))
     val value = args.checkString(4)
     if (value.length == 1) screen(s => {
+      val overlap: Int = getViewportOverlapSize(s, x, y, x + w - 1, y + h - 1)
+      if (overlap != 0) context.consumeCallBudget(fillCosts(tier))
       s.fill(x, y, w, h, value.charAt(0))
       result(true)
     })
