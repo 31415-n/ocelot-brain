@@ -22,15 +22,15 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     withComponent("screen").
     create()
 
-  private var maxResolution = Settings.screenResolutionsByTier(bufferTier)
+  private var maxResolution: (Int, Int) = Settings.screenResolutionsByTier(bufferTier)
 
-  private var maxDepth = Settings.screenDepthsByTier(bufferTier)
+  private var maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(bufferTier)
 
-  private var aspectRatio = (1.0, 1.0)
+  private var aspectRatio: (Double, Double) = (1.0, 1.0)
 
-  protected var precisionMode = false
+  protected var precisionMode: Boolean = false
 
-  private var isDisplaying = true
+  private var isDisplaying: Boolean = true
 
   var _data = new GenericTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
   def data: GenericTextBuffer = _data
@@ -435,10 +435,14 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
       // Make sure the string isn't longer than it needs to be, in particular to
       // avoid sending too much data to our clients.
       val (x, y, truncated) =
-      if (vertical) if (row < 0) (column, 0, value.substring(-row))
-      else (column, row, value.substring(0, math.min(value.length, _data.height - row)))
-      else if (column < 0) (0, row, value.substring(-column))
-      else (column, row, value.substring(0, math.min(value.length, _data.width - column)))
+      if (vertical) {
+        if (row < 0) (column, 0, value.substring(-row))
+        else (column, row, value.substring(0, math.min(value.length, _data.height - row)))
+      }
+      else {
+        if (column < 0) (0, row, value.substring(-column))
+        else (column, row, value.substring(0, math.min(value.length, _data.width - column)))
+      }
       if (_data.set(x, y, truncated, vertical))
         EventBus.send(TextBufferSetEvent(this.node.address, x, y, truncated, vertical))
     }
@@ -604,7 +608,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param code      the key code of the pressed key.
     * @param player    the player that pressed the key. Pass `null` on the client side.
     */
-  def keyDown(character: Char, code: Int, player: User) {
+  def keyDown(character: Char, code: Int, player: User): Unit = {
     sendToKeyboards("keyboard.keyDown", player, Char.box(character), Int.box(code))
   }
 
@@ -618,7 +622,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param code      the key code of the released key.
     * @param player    the player that released the key. Pass `null` on the client side.
     */
-  def keyUp(character: Char, code: Int, player: User) {
+  def keyUp(character: Char, code: Int, player: User): Unit = {
     sendToKeyboards("keyboard.keyUp", player, Char.box(character), Int.box(code))
   }
 
@@ -631,7 +635,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param value  the text that was pasted.
     * @param player the player that pasted the text. Pass `null` on the client side.
     */
-  def clipboard(value: String, player: User) {
+  def clipboard(value: String, player: User): Unit = {
     sendToKeyboards("keyboard.clipboard", player, value)
   }
 
@@ -645,7 +649,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param button the button of the mouse that was pressed.
     * @param player the player that pressed the mouse button. Pass `null` on the client side.
     */
-  def mouseDown(x: Double, y: Double, button: Int, player: User) {
+  def mouseDown(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "touch", x, y, button)
   }
 
@@ -659,7 +663,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param button the button of the mouse that is pressed.
     * @param player the player that moved the mouse. Pass `null` on the client side.
     */
-  def mouseDrag(x: Double, y: Double, button: Int, player: User) {
+  def mouseDrag(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "drag", x, y, button)
   }
 
@@ -673,7 +677,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param button the button of the mouse that was released.
     * @param player the player that released the mouse button. Pass `null` on the client side.
     */
-  def mouseUp(x: Double, y: Double, button: Int, player: User) {
+  def mouseUp(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "drop", x, y, button)
   }
 
@@ -687,7 +691,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param delta  indicates the direction of the mouse scroll.
     * @param player the player that scrolled the mouse wheel. Pass `null` on the client side.
     */
-  def mouseScroll(x: Double, y: Double, delta: Int, player: User) {
+  def mouseScroll(x: Double, y: Double, delta: Int, player: User): Unit = {
     sendMouseEvent(player, "scroll", x, y, delta)
   }
 
@@ -726,7 +730,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   private final val ViewportWidthTag = "viewportWidth"
   private final val ViewportHeightTag = "viewportHeight"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
     if (nbt.hasKey(DataTag)) {
