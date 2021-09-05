@@ -1,7 +1,5 @@
 package totoro.ocelot.brain.entity.fs
 
-import java.io.{FileNotFoundException, IOException}
-
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.result
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
@@ -13,6 +11,7 @@ import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
+import java.io.{FileNotFoundException, IOException}
 import scala.collection.mutable
 
 class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: Int)
@@ -273,7 +272,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
 
   private var container: DiskActivityAware = _
 
-  override def onConnect(node: Node) {
+  override def onConnect(node: Node): Unit = {
     node.host match {
       case x: DiskActivityAware =>
         if (node.isNeighborOf(this.node))
@@ -303,7 +302,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
     nbt.getTagList("owners", NBT.TAG_COMPOUND).foreach((ownerNbt: NBTTagCompound) => {

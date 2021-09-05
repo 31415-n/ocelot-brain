@@ -6,15 +6,15 @@ version := "0.6.5"
 scalaVersion := "2.13.2"
 
 libraryDependencies ++= Seq(
-  "org.apache.logging.log4j" % "log4j-core" % "2.12.1",
-  "org.apache.logging.log4j" % "log4j-api" % "2.12.1",
+  "org.apache.logging.log4j" % "log4j-core" % "2.14.1",
+  "org.apache.logging.log4j" % "log4j-api" % "2.14.1",
   "com.google.guava" % "guava" % "28.1-jre",
-  "commons-codec" % "commons-codec" % "1.13",
-  "com.typesafe" % "config" % "1.3.4",
-  "org.apache.commons" % "commons-lang3" % "3.9",
-  "org.apache.commons" % "commons-text" % "1.8",
-  "commons-io" % "commons-io" % "2.6",
-  "org.ow2.asm" % "asm" % "7.1"
+  "commons-codec" % "commons-codec" % "20041127.091804",
+  "com.typesafe" % "config" % "1.4.1",
+  "org.apache.commons" % "commons-lang3" % "3.12.0",
+  "org.apache.commons" % "commons-text" % "1.9",
+  "commons-io" % "commons-io" % "20030203.000550",
+  "org.ow2.asm" % "asm" % "9.2"
 )
 
 assemblyJarName := s"ocelot-brain-${version.value}.jar"

@@ -53,14 +53,14 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
 
   // ----------------------------------------------------------------------- //
 
-  override def onConnect(node: Node) {
+  override def onConnect(node: Node): Unit = {
     super.onConnect(node)
     if (node == this.node) {
       QuantumNetwork.add(this)
     }
   }
 
-  override def onDisconnect(node: Node) {
+  override def onDisconnect(node: Node): Unit = {
     super.onDisconnect(node)
     if (node == this.node) {
       QuantumNetwork.remove(this)
@@ -71,7 +71,7 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
 
   private final val TunnelTag = "tunnel"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
     if (nbt.hasKey(TunnelTag)) {
       tunnel = nbt.getString(TunnelTag)
@@ -79,7 +79,7 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
     loadWakeMessage(nbt)
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setString(TunnelTag, tunnel)
     saveWakeMessage(nbt)

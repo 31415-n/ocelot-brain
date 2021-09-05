@@ -26,7 +26,7 @@ public class NBTTagIntArray extends NBTBase {
     void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) throws IOException {
         int j = datainput.readInt();
 
-        nbtreadlimiter.a((long) (32 * j));
+        nbtreadlimiter.a(32L * j);
         this.data = new int[j];
 
         for (int k = 0; k < j; ++k) {

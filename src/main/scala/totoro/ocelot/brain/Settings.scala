@@ -1,12 +1,11 @@
 package totoro.ocelot.brain
 
-import java.io._
-import java.net.{Inet4Address, InetAddress}
-
 import com.google.common.net.InetAddresses
 import com.typesafe.config._
 import totoro.ocelot.brain.util.ColorDepth
 
+import java.io._
+import java.net.{Inet4Address, InetAddress}
 import scala.io.{Codec, Source}
 import scala.jdk.CollectionConverters._
 import scala.util.matching.Regex
@@ -224,7 +223,7 @@ object Settings {
     }
   }
 
-  val cidrPattern: Regex = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:/(\d{1,2}))""".r
+  val cidrPattern: Regex = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})""".r
 
   class AddressValidator(val value: String) {
     val validator: (InetAddress, String) => Boolean = try cidrPattern.findFirstIn(value) match {

@@ -45,7 +45,7 @@ trait FileInputStreamFileSystem extends InputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override protected def openInputChannel(path: String) = Some(new FileChannel(new io.File(root, path)))
+  override protected def openInputChannel(path: String): Option[InputChannel] = Some(new FileChannel(new io.File(root, path)))
 
   protected class FileChannel(file: io.File) extends InputChannel {
     val channel: channels.FileChannel = new io.RandomAccessFile(file, "r").getChannel

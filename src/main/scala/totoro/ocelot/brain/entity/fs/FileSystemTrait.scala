@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity.fs
 
-import java.io.FileNotFoundException
-
 import totoro.ocelot.brain.util.Persistable
+
+import java.io.FileNotFoundException
 
 /**
   * Interface for file system driver compatible file systems.

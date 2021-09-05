@@ -25,7 +25,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
   })
 
   // Called by nodes when they want to change address from loading.
-  def remap(remappedNode: Node, newAddress: String) {
+  def remap(remappedNode: Node, newAddress: String): Unit = {
     data.get(remappedNode.address) match {
       case Some(node) =>
         val neighbors = node.edges.map(_.other(node))
@@ -344,7 +344,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
       }
     }
 
-  private def send(source: Node, targets: Iterable[Node], name: String, args: Any*) {
+  private def send(source: Node, targets: Iterable[Node], name: String, args: Any*): Unit = {
     val message = new Message(source, name, Array(args: _*))
     targets.foreach(_.host.onMessage(message))
   }

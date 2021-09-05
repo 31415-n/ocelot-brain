@@ -1,9 +1,8 @@
 package totoro.ocelot.brain.entity.machine
 
-import java.util
-
 import com.google.common.base.Charsets
 
+import java.util
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 

@@ -1,10 +1,9 @@
 package totoro.ocelot.brain.entity.machine
 
-import java.lang.reflect.Method
-
 import org.objectweb.asm.{ClassWriter, Opcodes, Type}
 import totoro.ocelot.brain.Ocelot
 
+import java.lang.reflect.Method
 import scala.collection.mutable
 
 object CallbackWrapper {

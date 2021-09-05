@@ -51,7 +51,7 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   // ----------------------------------------------------------------------- //
 
-  override def onEntityAdded(entity: Entity) {
+  override def onEntityAdded(entity: Entity): Unit = {
     super.onEntityAdded(entity)
     entity match {
       case _: Memory => machine.onHostChanged()
@@ -59,7 +59,7 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
     }
   }
 
-  override def onEntityRemoved(entity: Entity) {
+  override def onEntityRemoved(entity: Entity): Unit = {
     super.onEntityRemoved(entity)
     entity match {
       case _: Processor => machine.stop()
@@ -72,12 +72,12 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   private final val ComputerTag = "computer"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
     machine.load(nbt.getCompoundTag(ComputerTag), workspace)
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     if (machine != null) {
       nbt.setNewCompoundTag(ComputerTag, machine.save)

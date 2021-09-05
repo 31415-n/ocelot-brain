@@ -1,7 +1,5 @@
 package totoro.ocelot.brain.entity.machine.luaj
 
-import java.io.{FileNotFoundException, IOException}
-
 import com.google.common.base.Strings
 import li.cil.repack.org.luaj.vm2._
 import li.cil.repack.org.luaj.vm2.lib.jse.JsePlatform
@@ -10,6 +8,8 @@ import totoro.ocelot.brain.entity.machine._
 import totoro.ocelot.brain.entity.traits.{Entity, Memory}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.{Ocelot, Settings}
+
+import java.io.{FileNotFoundException, IOException}
 
 class LuaJLuaArchitecture(val machine: Machine) extends Architecture {
   private[machine] var lua: Globals = _
@@ -103,7 +103,7 @@ class LuaJLuaArchitecture(val machine: Machine) extends Architecture {
 
   // ----------------------------------------------------------------------- //
 
-  override def runSynchronized() {
+  override def runSynchronized(): Unit = {
     synchronizedResult = synchronizedCall.call()
     synchronizedCall = null
   }
@@ -233,7 +233,7 @@ class LuaJLuaArchitecture(val machine: Machine) extends Architecture {
     true
   }
 
-  override def onConnect() {
+  override def onConnect(): Unit = {
   }
 
   override def close(): Unit = {
@@ -246,12 +246,12 @@ class LuaJLuaArchitecture(val machine: Machine) extends Architecture {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound) {
+  override def load(nbt: NBTTagCompound): Unit = {
     if (machine.isRunning) {
       machine.stop()
       machine.start()
     }
   }
 
-  override def save(nbt: NBTTagCompound) {}
+  override def save(nbt: NBTTagCompound): Unit = {}
 }

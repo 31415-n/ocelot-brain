@@ -5,7 +5,7 @@ import totoro.ocelot.brain.entity.machine.ScalaClosure._
 import totoro.ocelot.brain.util.FontUtils
 
 class UnicodeAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
-  override def initialize() {
+  override def initialize(): Unit = {
     // Provide some better Unicode support.
     val unicode = LuaValue.tableOf()
 

@@ -5,7 +5,7 @@ import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.util.GameTimeFormatter
 
 class OSAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
-  override def initialize() {
+  override def initialize(): Unit = {
     // Push a couple of functions that override original Lua API functions or
     // that add new functionality to it.
     lua.getGlobal("os")
@@ -28,7 +28,7 @@ class OSAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
         else (machine.worldTime + 6000) * 60 * 60 / 1000
 
       val dt = GameTimeFormatter.parse(time)
-      def fmt(format: String) {
+      def fmt(format: String): Unit = {
         if (format == "*t") {
           lua.newTable(0, 8)
           lua.pushInteger(dt.year)

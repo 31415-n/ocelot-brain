@@ -1,7 +1,5 @@
 package totoro.ocelot.demo
 
-import java.nio.file.Files
-
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.traits.{Entity, Environment}
 import totoro.ocelot.brain.entity.{CPU, Case, GraphicsCard, HDDManaged, Memory, Redstone, Screen}
@@ -11,6 +9,8 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.nbt.persistence.PersistableString
 import totoro.ocelot.brain.util.Tier
 import totoro.ocelot.brain.workspace.Workspace
+
+import java.nio.file.Files
 
 object Demo extends App {
   println("Hi! We are testing Ocelot brains here. Join in!")

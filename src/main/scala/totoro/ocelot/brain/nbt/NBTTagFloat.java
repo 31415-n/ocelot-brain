@@ -66,7 +66,7 @@ public class NBTTagFloat extends NBTNumber {
     }
 
     public double getDouble() {
-        return (double) this.data;
+        return this.data;
     }
 
     public float getFloat() {

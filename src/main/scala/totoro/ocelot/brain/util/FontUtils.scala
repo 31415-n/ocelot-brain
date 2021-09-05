@@ -1,10 +1,9 @@
 package totoro.ocelot.brain.util
 
-import java.io.{BufferedReader, InputStreamReader}
-import java.nio.charset.StandardCharsets
-
 import totoro.ocelot.brain.Ocelot
 
+import java.io.{BufferedReader, InputStreamReader}
+import java.nio.charset.StandardCharsets
 import scala.collection.mutable
 
 object FontUtils {

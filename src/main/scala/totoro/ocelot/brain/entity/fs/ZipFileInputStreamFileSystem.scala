@@ -1,14 +1,13 @@
 package totoro.ocelot.brain.entity.fs
 
-import java.io
-import java.io.ByteArrayInputStream
-import java.util.concurrent.Callable
-import java.util.zip.{ZipEntry, ZipFile}
-
 import com.google.common.cache.CacheBuilder
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.fs.ZipFileInputStreamFileSystem.{ArchiveDirectory, ArchiveFile}
 
+import java.io
+import java.io.ByteArrayInputStream
+import java.util.concurrent.Callable
+import java.util.zip.{ZipEntry, ZipFile}
 import scala.collection.mutable
 import scala.language.postfixOps
 
@@ -102,7 +101,7 @@ object ZipFileInputStreamFileSystem {
             }
             var root: ArchiveDirectory = null
             for (entry <- directories ++ files) {
-              if (entry.path.length > 0) {
+              if (entry.path.nonEmpty) {
                 val parent = entry.path.substring(0, math.max(entry.path.lastIndexOf('/'), 0))
                 directories.find(d => d.path == parent) match {
                   case Some(directory) => directory.children += entry

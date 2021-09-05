@@ -205,7 +205,7 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
     changed
   }
 
-  private def setChar(line: Array[Char], lineColor: Array[Short], x: Int, c: Char) {
+  private def setChar(line: Array[Char], lineColor: Array[Short], x: Int, c: Char): Unit = {
     if (FontUtils.wcwidth(c) > 1 && x >= line.length - 1) {
       // Don't allow setting wide chars in right-most col.
       return
@@ -273,7 +273,7 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
   }
 
   override def toString: String = {
-    val b = StringBuilder.newBuilder
+    val b = new StringBuilder
     if (buffer.length > 0) {
       b.appendAll(buffer(0))
       for (y <- 1 until height) {

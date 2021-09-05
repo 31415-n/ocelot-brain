@@ -5,7 +5,7 @@ import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 
 class SystemAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
-  override def initialize() {
+  override def initialize(): Unit = {
     // Until we get to ingame screens we log to Java's stdout.
     lua.pushScalaFunction(lua => {
       println((1 to lua.getTop).map(i => lua.`type`(i) match {

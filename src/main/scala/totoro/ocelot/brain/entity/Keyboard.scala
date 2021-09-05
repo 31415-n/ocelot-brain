@@ -28,7 +28,7 @@ class Keyboard extends Entity with Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  def releasePressedKeys(player: User) {
+  def releasePressedKeys(player: User): Unit = {
     pressedKeys.get(player) match {
       case Some(keys) => for ((code, char) <- keys) {
         if (Settings.get.inputUsername) {

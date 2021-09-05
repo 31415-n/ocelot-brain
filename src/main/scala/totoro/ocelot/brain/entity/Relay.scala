@@ -98,7 +98,7 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
 
   // ----------------------------------------------------------------------- //
 
-  override protected def onPlugConnect(plug: Plug, node: Node) {
+  override protected def onPlugConnect(plug: Plug, node: Node): Unit = {
     super.onPlugConnect(plug, node)
     if (node == plug.node) {
       Network.joinWirelessNetwork(this)
@@ -109,7 +109,7 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
       componentNodes(plug.side.id).remove()
   }
 
-  override protected def onPlugDisconnect(plug: Plug, node: Node) {
+  override protected def onPlugDisconnect(plug: Plug, node: Node): Unit = {
     super.onPlugDisconnect(plug, node)
     if (node == plug.node) {
       Network.leaveWirelessNetwork(this)
@@ -162,7 +162,7 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
     updateLimits()
   }
 
-  private def updateLimits() {
+  private def updateLimits(): Unit = {
     if (cpuTier > Tier.None && cpuTier <= Tier.Three)
       relayDelay = math.max(1, relayBaseDelay - ((cpuTier + 1) * relayDelayPerUpgrade).toInt)
     else relayDelay = relayBaseDelay

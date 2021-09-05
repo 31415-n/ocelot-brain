@@ -1,12 +1,5 @@
 package totoro.ocelot.brain.entity
 
-import java.io._
-import java.net._
-import java.nio.ByteBuffer
-import java.nio.channels.{SelectionKey, Selector, SocketChannel}
-import java.util.UUID
-import java.util.concurrent.{Callable, ConcurrentLinkedQueue, ExecutionException, Future}
-
 import totoro.ocelot.brain.entity.machine.{AbstractValue, Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
@@ -14,6 +7,12 @@ import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.ThreadPoolFactory
 import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 
+import java.io._
+import java.net._
+import java.nio.ByteBuffer
+import java.nio.channels.{SelectionKey, Selector, SocketChannel}
+import java.util.UUID
+import java.util.concurrent.{Callable, ConcurrentLinkedQueue, ExecutionException, Future}
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
@@ -86,7 +85,7 @@ class InternetCard extends Entity with Environment with DeviceInfo {
     result(socket)
   }
 
-  private def checkOwner(context: Context) {
+  private def checkOwner(context: Context): Unit = {
     if (owner.isEmpty || context.node != owner.get.node) {
       throw new IllegalArgumentException("can only be used by the owning computer")
     }
@@ -94,7 +93,7 @@ class InternetCard extends Entity with Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  override def onConnect(node: Node) {
+  override def onConnect(node: Node): Unit = {
     super.onConnect(node)
     if (owner.isEmpty && node.host.isInstanceOf[Context] && node.isNeighborOf(this.node)) {
       owner = Some(node.host.asInstanceOf[Context])
@@ -176,7 +175,7 @@ object InternetCard {
     override def run(): Unit = {
       while (true) {
         try {
-          Stream.continually(toAccept.poll).takeWhile(_ != null).foreach({
+          LazyList.continually(toAccept.poll).takeWhile(_ != null).foreach({
             case (channel: SocketChannel, action: (() => Unit)) =>
               channel.register(selector, SelectionKey.OP_READ, action)
             case (a, b) =>
@@ -208,7 +207,7 @@ object InternetCard {
       }
     }
 
-    def add(e: (SocketChannel, () => Unit)) {
+    def add(e: (SocketChannel, () => Unit)): Unit = {
       toAccept.offer(e)
       selector.wakeup()
     }
@@ -231,7 +230,7 @@ object InternetCard {
     private var isAddressResolved = false
     private val id = UUID.randomUUID()
 
-    private def setupSelector() {
+    private def setupSelector(): Unit = {
       TCPNotifier.add((channel, () => {
         owner match {
           case Some(internetCard) =>
@@ -340,7 +339,7 @@ object InternetCard {
 
   }
 
-  def checkLists(inetAddress: InetAddress, host: String) {
+  def checkLists(inetAddress: InetAddress, host: String): Unit = {
     if (Settings.get.httpHostWhitelist.length > 0 && !Settings.get.httpHostWhitelist.exists(_ (inetAddress, host))) {
       throw new FileNotFoundException("address is not whitelisted")
     }

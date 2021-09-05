@@ -41,7 +41,7 @@ trait Processor extends CallBudget with Persistable {
     super.load(nbt, workspace)
     if (nbt.hasKey(Processor.ArchTag)) {
       val archClass = nbt.getString(Processor.ArchTag)
-      if (!archClass.isEmpty) try
+      if (archClass.nonEmpty) try
         _architecture = Class.forName(archClass).asSubclass(classOf[Architecture])
       catch {
         case t: Throwable =>

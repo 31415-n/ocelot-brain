@@ -1,7 +1,5 @@
 package totoro.ocelot.brain.workspace
 
-import java.nio.file.Path
-
 import totoro.ocelot.brain.entity.traits.{Entity, Environment, SidedEnvironment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
@@ -9,6 +7,7 @@ import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound}
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.util.Direction
 
+import java.nio.file.Path
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.jdk.CollectionConverters._

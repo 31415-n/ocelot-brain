@@ -1,10 +1,10 @@
 package totoro.ocelot.brain.entity.fs
 
-import java.io
-
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.workspace.Workspace
+
+import java.io
 
 trait Capacity extends OutputStreamFileSystem {
   private var used = computeSize("/")
@@ -45,14 +45,14 @@ trait Capacity extends OutputStreamFileSystem {
 
   // ----------------------------------------------------------------------- //
 
-  override def close() {
+  override def close(): Unit = {
     super.close()
     used = computeSize("/")
   }
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     try {
       ignoreCapacity = true
       super.load(nbt, workspace)
@@ -63,7 +63,7 @@ trait Capacity extends OutputStreamFileSystem {
     used = computeSize("/")
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
 
     // For the tooltip.
@@ -115,7 +115,7 @@ trait Capacity extends OutputStreamFileSystem {
 
     override def seek(to: Long): Long = inner.seek(to)
 
-    override def write(b: Array[Byte]) {
+    override def write(b: Array[Byte]): Unit = {
       if (owner.capacity - owner.used < b.length && !ignoreCapacity)
         throw new io.IOException("not enough space")
       inner.write(b)

@@ -5,7 +5,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, Tiered}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
+import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor, Tier}
 import totoro.ocelot.brain.workspace.Workspace
@@ -112,7 +112,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param value whether the buffer should be on or not.
     * @see `getPowerState()`
     */
-  def setPowerState(value: Boolean) {
+  def setPowerState(value: Boolean): Unit = {
     isDisplaying = value
   }
 
@@ -130,7 +130,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param width  the maximum horizontal resolution, in characters.
     * @param height the maximum vertical resolution, in characters.
     */
-  def setMaximumResolution(width: Int, height: Int) {
+  def setMaximumResolution(width: Int, height: Int): Unit = {
     if (width < 1) throw new IllegalArgumentException("width must be larger or equal to one")
     if (height < 1) throw new IllegalArgumentException("height must be larger or equal to one")
     maxResolution = (width, height)
@@ -328,7 +328,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param color         the color or palette index.
     * @param isFromPalette `true` if `color` specifies a palette index.
     */
-  def setForegroundColor(color: Int, isFromPalette: Boolean) {
+  def setForegroundColor(color: Int, isFromPalette: Boolean): Unit = {
     val value = PackedColor.Color(color, isFromPalette)
     if (_data.foreground != value) {
       _data.foreground = value
@@ -369,7 +369,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param color         the color or palette index.
     * @param isFromPalette `true` if `color` specifies a palette index.
     */
-  def setBackgroundColor(color: Int, isFromPalette: Boolean) {
+  def setBackgroundColor(color: Int, isFromPalette: Boolean): Unit = {
     val value = PackedColor.Color(color, isFromPalette)
     if (_data.background != value) {
       _data.background = value
@@ -604,7 +604,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param code      the key code of the pressed key.
     * @param player    the player that pressed the key. Pass `null` on the client side.
     */
-  def keyDown(character: Char, code: Int, player: User) {
+  def keyDown(character: Char, code: Int, player: User): Unit = {
     sendToKeyboards("keyboard.keyDown", player, Char.box(character), Int.box(code))
   }
 
@@ -618,7 +618,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param code      the key code of the released key.
     * @param player    the player that released the key. Pass `null` on the client side.
     */
-  def keyUp(character: Char, code: Int, player: User) {
+  def keyUp(character: Char, code: Int, player: User): Unit = {
     sendToKeyboards("keyboard.keyUp", player, Char.box(character), Int.box(code))
   }
 
@@ -631,7 +631,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param value  the text that was pasted.
     * @param player the player that pasted the text. Pass `null` on the client side.
     */
-  def clipboard(value: String, player: User) {
+  def clipboard(value: String, player: User): Unit = {
     sendToKeyboards("keyboard.clipboard", player, value)
   }
 
@@ -645,7 +645,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param button the button of the mouse that was pressed.
     * @param player the player that pressed the mouse button. Pass `null` on the client side.
     */
-  def mouseDown(x: Double, y: Double, button: Int, player: User) {
+  def mouseDown(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "touch", x, y, button)
   }
 
@@ -659,7 +659,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param button the button of the mouse that is pressed.
     * @param player the player that moved the mouse. Pass `null` on the client side.
     */
-  def mouseDrag(x: Double, y: Double, button: Int, player: User) {
+  def mouseDrag(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "drag", x, y, button)
   }
 
@@ -673,7 +673,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param button the button of the mouse that was released.
     * @param player the player that released the mouse button. Pass `null` on the client side.
     */
-  def mouseUp(x: Double, y: Double, button: Int, player: User) {
+  def mouseUp(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "drop", x, y, button)
   }
 
@@ -687,7 +687,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param delta  indicates the direction of the mouse scroll.
     * @param player the player that scrolled the mouse wheel. Pass `null` on the client side.
     */
-  def mouseScroll(x: Double, y: Double, delta: Int, player: User) {
+  def mouseScroll(x: Double, y: Double, delta: Int, player: User): Unit = {
     sendMouseEvent(player, "scroll", x, y, delta)
   }
 
@@ -712,7 +712,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     node.sendToReachable("computer.checked_signal", args.toSeq: _*)
   }
 
-  private def sendToKeyboards(name: String, values: AnyRef*) {
+  private def sendToKeyboards(name: String, values: AnyRef*): Unit = {
     node.sendToNeighbors(name, values: _*)
   }
 
@@ -726,7 +726,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   private final val ViewportWidthTag = "viewportWidth"
   private final val ViewportHeightTag = "viewportHeight"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
     if (nbt.hasKey(DataTag)) {

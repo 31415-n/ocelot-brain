@@ -38,14 +38,14 @@ trait ComponentInventory extends Inventory with Environment with Entity {
     super.onEntityRemoved(entity)
   }
 
-  override def onConnect(node: Node) {
+  override def onConnect(node: Node): Unit = {
     super.onConnect(node)
     if (node == this.node) {
       connectComponents()
     }
   }
 
-  override def onDisconnect(node: Node) {
+  override def onDisconnect(node: Node): Unit = {
     super.onDisconnect(node)
     if (node == this.node) {
       disconnectComponents()

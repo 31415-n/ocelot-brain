@@ -11,7 +11,7 @@ class Screen(tier: Int) extends TextBuffer(tier) with Entity with Tiered {
 
   var invertTouchMode = false
 
-  def walk(player: Option[User], x: Double, y: Double) {
+  def walk(player: Option[User], x: Double, y: Double): Unit = {
     player match {
       case Some(user) if Settings.get.inputUsername =>
         node.sendToReachable("computer.signal", "walk", x, y, user.nickname)
@@ -41,12 +41,12 @@ class Screen(tier: Int) extends TextBuffer(tier) with Entity with Tiered {
 
   private final val InvertTouchModeTag = "invertTouchMode"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
     invertTouchMode = nbt.getBoolean(InvertTouchModeTag)
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setBoolean(InvertTouchModeTag, invertTouchMode)
   }

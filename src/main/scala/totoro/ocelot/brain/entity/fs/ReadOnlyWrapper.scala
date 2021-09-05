@@ -1,9 +1,9 @@
 package totoro.ocelot.brain.entity.fs
 
-import java.io.FileNotFoundException
-
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.workspace.Workspace
+
+import java.io.FileNotFoundException
 
 private class ReadOnlyWrapper(val fileSystem: FileSystemTrait) extends FileSystemTrait {
   override def isReadOnly = true

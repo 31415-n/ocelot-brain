@@ -1,7 +1,5 @@
 package totoro.ocelot.brain.entity.machine.luac
 
-import java.io.{FileNotFoundException, IOException}
-
 import com.google.common.base.Strings
 import li.cil.repack.com.naef.jnlua._
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
@@ -9,6 +7,8 @@ import totoro.ocelot.brain.entity.machine._
 import totoro.ocelot.brain.entity.traits.{Entity, Memory}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.{Ocelot, Settings}
+
+import java.io.{FileNotFoundException, IOException}
 
 class NativeLua52Architecture(machine: Machine) extends NativeLuaArchitecture(machine) {
   override def factory: LuaStateFactory.Lua52.type = LuaStateFactory.Lua52
@@ -163,7 +163,7 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
 
   // ----------------------------------------------------------------------- //
 
-  override def runSynchronized() {
+  override def runSynchronized(): Unit = {
     // These three asserts are all guaranteed by run().
     assert(lua.getTop == 2)
     assert(lua.isThread(1))
@@ -317,10 +317,10 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
     true
   }
 
-  override def onConnect() {
+  override def onConnect(): Unit = {
   }
 
-  override def close() {
+  override def close(): Unit = {
     if (lua != null) {
       if (Settings.get.limitMemory) {
         lua.setTotalMemory(Integer.MAX_VALUE)
@@ -337,9 +337,9 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
   // so we don't need to check the state. Will need a period where saves are
   // loaded using the old *and* new method and saved using the new.
   @Deprecated
-  private def state = machine.asInstanceOf[Machine].state
+  private def state = machine.state
 
-  override def load(nbt: NBTTagCompound) {
+  override def load(nbt: NBTTagCompound): Unit = {
     if (!machine.isRunning) return
 
     // Unlimit memory use while unpersisting.
@@ -389,7 +389,7 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
     recomputeMemory(machine.host.inventory)
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     // Unlimit memory while persisting.
     if (Settings.get.limitMemory) {
       lua.setTotalMemory(Integer.MAX_VALUE)

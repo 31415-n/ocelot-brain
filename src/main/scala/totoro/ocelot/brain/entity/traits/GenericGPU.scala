@@ -316,7 +316,7 @@ trait GenericGPU extends Environment with Tiered {
 
   // ----------------------------------------------------------------------- //
 
-  override def onMessage(message: Message) {
+  override def onMessage(message: Message): Unit = {
     super.onMessage(message)
     if (message.name == "computer.stopped" && node.isNeighborOf(message.source)) {
       screen(s => {
@@ -334,8 +334,8 @@ trait GenericGPU extends Environment with Tiered {
             else s.setBackgroundColor(0x000000)
             s.fill(0, 0, w, h, ' ')
             try {
-              val wrapRegEx = s"(.{1,${math.max(1, w - 2)}})\\s".r
-              val lines = wrapRegEx.replaceAllIn(machine.lastError.replace("\t", "  ") + "\n", m => Regex.quoteReplacement(m.group(1) + "\n")).lines.toArray
+              val wrapRegEx = s"(.{1,${math.max(1, w - 2)}})\\s".r // FIXME: this is unreadable, IDEA says it's a syntax error
+              val lines = wrapRegEx.replaceAllIn(machine.lastError.replace("\t", "  ") + "\n", m => Regex.quoteReplacement(m.group(1) + "\n")).linesIterator.toArray
               val firstRow = ((h - lines.length) / 2) max 2
 
               val message = "Unrecoverable Error"
@@ -371,7 +371,7 @@ trait GenericGPU extends Environment with Tiered {
     }
   }
 
-  override def onDisconnect(node: Node) {
+  override def onDisconnect(node: Node): Unit = {
     super.onDisconnect(node)
     if (node == this.node || screenAddress.contains(node.address)) {
       screenInstance = None
@@ -382,19 +382,19 @@ trait GenericGPU extends Environment with Tiered {
 
   private final val ScreenTag = "screen"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
     if (nbt.hasKey(ScreenTag)) {
       nbt.getString(ScreenTag) match {
-        case screen: String if !screen.isEmpty => screenAddress = Some(screen)
+        case screen: String if screen.nonEmpty => screenAddress = Some(screen)
         case _ => screenAddress = None
       }
       screenInstance = None
     }
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
 
     if (screenAddress.isDefined) {

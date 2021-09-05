@@ -1,9 +1,8 @@
 package totoro.ocelot.brain.entity.machine
 
-import java.lang.reflect.{Method, Modifier}
-
 import totoro.ocelot.brain.Ocelot
 
+import java.lang.reflect.{Method, Modifier}
 import scala.collection.{immutable, mutable}
 
 object Callbacks {

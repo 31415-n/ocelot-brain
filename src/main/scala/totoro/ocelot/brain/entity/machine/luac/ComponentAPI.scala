@@ -6,7 +6,7 @@ import totoro.ocelot.brain.network.Component
 import scala.jdk.CollectionConverters._
 
 class ComponentAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
-  def initialize() {
+  def initialize(): Unit = {
     lua.newTable()
 
     lua.pushScalaFunction(lua => components.synchronized {

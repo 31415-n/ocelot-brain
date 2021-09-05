@@ -160,12 +160,12 @@ trait Component extends Node {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound) {
+  override def load(nbt: NBTTagCompound): Unit = {
     super.load(nbt)
     if (nbt.hasKey(Node.VisibilityTag)) _visibility = Visibility(nbt.getInteger(Node.VisibilityTag))
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setInteger(Node.VisibilityTag, _visibility.id)
   }

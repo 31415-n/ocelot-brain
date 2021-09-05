@@ -1,9 +1,8 @@
 package totoro.ocelot.brain.entity.machine
 
-import java.util
-
 import totoro.ocelot.brain.Ocelot
 
+import java.util
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.jdk.CollectionConverters._
@@ -26,7 +25,7 @@ object Registry {
     *
     * @param converter the converter to register.
     */
-  def add(converter: Converter) {
+  def add(converter: Converter): Unit = {
     if (locked) throw new IllegalStateException("Please register all converters in the init phase.")
     if (!converters.contains(converter)) {
       Ocelot.log.debug(s"Registering converter ${converter.getClass.getName}.")
@@ -134,7 +133,6 @@ object Registry {
     val fn: PartialFunction[(_, _), Unit] = {
       case (key: AnyRef, value: AnyRef) => converted += convertRecursively(key, memo) -> convertRecursively(value, memo)
     }
-    map.collect(fn)
     memo.get(obj)
   }
 }

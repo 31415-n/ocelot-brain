@@ -1,11 +1,10 @@
 package totoro.ocelot.brain.entity.fs
 
-import java.io
-import java.io.{FileNotFoundException, InputStream}
-
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagList}
 import totoro.ocelot.brain.workspace.Workspace
 
+import java.io
+import java.io.{FileNotFoundException, InputStream}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -145,12 +144,12 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
 
     var lastModified: Long = System.currentTimeMillis()
 
-    def load(nbt: NBTTagCompound) {
+    def load(nbt: NBTTagCompound): Unit = {
       if (nbt.hasKey("lastModified"))
         lastModified = nbt.getLong("lastModified")
     }
 
-    def save(nbt: NBTTagCompound) {
+    def save(nbt: NBTTagCompound): Unit = {
       nbt.setLong("lastModified", lastModified)
     }
 
@@ -184,13 +183,13 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
         handle
       }
 
-    override def load(nbt: NBTTagCompound) {
+    override def load(nbt: NBTTagCompound): Unit = {
       super.load(nbt)
       data.clear()
       data ++= nbt.getByteArray("data")
     }
 
-    override def save(nbt: NBTTagCompound) {
+    override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
       nbt.setByteArray("data", data.toArray)
     }
@@ -244,7 +243,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
     private final val IsDirectoryTag = "isDirectory"
     private final val NameTag = "name"
 
-    override def load(nbt: NBTTagCompound) {
+    override def load(nbt: NBTTagCompound): Unit = {
       super.load(nbt)
       val childrenNbt = nbt.getTagList(ChildrenTag, NBT.TAG_COMPOUND)
       (0 until childrenNbt.tagCount).map(childrenNbt.getCompoundTagAt).foreach(childNbt => {
@@ -256,7 +255,7 @@ trait VirtualFileSystem extends OutputStreamFileSystem {
       })
     }
 
-    override def save(nbt: NBTTagCompound) {
+    override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
       val childrenNbt = new NBTTagList()
       for ((childName, child) <- children) {

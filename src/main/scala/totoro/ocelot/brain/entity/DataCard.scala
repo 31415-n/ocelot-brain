@@ -1,13 +1,6 @@
 package totoro.ocelot.brain.entity
 
-import java.security._
-import java.security.interfaces.ECPublicKey
-import java.security.spec.{PKCS8EncodedKeySpec, X509EncodedKeySpec}
-import java.util.zip.{DeflaterOutputStream, InflaterOutputStream}
-
 import com.google.common.hash.Hashing
-import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
-import javax.crypto.{Cipher, KeyAgreement, Mac}
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.output.ByteArrayOutputStream
 import totoro.ocelot.brain.Settings
@@ -17,6 +10,13 @@ import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
+
+import java.security._
+import java.security.interfaces.ECPublicKey
+import java.security.spec.{PKCS8EncodedKeySpec, X509EncodedKeySpec}
+import java.util.zip.{DeflaterOutputStream, InflaterOutputStream}
+import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
+import javax.crypto.{Cipher, KeyAgreement, Mac}
 
 abstract class DataCard extends Entity with Environment with DeviceInfo {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).

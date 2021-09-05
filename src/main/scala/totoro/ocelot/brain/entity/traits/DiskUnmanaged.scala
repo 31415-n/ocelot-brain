@@ -1,8 +1,5 @@
 package totoro.ocelot.brain.entity.traits
 
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
-import java.util.zip.{GZIPInputStream, GZIPOutputStream}
-
 import com.google.common.io.Files
 import totoro.ocelot.brain.entity.fs.Label
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
@@ -11,6 +8,9 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
+
+import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File}
+import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 /**
   * Basic trait for all unmanaged-disk-like entities.
@@ -212,7 +212,7 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
 
   private var container: DiskActivityAware = _
 
-  override def onConnect(node: Node) {
+  override def onConnect(node: Node): Unit = {
     node.host match {
       case x: DiskActivityAware =>
         if (node.isNeighborOf(this.node))
@@ -221,7 +221,7 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
     }
   }
 
-  override def onDisconnect(node: Node) {
+  override def onDisconnect(node: Node): Unit = {
     if (container != null) {
       if (node.host == container) container = null
     }
