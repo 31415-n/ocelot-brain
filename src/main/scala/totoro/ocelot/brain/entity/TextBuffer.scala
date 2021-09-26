@@ -2,10 +2,10 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, Tiered}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, TextBufferProxy, Tiered}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
+import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor, Tier}
 import totoro.ocelot.brain.workspace.Workspace
@@ -17,7 +17,7 @@ import scala.collection.mutable
   * This trait implements functionality for displaying and manipulating
   * text, like screens and robots.
   */
-class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with DeviceInfo with Tiered {
+class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBufferProxy with DeviceInfo with Tiered {
   override val node: Component =  Network.newNode(this, Visibility.Network).
     withComponent("screen").
     create()
@@ -33,7 +33,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   private var isDisplaying: Boolean = true
 
   var _data = new GenericTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
-  def data: GenericTextBuffer = _data
+  override def data: GenericTextBuffer = _data
 
   var viewport: (Int, Int) = _data.size
 
@@ -112,7 +112,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param value whether the buffer should be on or not.
     * @see `getPowerState()`
     */
-  def setPowerState(value: Boolean) {
+  def setPowerState(value: Boolean): Unit = {
     isDisplaying = value
   }
 
@@ -130,7 +130,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     * @param width  the maximum horizontal resolution, in characters.
     * @param height the maximum vertical resolution, in characters.
     */
-  def setMaximumResolution(width: Int, height: Int) {
+  def setMaximumResolution(width: Int, height: Int): Unit = {
     if (width < 1) throw new IllegalArgumentException("width must be larger or equal to one")
     if (height < 1) throw new IllegalArgumentException("height must be larger or equal to one")
     maxResolution = (width, height)
@@ -193,20 +193,6 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
   }
 
   /**
-    * Get the current horizontal resolution.
-    *
-    * @see `setResolution(int, int)`
-    */
-  def getWidth: Int = _data.width
-
-  /**
-    * Get the current vertical resolution.
-    *
-    * @see `setResolution(int, int)`
-    */
-  def getHeight: Int = _data.height
-
-  /**
     * Set the buffer's active viewport resolution.
     *
     * This cannot exceed the current buffer resolution.
@@ -244,359 +230,42 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     */
   def getViewportHeight: Int = viewport._2
 
-  /**
-    * Sets the maximum color depth supported by this buffer.
-    *
-    * Note that this is the ''maximum'' supported depth, lower depths
-    * will be supported, too. So when setting this to four bit, one bit will
-    * be supported, too. When setting this to eight bit, four and one bit
-    * will be supported, also.
-    *
-    * @param depth the maximum color depth of the buffer.
-    */
-  def setMaximumColorDepth(depth: ColorDepth.Value): Unit = maxDepth = depth
+  override def setMaximumColorDepth(depth: ColorDepth.Value): Unit = maxDepth = depth
 
-  /**
-    * Get the maximum color depth supported.
-    */
-  def getMaximumColorDepth: ColorDepth.Value = maxDepth
+  override def getMaximumColorDepth: ColorDepth.Value = maxDepth
 
-  /**
-    * Set the active color depth for this buffer.
-    *
-    * @param depth the new color depth.
-    * @return `true` if the color depth changed.
-    */
-  def setColorDepth(depth: ColorDepth.Value): Boolean = {
-    if (depth.id > maxDepth.id)
-      throw new IllegalArgumentException("unsupported depth")
+  override def setColorDepth(depth: ColorDepth.Value): Boolean = {
+    val colorDepthChanged: Boolean = super.setColorDepth(depth)
     EventBus.send(TextBufferSetColorDepthEvent(this.node.address, depth.id))
-    _data.format = PackedColor.Depth.format(depth)
+    colorDepthChanged
   }
 
-  /**
-    * Get the active color depth of this buffer.
-    */
-  def getColorDepth: ColorDepth.Value = _data.format.depth
+  override def onBufferPaletteColorChange(index: Int, color: Int): Unit =
+    EventBus.send(TextBufferSetPaletteColorEvent(this.node.address, index, color))
 
-  /**
-    * Set the color of the active color palette at the specified index.
-    *
-    * This will error if the current depth does not have a palette (one bit).
-    *
-    * @param index the index at which to set the color.
-    * @param color the color to set for the specified index.
-    */
-  def setPaletteColor(index: Int, color: Int): Unit = _data.format match {
-    case palette: PackedColor.MutablePaletteFormat =>
-      palette(index) = color
-      EventBus.send(TextBufferSetPaletteColorEvent(this.node.address, index, color))
-    case _ => throw new Exception("palette not available")
-  }
+  override def onBufferForegroundColorChange(color: PackedColor.Color): Unit =
+    EventBus.send(TextBufferSetForegroundColorEvent(this.node.address, _data.format.inflate(_data.format.deflate(color) & 0xFF)))
 
-  /**
-    * Get the color in the active color palette at the specified index.
-    *
-    * This will error if the current depth does not have a palette (one bit).
-    *
-    * @param index the index at which to get the color.
-    * @return the color in the active palette at the specified index.
-    */
-  def getPaletteColor(index: Int): Int = _data.format match {
-    case palette: PackedColor.MutablePaletteFormat => palette(index)
-    case _ => throw new Exception("palette not available")
-  }
+  override def onBufferBackgroundColorChange(color: PackedColor.Color): Unit =
+    EventBus.send(TextBufferSetBackgroundColorEvent(this.node.address, _data.format.inflate(_data.format.deflate(color) & 0xFF)))
 
-  /**
-    * Set the active foreground color, not using a palette.
-    *
-    * @param color the new foreground color.
-    * @see `setForegroundColor(int, boolean)`
-    */
-  def setForegroundColor(color: Int): Unit = setForegroundColor(color, isFromPalette = false)
+  override def onBufferCopy(col: Int, row: Int, w: Int, h: Int, tx: Int, ty: Int): Unit =
+    EventBus.send(TextBufferCopyEvent(this.node.address, col, row, w, h, tx, ty))
 
-  /**
-    * Set the active foreground color.
-    *
-    * If the value is not from the palette, the actually stored value may
-    * differ from the specified one, as it is converted to the buffer's
-    * current color depth.
-    *
-    * For palette-only color formats (four bit) the best fit from the palette
-    * is chosen, if the value is not from the palette.
-    *
-    * @param color         the color or palette index.
-    * @param isFromPalette `true` if `color` specifies a palette index.
-    */
-  def setForegroundColor(color: Int, isFromPalette: Boolean) {
-    val value = PackedColor.Color(color, isFromPalette)
-    if (_data.foreground != value) {
-      _data.foreground = value
-      EventBus.send(TextBufferSetForegroundColorEvent(this.node.address, _data.format.inflate(_data.format.deflate(value) & 0xFF)))
-    }
-  }
+  override def onBufferFill(col: Int, row: Int, w: Int, h: Int, c: Char): Unit =
+    EventBus.send(TextBufferFillEvent(this.node.address, col, row, w, h, c))
 
-  /**
-    * The active foreground color.
-    */
-  def getForegroundColor: Int = _data.foreground.value
+  override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean): Unit =
+    EventBus.send(TextBufferSetEvent(this.node.address, col, row, s, vertical))
 
-  /**
-    * `true` if the foreground color is from the color palette, meaning
-    * the value returned from `getForegroundColor()` is the color
-    * palette index.
-    */
-  def isForegroundFromPalette: Boolean = _data.foreground.isPalette
+  override def rawSetText(column: Int, row: Int, text: Array[Array[Char]]): Unit =
+    super.rawSetText(column, row, text)
 
-  /**
-    * Set the active background color, not using a palette.
-    *
-    * @param color the new background color.
-    * @see `setBackgroundColor(int, boolean)`
-    */
-  def setBackgroundColor(color: Int): Unit = setBackgroundColor(color, isFromPalette = false)
+  override def rawSetForeground(column: Int, row: Int, color: Array[Array[Int]]): Unit =
+    super.rawSetForeground(column, row, color)
 
-  /**
-    * Set the active background color.
-    *
-    * If the value is not from the palette, the actually stored value may
-    * differ from the specified one, as it is converted to the buffer's
-    * current color depth.
-    *
-    * For palette-only color formats (four bit) the best fit from the palette
-    * is chosen, if the value is not from the palette.
-    *
-    * @param color         the color or palette index.
-    * @param isFromPalette `true` if `color` specifies a palette index.
-    */
-  def setBackgroundColor(color: Int, isFromPalette: Boolean) {
-    val value = PackedColor.Color(color, isFromPalette)
-    if (_data.background != value) {
-      _data.background = value
-      EventBus.send(TextBufferSetBackgroundColorEvent(this.node.address, _data.format.inflate(_data.format.deflate(value) & 0xFF)))
-    }
-  }
-
-  /**
-    * The active background color.
-    */
-  def getBackgroundColor: Int = _data.background.value
-
-  /**
-    * `true` if the background color is from the color palette, meaning
-    * the value returned from `getBackgroundColor()` is the color
-    * palette index.
-    */
-  def isBackgroundFromPalette: Boolean = _data.background.isPalette
-
-  /**
-    * Copy a portion of the text buffer.
-    *
-    * This will copy the area's text and colors.
-    *
-    * @param column                the starting horizontal index of the area to copy.
-    * @param row                   the starting vertical index of the area to copy.
-    * @param width                 the width of the area to copy.
-    * @param height                the height of the area to copy.
-    * @param horizontalTranslation the horizontal offset, relative to the starting column to copy the are to.
-    * @param verticalTranslation   the vertical offset, relative to the starting row to copy the are to.
-    */
-  def copy(column: Int, row: Int, width: Int, height: Int, horizontalTranslation: Int, verticalTranslation: Int): Unit =
-    if (_data.copy(column, row, width, height, horizontalTranslation, verticalTranslation))
-      EventBus.send(TextBufferCopyEvent(this.node.address, column, row, width, height, horizontalTranslation, verticalTranslation))
-
-  /**
-    * Fill a portion of the text buffer.
-    *
-    * This will set the area's colors to the currently active ones.
-    *
-    * @param column the starting horizontal index of the area to fill.
-    * @param row    the starting vertical index of the area to fill.
-    * @param width  the width of the area to fill.
-    * @param height the height of the area to fill.
-    * @param value  the character to fill the area with.
-    */
-  def fill(column: Int, row: Int, width: Int, height: Int, value: Char): Unit =
-    if (_data.fill(column, row, width, height, value))
-      EventBus.send(TextBufferFillEvent(this.node.address, column, row, width, height, value))
-
-  /**
-    * Write a string into the text buffer.
-    *
-    * This will apply the currently active colors to the changed area.
-    *
-    * @param column   the starting horizontal index to write at.
-    * @param row      the starting vertical index to write at.
-    * @param value    the string to write.
-    * @param vertical `true` if the string should be written vertically instead of horizontally.
-    */
-  def set(column: Int, row: Int, value: String, vertical: Boolean): Unit =
-    if (column < _data.width && (column >= 0 || -column < value.length)) {
-      // Make sure the string isn't longer than it needs to be, in particular to
-      // avoid sending too much data to our clients.
-      val (x, y, truncated) =
-      if (vertical) {
-        if (row < 0) (column, 0, value.substring(-row))
-        else (column, row, value.substring(0, math.min(value.length, _data.height - row)))
-      }
-      else {
-        if (column < 0) (0, row, value.substring(-column))
-        else (column, row, value.substring(0, math.min(value.length, _data.width - column)))
-      }
-      if (_data.set(x, y, truncated, vertical))
-        EventBus.send(TextBufferSetEvent(this.node.address, x, y, truncated, vertical))
-    }
-
-  /**
-    * Get the character in the text buffer at the specified location.
-    *
-    * @param column the horizontal index.
-    * @param row    the vertical index.
-    * @return the character at that index.
-    */
-  def get(column: Int, row: Int): Char = _data.get(column, row)
-
-  /**
-    * Get the foreground color of the text buffer at the specified location.
-    *
-    * '''Important''': this may be a palette index.
-    *
-    * @param column the horizontal index.
-    * @param row    the vertical index.
-    * @return the foreground color at that index.
-    */
-  def getForegroundColor(column: Int, row: Int): Int =
-    if (isForegroundFromPalette(column, row)) PackedColor.extractForeground(color(column, row))
-    else PackedColor.unpackForeground(color(column, row), _data.format)
-
-  /**
-    * Whether the foreground color of the text buffer at the specified
-    * location if from the color palette.
-    *
-    * @param column the horizontal index.
-    * @param row    the vertical index.
-    * @return whether the foreground at that index is from the palette.
-    */
-  def isForegroundFromPalette(column: Int, row: Int): Boolean =
-    _data.format.isFromPalette(PackedColor.extractForeground(color(column, row)))
-
-  /**
-    * Get the background color of the text buffer at the specified location.
-    *
-    * '''Important''': this may be a palette index.
-    *
-    * @param column the horizontal index.
-    * @param row    the vertical index.
-    * @return the background color at that index.
-    */
-  def getBackgroundColor(column: Int, row: Int): Int =
-    if (isBackgroundFromPalette(column, row)) PackedColor.extractBackground(color(column, row))
-    else PackedColor.unpackBackground(color(column, row), _data.format)
-
-  /**
-    * Whether the background color of the text buffer at the specified
-    * location if from the color palette.
-    *
-    * @param column the horizontal index.
-    * @param row    the vertical index.
-    * @return whether the background at that index is from the palette.
-    */
-  def isBackgroundFromPalette(column: Int, row: Int): Boolean =
-    _data.format.isFromPalette(PackedColor.extractBackground(color(column, row)))
-
-  /**
-    * Overwrites a portion of the text in raw mode.
-    *
-    * This will copy the given char array into the buffer, starting at the
-    * specified column and row. The array is expected to be indexed row-
-    * first, i.e. the first dimension is the vertical axis, the second
-    * the horizontal.
-    *
-    * '''Important''': this performs no checks as to whether something
-    * actually changed. It will always send the changed patch to clients.
-    * It will also not crop the specified array to the actually used range.
-    * In other words, this is not intended to be exposed as-is to user code,
-    * it should always be called with validated, and, as necessary, cropped
-    * values.
-    *
-    * @param column the horizontal index.
-    * @param row    the vertical index.
-    * @param text   the text to write.
-    */
-  def rawSetText(column: Int, row: Int, text: Array[Array[Char]]): Unit = {
-    for (y <- row until ((row + text.length) min _data.height)) {
-      val line = text(y - row)
-      Array.copy(line, 0, _data.buffer(y), column, line.length min _data.width)
-    }
-  }
-
-  /**
-    * Overwrites a portion of the foreground color information in raw mode.
-    *
-    * This will convert the specified RGB data (in `0xRRGGBB` format)
-    * to the internal, packed representation and copy it into the buffer,
-    * starting at the specified column and row. The array is expected to be
-    * indexed row-first, i.e. the first dimension is the vertical axis, the
-    * second the horizontal.
-    *
-    * '''Important''': this performs no checks as to whether something
-    * actually changed. It will always send the changed patch to clients.
-    * It will also not crop the specified array to the actually used range.
-    * In other words, this is not intended to be exposed as-is to user code,
-    * it should always be called with validated, and, as necessary, cropped
-    * values.
-    *
-    * @param column the horizontal index.
-    * @param row    the vertical index.
-    * @param color  the foreground color data to write.
-    */
-  def rawSetForeground(column: Int, row: Int, color: Array[Array[Int]]): Unit = {
-    for (y <- row until ((row + color.length) min _data.height)) {
-      val line = color(y - row)
-      for (x <- column until ((column + line.length) min _data.width)) {
-        val packedBackground = _data.format.deflate(PackedColor.Color(line(x - column))) & 0x00FF
-        val packedForeground = _data.color(row)(column) & 0xFF00
-        _data.color(row)(column) = (packedForeground | packedBackground).toShort
-      }
-    }
-  }
-
-  /**
-    * Overwrites a portion of the background color information in raw mode.
-    *
-    * This will convert the specified RGB data (in `0xRRGGBB` format)
-    * to the internal, packed representation and copy it into the buffer,
-    * starting at the specified column and row. The array is expected to be
-    * indexed row-first, i.e. the first dimension is the vertical axis, the
-    * second the horizontal.
-    *
-    * '''Important''': this performs no checks as to whether something
-    * actually changed. It will always send the changed patch to clients.
-    * It will also not crop the specified array to the actually used range.
-    * In other words, this is not intended to be exposed as-is to user code,
-    * it should always be called with validated, and, as necessary, cropped
-    * values.
-    *
-    * @param column the horizontal index.
-    * @param row    the vertical index.
-    * @param color  the background color data to write.
-    */
-  def rawSetBackground(column: Int, row: Int, color: Array[Array[Int]]): Unit = {
-    for (y <- row until ((row + color.length) min _data.height)) {
-      val line = color(y - row)
-      for (x <- column until ((column + line.length) min _data.width)) {
-        val packedBackground = _data.color(row)(column) & 0x00FF
-        val packedForeground = (_data.format.deflate(PackedColor.Color(line(x - column))) << PackedColor.ForegroundShift) & 0xFF00
-        _data.color(row)(column) = (packedForeground | packedBackground).toShort
-      }
-    }
-  }
-
-  private def color(column: Int, row: Int) = {
-    if (column < 0 || column >= getWidth || row < 0 || row >= getHeight)
-      throw new IndexOutOfBoundsException()
-    else _data.color(row)(column)
-  }
+  override def rawSetBackground(column: Int, row: Int, color: Array[Array[Int]]): Unit =
+    super.rawSetBackground(column, row, color)
 
   /**
     * Signals a key down event for the buffer.
@@ -716,7 +385,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with Device
     node.sendToReachable("computer.checked_signal", args.toSeq: _*)
   }
 
-  private def sendToKeyboards(name: String, values: AnyRef*) {
+  private def sendToKeyboards(name: String, values: AnyRef*): Unit = {
     node.sendToNeighbors(name, values: _*)
   }
 
