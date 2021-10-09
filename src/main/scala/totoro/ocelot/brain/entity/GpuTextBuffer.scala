@@ -14,7 +14,7 @@ class GpuTextBuffer(val id: Int, val data: GenericTextBuffer) extends Environmen
   override def getViewportWidth: Int = data.height
   override def getViewportHeight: Int = data.width
 
-  var dirty: Boolean = false
+  var dirty: Boolean = true
   override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean): Unit = dirty = true
   override def onBufferForegroundColorChange(color: PackedColor.Color): Unit = dirty = true
   override def onBufferBackgroundColorChange(color: PackedColor.Color): Unit = dirty = true

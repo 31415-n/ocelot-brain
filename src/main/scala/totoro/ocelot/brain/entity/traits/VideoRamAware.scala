@@ -19,9 +19,7 @@ trait VideoRamAware {
 
   def addBuffer(buffer: GpuTextBuffer): Boolean = {
     val preexists = internalBuffers.contains(buffer.id)
-    if (!preexists) {
-      internalBuffers += buffer.id -> buffer
-    }
+    internalBuffers += buffer.id -> buffer
     if (!preexists || buffer.dirty) {
       buffer.onBufferRamInit(buffer.id, buffer)
       onBufferRamInit(buffer.id, buffer)

@@ -163,7 +163,7 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
 
   @Callback(direct = true, doc = """function(index: number): boolean -- Closes buffer at `index`. Returns true if a buffer closed. If the current buffer is closed, index moves to 0""")
   def freeBuffer(context: Context, args: Arguments): Array[AnyRef] = {
-    val index: Int = args.checkInteger(0)
+    val index: Int = args.optInteger(0, bufferIndex)
     if (removeBuffers(Array(index))) result(true)
     else result((), "no buffer at index")
   }
@@ -183,7 +183,7 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
 
   @Callback(direct = true, doc = """function(index: number): number, number -- returns the buffer size at index. Returns the screen resolution for index 0. returns nil for invalid indexes""")
   def getBufferSize(context: Context, args: Arguments): Array[AnyRef] = {
-    val idx = args.checkInteger(0)
+    val idx = args.optInteger(0, bufferIndex)
     screen(idx, s => result(s.getWidth, s.getHeight))
   }
 
