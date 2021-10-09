@@ -3,7 +3,7 @@ package totoro.ocelot.brain.entity.traits
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor}
 
-trait TextBufferProxy extends Environment with VideoRamAware {
+trait TextBufferProxy extends Environment {
   def data: GenericTextBuffer
 
   /**

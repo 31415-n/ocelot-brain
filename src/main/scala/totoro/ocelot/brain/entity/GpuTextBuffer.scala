@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.{Environment, TextBufferProxy}
+import totoro.ocelot.brain.entity.traits.{Environment, TextBufferProxy, VideoRamRasterizer}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Message, Node}
 import totoro.ocelot.brain.user.User
@@ -8,7 +8,16 @@ import totoro.ocelot.brain.util.ColorDepth.ColorDepth
 import totoro.ocelot.brain.util.{GenericTextBuffer, PackedColor}
 import totoro.ocelot.brain.workspace.Workspace
 
-class GpuTextBuffer(val id: Int, val data: GenericTextBuffer) extends Environment with TextBufferProxy {
+import java.io.InvalidObjectException
+
+class GpuTextBuffer(val owner: String, val id: Int, val data: GenericTextBuffer) extends TextBufferProxy {
+
+  // the gpu ram does not join nor is searchable to the network
+  // this field is required because the api TextBuffer is an Environment
+  override def node(): Node = {
+    throw new InvalidObjectException("GpuTextBuffers do not have nodes")
+  }
+
   override def getMaximumWidth: Int = data.width
   override def getMaximumHeight: Int = data.height
   override def getViewportWidth: Int = data.height
@@ -18,10 +27,19 @@ class GpuTextBuffer(val id: Int, val data: GenericTextBuffer) extends Environmen
   override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean): Unit = dirty = true
   override def onBufferForegroundColorChange(color: PackedColor.Color): Unit = dirty = true
   override def onBufferBackgroundColorChange(color: PackedColor.Color): Unit = dirty = true
-  override def onBufferBitBlt(col: Int, row: Int, w: Int, h: Int, id: Int, fromCol: Int, fromRow: Int): Unit = dirty = true
   override def onBufferCopy(col: Int, row: Int, w: Int, h: Int, tx: Int, ty: Int): Unit = dirty = true
   override def onBufferFill(col: Int, row: Int, w: Int, h: Int, c: Char): Unit = dirty = true
-  override def onBufferRamInit(id: Int, ram: TextBufferProxy): Unit = dirty = false
+
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    // the data is initially dirty because other devices don't know about it yet
+    data.load(nbt, workspace)
+    dirty = true
+  }
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    data.save(nbt)
+    dirty = false
+  }
 
   override def setMaximumResolution(width: Int, height: Int): Unit = {}
   override def setAspectRatio(width: Double, height: Double): Unit = {}
@@ -40,27 +58,13 @@ class GpuTextBuffer(val id: Int, val data: GenericTextBuffer) extends Environmen
   override def mouseScroll(x: Double, y: Double, delta: Int, player: User): Unit = {}
   override def needUpdate: Boolean = false
   override def update(): Unit = {}
-  override def node: Node = null
   override def onConnect(node: Node): Unit = {}
   override def onDisconnect(node: Node): Unit = {}
   override def onMessage(message: Message): Unit = {}
-  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {}
-  override def save(nbt: NBTTagCompound): Unit = {}
 }
 
 object GpuTextBuffer {
-  def wrap(id: Int, data: GenericTextBuffer): GpuTextBuffer = new GpuTextBuffer(id, data)
-
-  def bitblt(dst: TextBufferProxy, col: Int, row: Int, w: Int, h: Int, srcId: Int, fromCol: Int, fromRow: Int): Unit = {
-    dst match {
-      case screen: traits.TextBufferProxy => screen.getBuffer(srcId) match {
-        case Some(buffer: GpuTextBuffer) =>
-          bitblt(dst, col, row, w, h, buffer, fromCol, fromRow)
-        case _ => // ignore - got a bitblt for a missing buffer
-      }
-      case _ => // ignore - weird packet handler called this, should only happen for screens that know about thsi
-    }
-  }
+  def wrap(owner: String, id: Int, data: GenericTextBuffer): GpuTextBuffer = new GpuTextBuffer(owner, id, data)
 
   def bitblt(dst: TextBufferProxy, col: Int, row: Int, w: Int, h: Int, src: TextBufferProxy, fromCol: Int, fromRow: Int): Unit = {
     val x = col - 1
@@ -110,37 +114,28 @@ object GpuTextBuffer {
     }
 
     dst match {
-      case dstRam: GpuTextBuffer => src match {
-        case srcRam: GpuTextBuffer => write_vram_to_vram(dstRam, adjustedDstX, adjustedDstY, adjustedWidth, adjustedHeight, srcRam, adjustedSourceX, adjustedSourceY)
-        case srcScreen: traits.TextBufferProxy => write_screen_to_vram(dstRam, adjustedDstX, adjustedDstY, adjustedWidth, adjustedHeight, srcScreen, adjustedSourceX, adjustedSourceY)
-        case _ => throw new UnsupportedOperationException("Source buffer does not support bitblt operations")
+      case dstScreen: TextBuffer => src match {
+        case srcGpu: GpuTextBuffer => write_vram_to_screen(dstScreen, adjustedDstX, adjustedDstY, adjustedWidth, adjustedHeight, srcGpu, adjustedSourceX, adjustedSourceY)
+        case _ => throw new UnsupportedOperationException("Source buffer does not support bitblt operations to a screen")
       }
-      case dstScreen: traits.TextBufferProxy => src match {
-        case srcRam: GpuTextBuffer => write_vram_to_screen(dstScreen, adjustedDstX, adjustedDstY, adjustedWidth, adjustedHeight, srcRam, adjustedSourceX, adjustedSourceY)
-        case _: traits.TextBufferProxy => throw new UnsupportedOperationException("Screen to screen bitblt not supported")
+      case dstGpu: GpuTextBuffer => src match {
+        case srcProxy: TextBufferProxy => write_to_vram(dstGpu, adjustedDstX, adjustedDstY, adjustedWidth, adjustedHeight, srcProxy, adjustedSourceX, adjustedSourceY)
         case _ => throw new UnsupportedOperationException("Source buffer does not support bitblt operations")
       }
       case _ => throw new UnsupportedOperationException("Destination buffer does not support bitblt operations")
     }
   }
 
-  def write_vram_to_vram(dstRam: GpuTextBuffer, x: Int, y: Int, w: Int, h: Int, srcRam: GpuTextBuffer, fx: Int, fy: Int): Boolean = {
-    dstRam.data.rawcopy(x + 1, y + 1, w, h, srcRam.data, fx + 1, fx + 1)
-  }
-
-  def write_vram_to_screen(dstScreen: traits.TextBufferProxy, x: Int, y: Int, w: Int, h: Int, srcRam: GpuTextBuffer, fx: Int, fy: Int): Boolean = {
+  def write_vram_to_screen(dstScreen: TextBuffer, x: Int, y: Int, w: Int, h: Int, srcRam: GpuTextBuffer, fx: Int, fy: Int): Boolean = {
     if (dstScreen.data.rawcopy(x + 1, y + 1, w, h, srcRam.data, fx + 1, fy + 1)) {
       // rawcopy returns true only if data was modified
       dstScreen.addBuffer(srcRam)
-      dstScreen.onBufferBitBlt(x + 1, y + 1, w, h, srcRam.id, fx + 1, fy + 1)
+      dstScreen.onBufferBitBlt(x + 1, y + 1, w, h, srcRam, fx + 1, fy + 1)
       true
     } else false
   }
 
-  def write_screen_to_vram(dstRam: GpuTextBuffer, x: Int, y: Int, w: Int, h: Int, srcScreen: traits.TextBufferProxy, fx: Int, fy: Int): Boolean = {
-    val format: PackedColor.ColorFormat = PackedColor.Depth.format(srcScreen.getColorDepth)
-    val tempGpu = GpuTextBuffer.wrap(id = -1, new GenericTextBuffer(w, h, format))
-    tempGpu.data.rawcopy(col = 1, row = 1, w, h, srcScreen.data, fx + 1, fy + 1)
-    write_vram_to_vram(dstRam, x, y, w, h, tempGpu, fx = 0, fy = 0)
+  def write_to_vram(dstRam: GpuTextBuffer, x: Int, y: Int, w: Int, h: Int, src: TextBufferProxy, fx: Int, fy: Int): Boolean = {
+    dstRam.data.rawcopy(x + 1, y + 1, w, h, src.data, fx + 1, fy + 1)
   }
 }

@@ -22,7 +22,7 @@ import scala.util.matching.Regex
 // saved, but before the computer was saved, leading to mismatching states in
 // the save file - a Bad Thing (TM).
 
-trait GenericGPU extends Environment with Tiered with VideoRamAware {
+trait GenericGPU extends Environment with Tiered with VideoRamDevice {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
     withComponent("gpu").
     create()
@@ -145,25 +145,25 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
     } else {
       val format: PackedColor.ColorFormat = PackedColor.Depth.format(Settings.screenDepthsByTier(tier))
       val buffer = new GenericTextBuffer(width, height, format)
-      val page = GpuTextBuffer.wrap(nextAvailableBufferIndex, buffer)
+      val page = GpuTextBuffer.wrap(node.address, nextAvailableBufferIndex, buffer)
       addBuffer(page)
       result(page.id)
     }
   }
 
   // this event occurs when the gpu is told a page was removed - we need to notify the screen of this
-  // we do this because the VideoRamAware trait only notifies itself, it doesn't assume there is a screen
-  override def onBufferRamDestroy(ids: Array[Int]): Unit = {
+  // we do this because the VideoRamDevice trait only notifies itself, it doesn't assume there is a screen
+  override def onBufferRamDestroy(id: Int): Unit = {
     // first protect our buffer index - it needs to fall back to the screen if its buffer was removed
-    if (ids.contains(bufferIndex)) {
-      bufferIndex = RESERVED_SCREEN_INDEX
-    }
-    if (ids.nonEmpty) {
+    if (id != RESERVED_SCREEN_INDEX) {
       screen(RESERVED_SCREEN_INDEX, s => s match {
-        case oc: VideoRamAware => result(oc.removeBuffers(ids))
+        case oc: VideoRamRasterizer => result(oc.removeBuffer(node.address, id))
         case _ => result(true)// addon mod screen type that is not video ram aware
       })
-    } else result(true)
+    }
+    if (id == bufferIndex) {
+      bufferIndex = RESERVED_SCREEN_INDEX
+    }
   }
 
   @Callback(direct = true, doc = """function(index: number): boolean -- Closes buffer at `index`. Returns true if a buffer closed. If the current buffer is closed, index moves to 0""")
@@ -274,7 +274,7 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
             s.setForegroundColor(0xFFFFFF)
             s.setBackgroundColor(0x000000)
             s match {
-              case oc: VideoRamAware => oc.removeAllBuffers()
+              case oc: VideoRamRasterizer => oc.removeAllBuffers()
               case _ =>
             }
           }
@@ -286,13 +286,7 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
   }
 
   @Callback(direct = true, doc = """function():string -- Get the address of the screen the GPU is currently bound to.""")
-  def getScreen(context: Context, args: Arguments): Array[AnyRef] = {
-    if (bufferIndex == RESERVED_SCREEN_INDEX) {
-      screen(s => result(s.node.address))
-    } else {
-      result((), "the current device is video ram")
-    }
-  }
+  def getScreen(context: Context, args: Arguments): Array[AnyRef] = screen(RESERVED_SCREEN_INDEX, s => result(s.node.address))
 
   @Callback(direct = true, doc = """function():number, boolean -- Get the current background color and whether it's from the palette or not.""")
   def getBackground(context: Context, args: Arguments): Array[AnyRef] =
@@ -619,7 +613,7 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
         val nbtPage = nbtPages.getCompoundTagAt(i)
         val idx: Int = nbtPage.getInteger(NbtPageIdx)
         val data = nbtPage.getCompoundTag(NbtPageData)
-        loadBuffer(idx, data, workspace)
+        loadBuffer(node.address, idx, data, workspace)
       }
     }
   }

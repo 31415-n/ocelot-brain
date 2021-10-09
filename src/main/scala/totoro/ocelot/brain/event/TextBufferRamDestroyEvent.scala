@@ -1,3 +1,5 @@
 package totoro.ocelot.brain.event
 
-case class TextBufferRamDestroyEvent(address: String, ids: Array[Int]) extends Event
+import totoro.ocelot.brain.entity.GpuTextBuffer
+
+case class TextBufferRamDestroyEvent(address: String, ram: GpuTextBuffer) extends Event

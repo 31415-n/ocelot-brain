@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, TextBufferProxy, Tiered}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, TextBufferProxy, Tiered, VideoRamRasterizer}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
@@ -17,7 +17,7 @@ import scala.collection.mutable
   * This trait implements functionality for displaying and manipulating
   * text, like screens and robots.
   */
-class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBufferProxy with DeviceInfo with Tiered {
+class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBufferProxy with VideoRamRasterizer with DeviceInfo with Tiered {
   override val node: Component =  Network.newNode(this, Visibility.Network).
     withComponent("screen").
     create()
@@ -201,14 +201,14 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
   override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean): Unit =
     EventBus.send(TextBufferSetEvent(this.node.address, col, row, s, vertical))
 
-  override def onBufferBitBlt(col: Int, row: Int, w: Int, h: Int, id: Int, fromCol: Int, fromRow: Int): Unit =
-    EventBus.send(TextBufferBitBltEvent(this.node.address, col, row, w, h, id, fromCol, fromRow))
+  override def onBufferBitBlt(col: Int, row: Int, w: Int, h: Int, ram: GpuTextBuffer, fromCol: Int, fromRow: Int): Unit =
+    EventBus.send(TextBufferBitBltEvent(this.node.address, col, row, w, h, ram, fromCol, fromRow))
 
-  override def onBufferRamInit(id: Int, ram: TextBufferProxy): Unit =
-    EventBus.send(TextBufferRamInitEvent(this.node.address, id))
+  override def onBufferRamInit(ram: GpuTextBuffer): Unit =
+    EventBus.send(TextBufferRamInitEvent(this.node.address, ram))
 
-  override def onBufferRamDestroy(ids: Array[Int]): Unit =
-    EventBus.send(TextBufferRamDestroyEvent(this.node.address, ids))
+  override def onBufferRamDestroy(ram: GpuTextBuffer): Unit =
+    EventBus.send(TextBufferRamDestroyEvent(this.node.address, ram))
 
   override def rawSetText(column: Int, row: Int, text: Array[Array[Char]]): Unit =
     super.rawSetText(column, row, text)

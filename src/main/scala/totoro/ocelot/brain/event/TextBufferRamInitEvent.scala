@@ -1,3 +1,5 @@
 package totoro.ocelot.brain.event
 
-case class TextBufferRamInitEvent(address: String, id: Int) extends Event
+import totoro.ocelot.brain.entity.GpuTextBuffer
+
+case class TextBufferRamInitEvent(address: String, ram: GpuTextBuffer) extends Event

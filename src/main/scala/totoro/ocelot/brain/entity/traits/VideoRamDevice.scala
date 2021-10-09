@@ -5,34 +5,32 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.{GenericTextBuffer, PackedColor}
 import totoro.ocelot.brain.workspace.Workspace
 
-trait VideoRamAware {
-  private val internalBuffers = new scala.collection.mutable.HashMap[Int, GpuTextBuffer]
+import scala.collection.mutable
+
+trait VideoRamDevice {
+  private val internalBuffers = new mutable.HashMap[Int, GpuTextBuffer]
   val RESERVED_SCREEN_INDEX: Int = 0
 
-  def onBufferBitBlt(col: Int, row: Int, w: Int, h: Int, id: Int, fromCol: Int, fromRow: Int): Unit = {}
-  def onBufferRamInit(id: Int, ram: TextBufferProxy): Unit = {}
-  def onBufferRamDestroy(ids: Array[Int]): Unit = {}
+  def isEmpty: Boolean = internalBuffers.isEmpty
+
+  def onBufferRamDestroy(id: Int): Unit = {}
 
   def bufferIndexes(): Array[Int] = internalBuffers.collect {
     case (index: Int, _: Any) => index
   }.toArray
 
-  def addBuffer(buffer: GpuTextBuffer): Boolean = {
-    val preexists = internalBuffers.contains(buffer.id)
-    internalBuffers += buffer.id -> buffer
-    if (!preexists || buffer.dirty) {
-      buffer.onBufferRamInit(buffer.id, buffer)
-      onBufferRamInit(buffer.id, buffer)
-    }
+  def addBuffer(ram: GpuTextBuffer): Boolean = {
+    val preexists = internalBuffers.contains(ram.id)
+    internalBuffers += ram.id -> ram
     preexists
   }
 
   def removeBuffers(ids: Array[Int]): Int = {
     var count = 0
     if (ids.nonEmpty) {
-      onBufferRamDestroy(ids)
       for (id <- ids) {
         if (internalBuffers.remove(id).nonEmpty) {
+          onBufferRamDestroy(id)
           count += 1
         }
       }
@@ -42,10 +40,10 @@ trait VideoRamAware {
 
   def removeAllBuffers(): Int = removeBuffers(bufferIndexes())
 
-  def loadBuffer(id: Int, nbt: NBTTagCompound, workspace: Workspace): Unit = {
+  def loadBuffer(address: String, id: Int, nbt: NBTTagCompound, workspace: Workspace): Unit = {
     val src = new GenericTextBuffer(width = 1, height = 1, PackedColor.SingleBitFormat)
     src.load(nbt, workspace)
-    addBuffer(GpuTextBuffer.wrap(id, src))
+    addBuffer(GpuTextBuffer.wrap(address, id, src))
   }
 
   def getBuffer(id: Int): Option[GpuTextBuffer] = {
