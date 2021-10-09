@@ -262,15 +262,8 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
     foreground = PackedColor.Color(nbt.getInteger("foreground"), nbt.getBoolean("foregroundIsPalette"))
     background = PackedColor.Color(nbt.getInteger("background"), nbt.getBoolean("backgroundIsPalette"))
 
-    val c = nbt.getIntArray("color")
-    for (i <- 0 until h) {
-      val rowColor = color(i)
-      for (j <- 0 until w) {
-        val index = j + i * w
-        if (index < c.length) {
-          rowColor(j) = c(index).toShort
-        }
-      }
+    if (!NbtDataStream.getShortArray(nbt, "color_bytes", color, w, h)) {
+      NbtDataStream.getIntArrayLegacy(nbt, "color", color, w, h)
     }
   }
 
@@ -291,7 +284,7 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
     nbt.setInteger("background", _background.value)
     nbt.setBoolean("backgroundIsPalette", _background.isPalette)
 
-    nbt.setTag("color", new NBTTagIntArray(color.flatten.map(_.toInt)))
+    NbtDataStream.setShortArray(nbt, "color_bytes", color.flatten.map(_.toShort))
   }
 
   override def toString: String = {
