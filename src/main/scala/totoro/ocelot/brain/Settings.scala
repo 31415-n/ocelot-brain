@@ -55,12 +55,6 @@ class Settings(val config: Config) {
       Ocelot.log.warn("Bad number of RAM sizes, ignoring.")
       Array(192, 256, 384, 512, 768, 1024)
   }
-  val vramSizes: Array[Int] = Array(config.getIntList("computer.lua.vramSizes").asScala.toArray: _*) match {
-    case Array(tier1, tier2, tier3) => Array(tier1: Int, tier2: Int, tier3: Int)
-    case _ =>
-      Ocelot.log.warn("Bad number of VRAM sizes, ignoring.")
-      Array(1, 2, 3)
-  }
   val ramScaleFor64Bit: Double = config.getDouble("computer.lua.ramScaleFor64Bit") max 1
   val maxTotalRam: Int = config.getInt("computer.lua.maxTotalRam") max 0
 
@@ -184,6 +178,21 @@ class Settings(val config: Config) {
   // >= 1.7.4
   val maxSignalQueueSize: Int =
     (if (config.hasPath("computer.maxSignalQueueSize")) config.getInt("computer.maxSignalQueueSize") else 256) min 256
+
+  // >= 1.7.6
+  val vramSizes: Array[Double] = Array(config.getDoubleList("gpu.vramSizes").asScala.toArray: _*) match {
+    case Array(tier1, tier2, tier3) => Array(tier1: Double, tier2: Double, tier3: Double)
+    case _ =>
+      Ocelot.log.warn("Bad number of VRAM sizes (expected 3), ignoring.")
+      Array(1, 2, 3)
+  }
+
+  val bitbltCosts: Array[Double] = Array(config.getDoubleList("gpu.bitbltCosts").asScala.toArray: _*) match {
+    case Array(tier1, tier2, tier3) => Array(tier1: Double, tier2: Double, tier3: Double)
+    case _ =>
+      Ocelot.log.warn("Bad number of bitblit costs (expected 3), ignoring.")
+      Array((1/64.0) * 16 * 1.5, (1/128.0) * 25 * 1.5, (1/256.0) * 50 * 1.5)
+  }
 }
 
 object Settings {
