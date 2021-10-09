@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.{GpuTextBuffer, TextBuffer}
-import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context, Machine}
+import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context, LimitReachedException, Machine}
 import totoro.ocelot.brain.nbt.{NBTTagCompound, NBTTagList}
 import totoro.ocelot.brain.network.{Message, Network, Node, Visibility}
 import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor}
@@ -64,6 +64,8 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
   // So for each tier, we multiple the set cost with the number of lines the screen may have
   final val bitbltCost: Double = Settings.get.bitbltCosts(0 max tier min 2)
   final val totalVRAM: Double = (maxResolution._1 * maxResolution._2) * Settings.get.vramSizes(0 max tier min 2)
+
+  var budgetExhausted: Boolean = false // for especially expensive calls, bitblt
 
   /**
    * Binds the GPU to some Screen node.
@@ -217,7 +219,24 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
         val fromCol = args.optInteger(6, 1)
         val fromRow = args.optInteger(7, 1)
 
-        val budgetCost: Double = determineBitbltBudgetCost(dst, src)
+        var budgetCost: Double = determineBitbltBudgetCost(dst, src)
+        val tierCredit: Double = ((tier + 1) * .5)
+        val overBudget: Double = budgetCost - tierCredit
+
+        if (overBudget > 0) {
+          if (budgetExhausted) { // we've thrown once before
+            if (overBudget > tierCredit) { // we need even more pause than just a single tierCredit
+              val pauseNeeded = overBudget - tierCredit
+              val seconds: Double = (pauseNeeded / tierCredit) / 20
+              context.pause(seconds)
+            }
+            budgetCost = 0 // remove the rest of the budget cost at this point
+          } else {
+            budgetExhausted = true
+            throw new LimitReachedException()
+          }
+        }
+        budgetExhausted = false
 
         if (resolveInvokeCosts(dstIdx, context, budgetCost)) {
           if (dstIdx == srcIdx) {
