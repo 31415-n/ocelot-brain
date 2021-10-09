@@ -59,7 +59,7 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
   final val setCosts = Array(1.0 / 64, 1.0 / 128, 1.0 / 256)
   final val copyCosts = Array(1.0 / 16, 1.0 / 32, 1.0 / 64)
   final val fillCosts = Array(1.0 / 32, 1.0 / 64, 1.0 / 128)
-  final val bitbltCosts = Array(2.0, 1.0, 1.0 / 2.0)
+  final val bitbltCosts = Array(32, 16, 8)
   final val totalVRAM: Int = (maxResolution._1 * maxResolution._2) * Settings.get.vramSizes(0 max tier min Settings.get.vramSizes.length)
 
   /**
@@ -187,6 +187,20 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
     screen(idx, s => result(s.getWidth, s.getHeight))
   }
 
+  private def determineBitbltBudgetCost(dst: TextBufferProxy, src: TextBufferProxy): Double = {
+    // large dirty buffers need throttling so their budget cost is more
+    // clean buffers have no budget cost.
+    src match {
+      case page: GpuTextBuffer if page.dirty => dst match {
+        case _: GpuTextBuffer => 0.0 // no cost to write to ram
+        case _ => // screen target will need the new buffer
+          // small buffers are cheap, so increase with size of buffer source
+          bitbltCosts(tier) * (src.getWidth * src.getHeight) / (maxResolution._1 * maxResolution._2)
+      }
+      case _ => 0.0 // from screen or from clean buffer is free
+    }
+  }
+
   @Callback(direct = true, doc = """function([dst: number, col: number, row: number, width: number, height: number, src: number, fromCol: number, fromRow: number]):boolean -- bitblt from buffer to screen. All parameters are optional. Writes to `dst` page in rectangle `x, y, width, height`, defaults to the bound screen and its viewport. Reads data from `src` page at `fx, fy`, default is the active page from position 1, 1""")
   def bitblt(context: Context, args: Arguments): Array[AnyRef] = {
     val dstIdx = args.optInteger(0, RESERVED_SCREEN_INDEX)
@@ -199,13 +213,10 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
       screen(srcIdx, src => {
         val fromCol = args.optInteger(6, 1)
         val fromRow = args.optInteger(7, 1)
-        // if src is vram and dirty, bltbit cost is large
-        val dirtyPage = src match {
-          case vram: GpuTextBuffer => vram.dirty
-          case _ => false
-        }
 
-        if (consumeViewportPower(dst, context, if (dirtyPage) bitbltCosts(tier) else setCosts(tier))) {
+        val budgetCost: Double = determineBitbltBudgetCost(dst, src)
+
+        if (consumeViewportPower(dst, context, budgetCost)) {
           if (dstIdx == srcIdx) {
             val tx = col - fromCol
             val ty = row - fromRow
