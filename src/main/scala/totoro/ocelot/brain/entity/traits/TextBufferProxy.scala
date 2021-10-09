@@ -1,8 +1,9 @@
 package totoro.ocelot.brain.entity.traits
 
+import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor}
 
-trait TextBufferProxy {
+trait TextBufferProxy extends Environment with VideoRamAware {
   def data: GenericTextBuffer
 
   /**
@@ -18,6 +19,77 @@ trait TextBufferProxy {
     * @see `setResolution(int, int)`
     */
   def getHeight: Int = data.height
+
+  /**
+    * Get the maximum horizontal size of the buffer.
+    */
+  def getMaximumWidth: Int
+
+  /**
+    * Get the maximum vertical size of the buffer.
+    */
+  def getMaximumHeight: Int
+
+  /**
+    * Get the current horizontal viewport resolution.
+    */
+  def getViewportWidth: Int
+
+  /**
+    * Get the current vertical viewport resolution.
+    */
+  def getViewportHeight: Int
+
+  /**
+    * Sets the maximum resolution supported by this buffer.
+    *
+    * @param width  the maximum horizontal resolution, in characters.
+    * @param height the maximum vertical resolution, in characters.
+    */
+  def setMaximumResolution(width: Int, height: Int): Unit
+
+  /**
+    * Set the 'aspect ratio' of the buffer.
+    *
+    * Not to be confused with the maximum resolution of the buffer, this
+    * refers to the 'physical' size of the buffer's container. For multi-
+    * block screens, for example, this is the number of horizontal and
+    * vertical blocks.
+    *
+    * @param width  the horizontal size of the physical representation.
+    * @param height the vertical size of the physical representation.
+    */
+  def setAspectRatio(width: Double, height: Double): Unit
+
+  /**
+    * Get the aspect ratio of the buffer.
+    *
+    * Note that this is in fact `width / height`.
+    *
+    * @see #setAspectRatio(double, double)
+    */
+  def getAspectRatio: Double
+
+  /**
+    * Set the buffer's active resolution.
+    *
+    * @param width  the horizontal resolution.
+    * @param height the vertical resolution.
+    * @return `true` if the resolution changed.
+    */
+  def setResolution(width: Int, height: Int): Boolean
+
+  /**
+    * Set the buffer's active viewport resolution.
+    *
+    * This cannot exceed the current buffer resolution.
+    *
+    * @param width  the horizontal resolution.
+    * @param height the vertical resolution.
+    * @return `true` if the resolution changed.
+    * @see `setResolution(int, int)`
+    */
+  def setViewport(width: Int, height: Int): Boolean
 
   /**
     * Sets the maximum color depth supported by this buffer.
@@ -391,4 +463,87 @@ trait TextBufferProxy {
       throw new IndexOutOfBoundsException()
     else data.color(row)(column)
   }
+
+  /**
+    * Signals a key down event for the buffer.
+    *
+    * This will trigger a message that will be picked up by
+    * keyboards, which will then cause a signal in attached machines.
+    *
+    * @param character the character of the pressed key.
+    * @param code      the key code of the pressed key.
+    * @param player    the player that pressed the key. Pass `null` on the client side.
+    */
+  def keyDown(character: Char, code: Int, player: User): Unit
+
+  /**
+    * Signals a key up event for the buffer.
+    *
+    * This will trigger a message that will be picked up by
+    * keyboards, which will then cause a signal in attached machines.
+    *
+    * @param character the character of the released key.
+    * @param code      the key code of the released key.
+    * @param player    the player that released the key. Pass `null` on the client side.
+    */
+  def keyUp(character: Char, code: Int, player: User): Unit
+
+  /**
+    * Signals a clipboard paste event for the buffer.
+    *
+    * This will trigger a message that will be picked up by
+    * keyboards, which will then cause a signal in attached machines.
+    *
+    * @param value  the text that was pasted.
+    * @param player the player that pasted the text. Pass `null` on the client side.
+    */
+  def clipboard(value: String, player: User): Unit
+
+  /**
+    * Signals a mouse button down event for the buffer.
+    *
+    * This will cause a signal in attached machines.
+    *
+    * @param x      the horizontal coordinate of the mouse, in characters.
+    * @param y      the vertical coordinate of the mouse, in characters.
+    * @param button the button of the mouse that was pressed.
+    * @param player the player that pressed the mouse button. Pass `null` on the client side.
+    */
+  def mouseDown(x: Double, y: Double, button: Int, player: User): Unit
+
+  /**
+    * Signals a mouse drag event for the buffer.
+    *
+    * This will cause a signal in attached machines.
+    *
+    * @param x      the horizontal coordinate of the mouse, in characters.
+    * @param y      the vertical coordinate of the mouse, in characters.
+    * @param button the button of the mouse that is pressed.
+    * @param player the player that moved the mouse. Pass `null` on the client side.
+    */
+  def mouseDrag(x: Double, y: Double, button: Int, player: User): Unit
+
+  /**
+    * Signals a mouse button release event for the buffer.
+    *
+    * This will cause a signal in attached machines.
+    *
+    * @param x      the horizontal coordinate of the mouse, in characters.
+    * @param y      the vertical coordinate of the mouse, in characters.
+    * @param button the button of the mouse that was released.
+    * @param player the player that released the mouse button. Pass `null` on the client side.
+    */
+  def mouseUp(x: Double, y: Double, button: Int, player: User): Unit
+
+  /**
+    * Signals a mouse wheel scroll event for the buffer.
+    *
+    * This will cause a signal in attached machines.
+    *
+    * @param x      the horizontal coordinate of the mouse, in characters.
+    * @param y      the vertical coordinate of the mouse, in characters.
+    * @param delta  indicates the direction of the mouse scroll.
+    * @param player the player that scrolled the mouse wheel. Pass `null` on the client side.
+    */
+  def mouseScroll(x: Double, y: Double, delta: Int, player: User): Unit
 }

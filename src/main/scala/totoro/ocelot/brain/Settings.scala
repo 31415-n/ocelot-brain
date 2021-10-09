@@ -55,6 +55,12 @@ class Settings(val config: Config) {
       Ocelot.log.warn("Bad number of RAM sizes, ignoring.")
       Array(192, 256, 384, 512, 768, 1024)
   }
+  val vramSizes: Array[Int] = Array(config.getIntList("computer.lua.vramSizes").asScala.toArray: _*) match {
+    case Array(tier1, tier2, tier3) => Array(tier1: Int, tier2: Int, tier3: Int)
+    case _ =>
+      Ocelot.log.warn("Bad number of VRAM sizes, ignoring.")
+      Array(1, 2, 3)
+  }
   val ramScaleFor64Bit: Double = config.getDouble("computer.lua.ramScaleFor64Bit") max 1
   val maxTotalRam: Int = config.getInt("computer.lua.maxTotalRam") max 0
 

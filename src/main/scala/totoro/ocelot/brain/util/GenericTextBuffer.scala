@@ -205,7 +205,29 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
     changed
   }
 
-  private def setChar(line: Array[Char], lineColor: Array[Short], x: Int, c: Char) {
+  // copy a portion of another buffer into this buffer
+  def rawcopy(col: Int, row: Int, w: Int, h: Int, src: GenericTextBuffer, fromCol: Int, fromRow: Int): Boolean = {
+    var changed: Boolean = false
+    val col_index = col - 1
+    val row_index = row - 1
+    for (yOffset <- 0 until h) {
+      val dstCharLine = buffer(row_index + yOffset)
+      val dstColorLine = color(row_index + yOffset)
+      for (xOffset <- 0 until w) {
+        val srcChar = src.buffer(fromRow + yOffset - 1)(fromCol + xOffset - 1)
+        val srcColor = src.color(fromRow + yOffset - 1)(fromCol + xOffset - 1)
+        if (srcChar != dstCharLine(col_index + xOffset) || srcColor != dstColorLine(col_index + xOffset)) {
+          changed = true
+          dstCharLine(col_index + xOffset) = srcChar
+          dstColorLine(col_index + xOffset) = srcColor
+        }
+      }
+    }
+
+    changed
+  }
+
+  private def setChar(line: Array[Char], lineColor: Array[Short], x: Int, c: Char): Unit = {
     if (FontUtils.wcwidth(c) > 1 && x >= line.length - 1) {
       // Don't allow setting wide chars in right-most col.
       return
@@ -273,7 +295,7 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
   }
 
   override def toString: String = {
-    val b = StringBuilder.newBuilder
+    val b = new StringBuilder()
     if (buffer.length > 0) {
       b.appendAll(buffer(0))
       for (y <- 1 until height) {

@@ -124,58 +124,21 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
     */
   def getPowerState: Boolean = isDisplaying
 
-  /**
-    * Sets the maximum resolution supported by this buffer.
-    *
-    * @param width  the maximum horizontal resolution, in characters.
-    * @param height the maximum vertical resolution, in characters.
-    */
-  def setMaximumResolution(width: Int, height: Int): Unit = {
+  override def setMaximumResolution(width: Int, height: Int): Unit = {
     if (width < 1) throw new IllegalArgumentException("width must be larger or equal to one")
     if (height < 1) throw new IllegalArgumentException("height must be larger or equal to one")
     maxResolution = (width, height)
   }
 
-  /**
-    * Get the maximum horizontal size of the buffer.
-    */
-  def getMaximumWidth: Int = maxResolution._1
+  override def getMaximumWidth: Int = maxResolution._1
 
-  /**
-    * Get the maximum vertical size of the buffer.
-    */
-  def getMaximumHeight: Int = maxResolution._2
+  override def getMaximumHeight: Int = maxResolution._2
 
-  /**
-    * Set the 'aspect ratio' of the buffer.
-    *
-    * Not to be confused with the maximum resolution of the buffer, this
-    * refers to the 'physical' size of the buffer's container. For multi-
-    * block screens, for example, this is the number of horizontal and
-    * vertical blocks.
-    *
-    * @param width  the horizontal size of the physical representation.
-    * @param height the vertical size of the physical representation.
-    */
-  def setAspectRatio(width: Double, height: Double): Unit = this.synchronized(this.aspectRatio = (width, height))
+  override def setAspectRatio(width: Double, height: Double): Unit = this.synchronized(this.aspectRatio = (width, height))
 
-  /**
-    * Get the aspect ratio of the buffer.
-    *
-    * Note that this is in fact `width / height`.
-    *
-    * @see #setAspectRatio(double, double)
-    */
-  def getAspectRatio: Double = aspectRatio._1 / aspectRatio._2
+  override def getAspectRatio: Double = aspectRatio._1 / aspectRatio._2
 
-  /**
-    * Set the buffer's active resolution.
-    *
-    * @param width  the horizontal resolution.
-    * @param height the vertical resolution.
-    * @return `true` if the resolution changed.
-    */
-  def setResolution(width: Int, height: Int): Boolean = {
+  override def setResolution(width: Int, height: Int): Boolean = {
     val (mw, mh) = maxResolution
     if (width < 1 || height < 1 || width > mw || height > mw || height * width > mw * mh)
       throw new IllegalArgumentException("unsupported resolution")
@@ -192,17 +155,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
     else false
   }
 
-  /**
-    * Set the buffer's active viewport resolution.
-    *
-    * This cannot exceed the current buffer resolution.
-    *
-    * @param width  the horizontal resolution.
-    * @param height the vertical resolution.
-    * @return `true` if the resolution changed.
-    * @see `setResolution(int, int)`
-    */
-  def setViewport(width: Int, height: Int): Boolean = {
+  override def setViewport(width: Int, height: Int): Boolean = {
     val (mw, mh) = _data.size
     if (width < 1 || height < 1 || width > mw || height > mh)
       throw new IllegalArgumentException("unsupported viewport resolution")
@@ -216,19 +169,9 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
     else false
   }
 
-  /**
-    * Get the current horizontal viewport resolution.
-    *
-    * @see `setViewport(int, int)`
-    */
-  def getViewportWidth: Int = viewport._1
+  override def getViewportWidth: Int = viewport._1
 
-  /**
-    * Get the current vertical viewport resolution.
-    *
-    * @see `setViewport(int, int)`
-    */
-  def getViewportHeight: Int = viewport._2
+  override def getViewportHeight: Int = viewport._2
 
   override def setMaximumColorDepth(depth: ColorDepth.Value): Unit = maxDepth = depth
 
@@ -258,6 +201,15 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
   override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean): Unit =
     EventBus.send(TextBufferSetEvent(this.node.address, col, row, s, vertical))
 
+  override def onBufferBitBlt(col: Int, row: Int, w: Int, h: Int, id: Int, fromCol: Int, fromRow: Int): Unit =
+    EventBus.send(TextBufferBitBltEvent(this.node.address, col, row, w, h, id, fromCol, fromRow))
+
+  override def onBufferRamInit(id: Int, ram: TextBufferProxy): Unit =
+    EventBus.send(TextBufferRamInitEvent(this.node.address, id))
+
+  override def onBufferRamDestroy(ids: Array[Int]): Unit =
+    EventBus.send(TextBufferRamDestroyEvent(this.node.address, ids))
+
   override def rawSetText(column: Int, row: Int, text: Array[Array[Char]]): Unit =
     super.rawSetText(column, row, text)
 
@@ -267,100 +219,31 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
   override def rawSetBackground(column: Int, row: Int, color: Array[Array[Int]]): Unit =
     super.rawSetBackground(column, row, color)
 
-  /**
-    * Signals a key down event for the buffer.
-    *
-    * This will trigger a message that will be picked up by
-    * keyboards, which will then cause a signal in attached machines.
-    *
-    * @param character the character of the pressed key.
-    * @param code      the key code of the pressed key.
-    * @param player    the player that pressed the key. Pass `null` on the client side.
-    */
-  def keyDown(character: Char, code: Int, player: User): Unit = {
+  override def keyDown(character: Char, code: Int, player: User): Unit = {
     sendToKeyboards("keyboard.keyDown", player, Char.box(character), Int.box(code))
   }
 
-  /**
-    * Signals a key up event for the buffer.
-    *
-    * This will trigger a message that will be picked up by
-    * keyboards, which will then cause a signal in attached machines.
-    *
-    * @param character the character of the released key.
-    * @param code      the key code of the released key.
-    * @param player    the player that released the key. Pass `null` on the client side.
-    */
-  def keyUp(character: Char, code: Int, player: User): Unit = {
+  override def keyUp(character: Char, code: Int, player: User): Unit = {
     sendToKeyboards("keyboard.keyUp", player, Char.box(character), Int.box(code))
   }
 
-  /**
-    * Signals a clipboard paste event for the buffer.
-    *
-    * This will trigger a message that will be picked up by
-    * keyboards, which will then cause a signal in attached machines.
-    *
-    * @param value  the text that was pasted.
-    * @param player the player that pasted the text. Pass `null` on the client side.
-    */
-  def clipboard(value: String, player: User): Unit = {
+  override def clipboard(value: String, player: User): Unit = {
     sendToKeyboards("keyboard.clipboard", player, value)
   }
 
-  /**
-    * Signals a mouse button down event for the buffer.
-    *
-    * This will cause a signal in attached machines.
-    *
-    * @param x      the horizontal coordinate of the mouse, in characters.
-    * @param y      the vertical coordinate of the mouse, in characters.
-    * @param button the button of the mouse that was pressed.
-    * @param player the player that pressed the mouse button. Pass `null` on the client side.
-    */
-  def mouseDown(x: Double, y: Double, button: Int, player: User): Unit = {
+  override def mouseDown(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "touch", x, y, button)
   }
 
-  /**
-    * Signals a mouse drag event for the buffer.
-    *
-    * This will cause a signal in attached machines.
-    *
-    * @param x      the horizontal coordinate of the mouse, in characters.
-    * @param y      the vertical coordinate of the mouse, in characters.
-    * @param button the button of the mouse that is pressed.
-    * @param player the player that moved the mouse. Pass `null` on the client side.
-    */
-  def mouseDrag(x: Double, y: Double, button: Int, player: User): Unit = {
+  override def mouseDrag(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "drag", x, y, button)
   }
 
-  /**
-    * Signals a mouse button release event for the buffer.
-    *
-    * This will cause a signal in attached machines.
-    *
-    * @param x      the horizontal coordinate of the mouse, in characters.
-    * @param y      the vertical coordinate of the mouse, in characters.
-    * @param button the button of the mouse that was released.
-    * @param player the player that released the mouse button. Pass `null` on the client side.
-    */
-  def mouseUp(x: Double, y: Double, button: Int, player: User): Unit = {
+  override def mouseUp(x: Double, y: Double, button: Int, player: User): Unit = {
     sendMouseEvent(player, "drop", x, y, button)
   }
 
-  /**
-    * Signals a mouse wheel scroll event for the buffer.
-    *
-    * This will cause a signal in attached machines.
-    *
-    * @param x      the horizontal coordinate of the mouse, in characters.
-    * @param y      the vertical coordinate of the mouse, in characters.
-    * @param delta  indicates the direction of the mouse scroll.
-    * @param player the player that scrolled the mouse wheel. Pass `null` on the client side.
-    */
-  def mouseScroll(x: Double, y: Double, delta: Int, player: User): Unit = {
+  override def mouseScroll(x: Double, y: Double, delta: Int, player: User): Unit = {
     sendMouseEvent(player, "scroll", x, y, delta)
   }
 
