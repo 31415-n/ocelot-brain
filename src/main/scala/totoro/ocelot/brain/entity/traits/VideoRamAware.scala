@@ -27,19 +27,20 @@ trait VideoRamAware {
     preexists
   }
 
-  def removeBuffers(ids: Array[Int]): Boolean = {
-    var allRemoved: Boolean = true
+  def removeBuffers(ids: Array[Int]): Int = {
+    var count = 0
     if (ids.nonEmpty) {
       onBufferRamDestroy(ids)
       for (id <- ids) {
-        if (internalBuffers.remove(id).isEmpty)
-          allRemoved = false
+        if (internalBuffers.remove(id).nonEmpty) {
+          count += 1
+        }
       }
     }
-    allRemoved
+    count
   }
 
-  def removeAllBuffers(): Boolean = removeBuffers(bufferIndexes())
+  def removeAllBuffers(): Int = removeBuffers(bufferIndexes())
 
   def loadBuffer(id: Int, nbt: NBTTagCompound, workspace: Workspace): Unit = {
     val src = new GenericTextBuffer(width = 1, height = 1, PackedColor.SingleBitFormat)
