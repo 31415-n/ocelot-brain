@@ -19,7 +19,7 @@ Desktop client implementation: [Ocelot Desktop](https://gitlab.com/cc-ru/ocelot/
 
 ### Corresponding OpenComputers version
 
-Current `master` branch of Ocelot Brain corresponds to OC 1.7.5 (Nov 17, 2019).
+Current `master` branch of Ocelot Brain corresponds to OC 1.7.6 (May 15, 2021, e38c3fd).
 
 ### Build instructions
 
@@ -27,17 +27,18 @@ Current `master` branch of Ocelot Brain corresponds to OC 1.7.5 (Nov 17, 2019).
 * Run the `sbt assemly` task to build JAR file with dependencies
 * Take the JAR from `target/scala-x.xx/` folder
 
-At the moment of development we've used Scala 2.13.
+At the moment we are using Scala 2.13.
 
 ### Usage tips
 
-The core can be configured using a `brain.conf` file.  
-This file has the exact format of OpenComputers configuration file.
+The core can be configured using a `brain.conf` file.
 
-You can take one from your Minecraft configs (or copy from the
+This file has the exact format of OpenComputers configuration file.  
+You can take one from your Minecraft save configs (or copy from the
 [`resources`](https://gitlab.com/cc-ru/ocelot/ocelot-brain/blob/master/src/main/resources/application.conf)
-folder) and modify it as needed.  
-All not used fields will be just ignored.
+folder) and modify it.
+
+All fields that Ocelot does not need - will be just ignored.
 
 ### Feedback
 
@@ -61,5 +62,4 @@ And at last but not least, thanks to OpenComputers team, who created this wonder
 
 ### Beware
 
-This project is a *work-in-progress*, expect breaking changes or bugs
-from time to time.
+This project is a *work-in-progress*, breaking changes or bugs are expected.  
