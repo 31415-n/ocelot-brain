@@ -220,7 +220,7 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
           if (dstIdx == srcIdx) {
             val tx = col - fromCol
             val ty = row - fromRow
-            dst.copy(col, row, w, h, tx, ty)
+            dst.copy(fromCol - 1, fromRow - 1, w, h, tx, ty)
             result(true)
           } else {
             // at least one of the two buffers is a gpu buffer
@@ -442,8 +442,6 @@ trait GenericGPU extends Environment with Tiered with VideoRamAware {
     val vertical = args.optBoolean(3, default = false)
 
     screen(s => {
-      val x2 = if (vertical) x else x + value.length - 1
-      val y2 = if (!vertical) y else y + value.length - 1
       if (consumeViewportPower(s, context, setCosts(tier))) {
         s.set(x, y, value, vertical)
         result(true)
