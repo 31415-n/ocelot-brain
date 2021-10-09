@@ -245,7 +245,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   def consumeCallBudget(callCost: Double): Unit = {
     if (architecture.isInitialized && !inSynchronizedCall) {
-      val clampedCost = math.max(0.0, callCost)
+      val clampedCost = math.max(0.001, callCost)
       if (clampedCost > callBudget) {
         throw new LimitReachedException()
       }
