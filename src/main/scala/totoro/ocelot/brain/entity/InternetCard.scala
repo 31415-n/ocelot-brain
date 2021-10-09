@@ -86,7 +86,7 @@ class InternetCard extends Entity with Environment with DeviceInfo {
     result(socket)
   }
 
-  private def checkOwner(context: Context) {
+  private def checkOwner(context: Context): Unit = {
     if (owner.isEmpty || context.node != owner.get.node) {
       throw new IllegalArgumentException("can only be used by the owning computer")
     }
@@ -94,7 +94,7 @@ class InternetCard extends Entity with Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  override def onConnect(node: Node) {
+  override def onConnect(node: Node): Unit = {
     super.onConnect(node)
     if (owner.isEmpty && node.host.isInstanceOf[Context] && node.isNeighborOf(this.node)) {
       owner = Some(node.host.asInstanceOf[Context])
@@ -208,7 +208,7 @@ object InternetCard {
       }
     }
 
-    def add(e: (SocketChannel, () => Unit)) {
+    def add(e: (SocketChannel, () => Unit)): Unit = {
       toAccept.offer(e)
       selector.wakeup()
     }
@@ -231,7 +231,8 @@ object InternetCard {
     private var isAddressResolved = false
     private val id = UUID.randomUUID()
 
-    private def setupSelector() {
+    private def setupSelector(): Unit = {
+      if (channel == null) return
       TCPNotifier.add((channel, () => {
         owner match {
           case Some(internetCard) =>
@@ -340,7 +341,7 @@ object InternetCard {
 
   }
 
-  def checkLists(inetAddress: InetAddress, host: String) {
+  def checkLists(inetAddress: InetAddress, host: String): Unit = {
     if (Settings.get.httpHostWhitelist.length > 0 && !Settings.get.httpHostWhitelist.exists(_ (inetAddress, host))) {
       throw new FileNotFoundException("address is not whitelisted")
     }
@@ -490,7 +491,5 @@ object InternetCard {
           throw new IOException(Option(e.getMessage).getOrElse(e.toString))
       }
     }
-
   }
-
 }
