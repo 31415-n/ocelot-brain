@@ -1,8 +1,5 @@
 package totoro.ocelot.brain.nbt;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -10,9 +7,7 @@ import java.util.*;
 
 @SuppressWarnings("unchecked")
 public class NBTTagCompound extends NBTBase {
-
-    private static final Logger b = LogManager.getLogger();
-    private Map map = new HashMap();
+    private final Map map = new HashMap();
 
     public NBTTagCompound() {}
 
@@ -39,7 +34,7 @@ public class NBTTagCompound extends NBTBase {
             while ((b0 = a(datainput, nbtreadlimiter)) != 0) {
                 String s = getTagType(datainput, nbtreadlimiter);
 
-                nbtreadlimiter.a((long) (16 * s.length()));
+                nbtreadlimiter.a(16L * s.length());
                 NBTBase nbtbase = a(b0, s, datainput, i + 1, nbtreadlimiter);
 
                 this.map.put(s, nbtbase);
