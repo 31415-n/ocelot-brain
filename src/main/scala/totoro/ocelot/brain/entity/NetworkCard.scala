@@ -96,7 +96,7 @@ class NetworkCard extends Entity with Environment with WakeMessageAware with Dev
 
   // ----------------------------------------------------------------------- //
 
-  override def onDisconnect(node: Node) {
+  override def onDisconnect(node: Node): Unit = {
     super.onDisconnect(node)
     if (node == this.node) {
       openPorts.clear()
@@ -130,14 +130,14 @@ class NetworkCard extends Entity with Environment with WakeMessageAware with Dev
   private final val WakeMessageTag = "wakeMessage"
   private final val WakeMessageFuzzyTag = "wakeMessageFuzzy"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
     assert(openPorts.isEmpty)
     openPorts ++= nbt.getIntArray(OpenPortsTag)
     loadWakeMessage(nbt)
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setIntArray(OpenPortsTag, openPorts.toArray)
     wakeMessage.foreach(nbt.setString(WakeMessageTag, _))

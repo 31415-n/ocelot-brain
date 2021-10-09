@@ -1,18 +1,17 @@
 package totoro.ocelot.brain.entity.machine.luac
 
-import java.util.UUID
-
 import li.cil.repack.com.naef.jnlua.LuaState
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
+import java.util.UUID
 import scala.collection.mutable
 
 class PersistenceAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
   private var persistKey = "__persist" + UUID.randomUUID().toString.replaceAll("-", "")
 
-  override def initialize() {
+  override def initialize(): Unit = {
     // Will be replaced by old value in load.
     lua.pushScalaFunction(lua => {
       lua.pushString(persistKey)
@@ -32,7 +31,7 @@ class PersistenceAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
       val perms = lua.getTop - 1
       val uperms = lua.getTop
 
-      def flattenAndStore() {
+      def flattenAndStore(): Unit = {
         /* ... k v */
         // We only care for tables and functions, any value types are safe.
         if (lua.isFunction(-1) || lua.isTable(-1)) {
@@ -91,19 +90,19 @@ class PersistenceAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
     }
   }
 
-  override def load(nbt: NBTTagCompound) {
+  override def load(nbt: NBTTagCompound): Unit = {
     super.load(nbt)
     if (nbt.hasKey("persistKey")) {
       persistKey = nbt.getString("persistKey")
     }
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setString("persistKey", persistKey)
   }
 
-  def configure() {
+  def configure(): Unit = {
     lua.getGlobal("eris")
 
     lua.getField(-1, "settings")

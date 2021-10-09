@@ -23,7 +23,7 @@ public class NBTTagByteArray extends NBTBase {
     void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) throws IOException {
         int j = datainput.readInt();
 
-        nbtreadlimiter.a((long) (8 * j));
+        nbtreadlimiter.a(8L * j);
         this.data = new byte[j];
         datainput.readFully(this.data);
     }

@@ -4,7 +4,7 @@ import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.util.FontUtils
 
 class UnicodeAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
-  override def initialize() {
+  override def initialize(): Unit = {
     // Provide some better Unicode support.
     lua.newTable()
 

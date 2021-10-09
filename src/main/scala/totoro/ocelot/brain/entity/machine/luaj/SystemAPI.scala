@@ -5,7 +5,7 @@ import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
 
 class SystemAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
-  override def initialize() {
+  override def initialize(): Unit = {
     val system = LuaValue.tableOf()
 
     // Whether bytecode may be loaded directly.

@@ -11,7 +11,7 @@ import scala.collection.mutable
   * This object contains methods to serialize custom Persistable objects
   * to NBT tags and back.
   * Serialized data will look like this:
-  * `
+  * {{{
   * {
   *   type: xxx.xxx.Class,
   *   data: {
@@ -19,7 +19,7 @@ import scala.collection.mutable
   *   },
   *   ...
   * }
-  * `
+  * }}}
   * The root object may be a freshly created NBT with nothing else,
   * of some existing object - this does not matter as long as there
   * are no field name clashes.

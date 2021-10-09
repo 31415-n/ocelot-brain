@@ -21,7 +21,7 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
 
   var strength: Double = maxWirelessRange
 
-  def receivePacket(packet: Packet, source: WirelessEndpoint) {
+  def receivePacket(packet: Packet, source: WirelessEndpoint): Unit = {
     receivePacket(packet, 1)
   }
 
@@ -40,7 +40,7 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
 
   override def isWired(context: Context, args: Arguments): Array[AnyRef] = result(shouldSendWiredTraffic)
 
-  override protected def doSend(packet: Packet) {
+  override protected def doSend(packet: Packet): Unit = {
     if (strength > 0) {
       Network.sendWirelessPacket(this, strength, packet)
     }
@@ -48,7 +48,7 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
       super.doSend(packet)
   }
 
-  override protected def doBroadcast(packet: Packet) {
+  override protected def doBroadcast(packet: Packet): Unit = {
     if (strength > 0) {
       Network.sendWirelessPacket(this, strength, packet)
     }
@@ -60,14 +60,14 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
 
   override val needUpdate = true
 
-  override def onConnect(node: Node) {
+  override def onConnect(node: Node): Unit = {
     super.onConnect(node)
     if (node == this.node) {
       Network.joinWirelessNetwork(this)
     }
   }
 
-  override def onDisconnect(node: Node) {
+  override def onDisconnect(node: Node): Unit = {
     super.onDisconnect(node)
     if (node == this.node) {
       Network.leaveWirelessNetwork(this)
@@ -78,14 +78,14 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
 
   private final val StrengthTag = "strength"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
     if (nbt.hasKey(StrengthTag)) {
       strength = nbt.getDouble(StrengthTag) max 0 min maxWirelessRange
     }
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setDouble(StrengthTag, strength)
   }

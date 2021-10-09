@@ -1,12 +1,12 @@
 package totoro.ocelot.brain.entity.traits
 
-import java.util.UUID
-
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI, FileSystemTrait, ReadWriteLabel}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.workspace.Workspace
+
+import java.util.UUID
 
 /**
   * Basic trait for all managed-disk-like entities.

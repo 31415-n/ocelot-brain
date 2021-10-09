@@ -1,16 +1,15 @@
 package totoro.ocelot.brain.entity.fs
 
-import java.io
-import java.io.FileNotFoundException
-import java.nio.ByteBuffer
-import java.util.concurrent.{CancellationException, Future, TimeUnit, TimeoutException}
-
 import org.apache.commons.io.FileUtils
 import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.{SafeThreadPool, ThreadPoolFactory}
 import totoro.ocelot.brain.workspace.Workspace
 
+import java.io
+import java.io.FileNotFoundException
+import java.nio.ByteBuffer
+import java.util.concurrent.{CancellationException, Future, TimeUnit, TimeoutException}
 import scala.collection.mutable
 
 object Buffered {
@@ -56,7 +55,7 @@ trait Buffered extends OutputStreamFileSystem {
   }
 
   private def loadFiles(nbt: NBTTagCompound): Unit = this.synchronized {
-    def recurse(path: String, directory: io.File) {
+    def recurse(path: String, directory: io.File): Unit = {
       makeDirectory(path)
       for (child <- directory.listFiles() if FileSystemAPI.isValidFilename(child.getName)) {
         val childPath = path + child.getName

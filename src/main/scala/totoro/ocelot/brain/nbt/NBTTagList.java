@@ -56,8 +56,8 @@ public class NBTTagList extends NBTBase {
         StringBuilder s = new StringBuilder("[");
         int i = 0;
 
-        for (Iterator iterator = this.list.iterator(); iterator.hasNext(); ++i) {
-            NBTBase nbtbase = (NBTBase) iterator.next();
+        for (Iterator<NBTBase> iterator = this.list.iterator(); iterator.hasNext(); ++i) {
+            NBTBase nbtbase = iterator.next();
 
             s.append(i).append(':').append(nbtbase).append(',');
         }
@@ -155,11 +155,8 @@ public class NBTTagList extends NBTBase {
 
         nbttaglist.type = this.type;
 
-        for (Object aList : this.list) {
-            NBTBase nbtbase = (NBTBase) aList;
-            NBTBase nbtbase1 = nbtbase.clone();
-
-            nbttaglist.list.add(nbtbase1);
+        for (NBTBase aList : this.list) {
+            nbttaglist.list.add(aList.clone());
         }
 
         return nbttaglist;

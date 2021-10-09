@@ -17,7 +17,7 @@ trait Disk extends Environment with Persistable {
 
   def isLocked: Boolean = isLocked(lockInfo)
 
-  def isLocked(forLockInfo: String): Boolean = forLockInfo != null && !forLockInfo.isEmpty
+  def isLocked(forLockInfo: String): Boolean = forLockInfo != null && forLockInfo.nonEmpty
 
   def setLocked(player: String): Unit = {
     val oldInfo = lockInfo
@@ -33,14 +33,14 @@ trait Disk extends Environment with Persistable {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
     lockInfo = if (nbt.hasKey(Disk.LockTag)) {
       nbt.getString(Disk.LockTag)
     } else ""
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setString(Disk.LockTag, lockInfo)
   }

@@ -95,7 +95,7 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
     else false
   }
 
-  protected def relayPacket(sourceSide: Option[Direction.Value], packet: Packet) {
+  protected def relayPacket(sourceSide: Option[Direction.Value], packet: Packet): Unit = {
     for (side <- Direction.values) {
       if (sourceSide.isEmpty || sourceSide.get != side) {
         val node = sidedNode(side)
@@ -173,11 +173,11 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
     def plugsInOtherNetworks: Iterable[Plug] = plugs.values.filter(_.node.network != node.network)
   }
 
-  protected def onPlugConnect(plug: Plug, node: Node) {}
+  protected def onPlugConnect(plug: Plug, node: Node): Unit = {}
 
-  protected def onPlugDisconnect(plug: Plug, node: Node) {}
+  protected def onPlugDisconnect(plug: Plug, node: Node): Unit = {}
 
-  protected def onPlugMessage(plug: Plug, message: Message) {
+  protected def onPlugMessage(plug: Plug, message: Message): Unit = {
     if (message.name == "network.message" && !plugs.values.exists(_.node == message.source)) message.data match {
       case Array(packet: Packet) => tryEnqueuePacket(Option(plug.side), packet)
       case _ =>

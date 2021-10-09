@@ -8,7 +8,7 @@ import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Registry, Value}
 import scala.jdk.CollectionConverters._
 
 class UserdataAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
-  override def initialize() {
+  override def initialize(): Unit = {
     val userdata = LuaValue.tableOf()
 
     userdata.set("apply", (args: Varargs) => {

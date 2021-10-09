@@ -1,7 +1,5 @@
 package totoro.ocelot.brain
 
-import java.io.File
-
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
 import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
@@ -11,6 +9,8 @@ import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence.TieredConstructor
 import totoro.ocelot.brain.util.{FontUtils, ThreadPoolFactory}
+
+import java.io.File
 
 object Ocelot {
   final val Name = "Ocelot"

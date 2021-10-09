@@ -22,12 +22,12 @@ trait Tiered extends Persistable {
 
   // ----------------------------------------------------------------------- //
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
     tier = nbt.getByte(Tiered.TierTag)
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setByte(Tiered.TierTag, tier.toByte)
   }

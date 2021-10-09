@@ -6,7 +6,7 @@ import totoro.ocelot.brain.entity.machine.MachineAPI
 import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
 
 class ComputerAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
-  def initialize() {
+  def initialize(): Unit = {
     // Computer API, stuff that kinda belongs to os, but we don't want to
     // clutter it.
     lua.newTable()

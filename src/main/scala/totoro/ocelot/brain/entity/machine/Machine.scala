@@ -363,7 +363,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
   }
 
-  def addUser(name: String) {
+  def addUser(name: String): Unit = {
     if (_users.size >= Settings.get.maxUsers)
       throw new Exception("too many users")
 
@@ -557,7 +557,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   // ----------------------------------------------------------------------- //
 
-  override def onMessage(message: Message) {
+  override def onMessage(message: Message): Unit = {
     message.data match {
       case Array(name: String, args@_*) if message.name == "computer.signal" =>
         signal(name, Seq(message.source.address) ++ args: _*)
@@ -570,7 +570,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
   }
 
-  override def onConnect(node: Node) {
+  override def onConnect(node: Node): Unit = {
     if (node == this.node) {
       _components += this.node.address -> this.node.name
       tmp.foreach(fs => node.connect(fs.node))
@@ -586,7 +586,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     host.onMachineConnect(node)
   }
 
-  override def onDisconnect(node: Node) {
+  override def onDisconnect(node: Node): Unit = {
     if (node == this.node) {
       close()
       tmp.foreach(_.node.remove())
@@ -603,13 +603,13 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   // ----------------------------------------------------------------------- //
 
-  def addComponent(component: Component) {
+  def addComponent(component: Component): Unit = {
     if (!_components.contains(component.address)) {
       addedComponents += component
     }
   }
 
-  def removeComponent(component: Component) {
+  def removeComponent(component: Component): Unit = {
     if (_components.contains(component.address)) {
       _components.synchronized(_components -= component.address)
       signal("component_removed", component.address, component.name)
@@ -617,7 +617,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     addedComponents -= component
   }
 
-  private def processAddedComponents() {
+  private def processAddedComponents(): Unit = {
     if (addedComponents.nonEmpty) {
       for (component <- addedComponents) {
         if (component.canBeSeenFrom(node)) {
@@ -633,7 +633,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     }
   }
 
-  private def verifyComponents() {
+  private def verifyComponents(): Unit = {
     val invalid = mutable.Set.empty[String]
     for ((address, name) <- _components) {
       node.network.node(address) match {
@@ -677,7 +677,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
     super.load(nbt, workspace)
 
-    state.pushAll(nbt.getIntArray(StateTag).reverseMap(MachineAPI.State(_)))
+    state.pushAll(nbt.getIntArray(StateTag).reverseIterator.map(MachineAPI.State(_)))
     nbt.getTagList(UsersTag, NBT.TAG_STRING).foreach((tag: NBTTagString) => _users += tag.getString)
     if (nbt.hasKey(MessageTag)) {
       message = Some(nbt.getString(MessageTag))

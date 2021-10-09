@@ -185,7 +185,7 @@ trait Node {
 
   // ----------------------------------------------------------------------- //
 
-  def onConnect(node: Node) {
+  def onConnect(node: Node): Unit = {
     try
       if (host != null) {
         host.onConnect(node)
@@ -195,7 +195,7 @@ trait Node {
     }
   }
 
-  def onDisconnect(node: Node) {
+  def onDisconnect(node: Node): Unit = {
     try
       host.onDisconnect(node)
     catch {

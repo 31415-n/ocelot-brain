@@ -1,7 +1,6 @@
 package totoro.ocelot.brain.util
 
 import java.util.{Calendar, GregorianCalendar, TimeZone}
-
 import scala.collection.mutable
 
 object GameTimeFormatter {
@@ -37,12 +36,12 @@ object GameTimeFormatter {
     'j' -> (t => f"${t.yearDay}%03d"),
     'm' -> (t => f"${t.month}%02d"),
     'M' -> (t => f"${t.minute}%02d"),
-    'n' -> (t => "\n"),
+    'n' -> (_ => "\n"),
     'p' -> (t => amPm(if (t.hour < 12) 0 else 1)),
     'r' -> (t => format("%I:%M:%S %p", t)),
     'R' -> (t => format("%H:%M", t)),
     'S' -> (t => f"${t.second}%02d"),
-    't' -> (t => "\t"),
+    't' -> (_ => "\t"),
     'T' -> (t => format("%H:%M:%S", t)),
     //'u' -> (t => ""),
     //'U' -> (t => ""),
@@ -55,7 +54,7 @@ object GameTimeFormatter {
     'Y' -> (t => f"${t.year}%04d"),
     //'z' -> (t => ""),
     //'Z' -> (t => ""),
-    '%' -> (t => "%")
+    '%' -> (_ => "%")
   )
 
   def parse(time: Double): DateTime = {

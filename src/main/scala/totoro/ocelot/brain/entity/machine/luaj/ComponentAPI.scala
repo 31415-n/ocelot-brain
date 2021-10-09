@@ -7,7 +7,7 @@ import totoro.ocelot.brain.network.Component
 import scala.jdk.CollectionConverters._
 
 class ComponentAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
-  override def initialize() {
+  override def initialize(): Unit = {
     // Component interaction stuff.
     val component = LuaValue.tableOf()
 

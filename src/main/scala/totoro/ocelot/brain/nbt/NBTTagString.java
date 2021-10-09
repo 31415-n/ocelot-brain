@@ -25,7 +25,7 @@ public class NBTTagString extends NBTBase {
 
     void load(DataInput datainput, int i, NBTReadLimiter nbtreadlimiter) throws IOException {
         this.data = datainput.readUTF();
-        nbtreadlimiter.a((long) (16 * this.data.length()));
+        nbtreadlimiter.a(16L * this.data.length());
     }
 
     public byte getId() {

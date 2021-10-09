@@ -1,11 +1,10 @@
 package totoro.ocelot.brain.entity.fs
 
-import java.io.{FileNotFoundException, IOException}
-
 import totoro.ocelot.brain.entity.fs
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagList}
 import totoro.ocelot.brain.workspace.Workspace
 
+import java.io.{FileNotFoundException, IOException}
 import scala.collection.mutable
 
 trait OutputStreamFileSystem extends InputStreamFileSystem {
@@ -47,7 +46,7 @@ trait OutputStreamFileSystem extends InputStreamFileSystem {
   private final val HandleTag = "handle"
   private final val PathTag = "path"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
     val handlesNbt = nbt.getTagList(OutputTag, NBT.TAG_COMPOUND)

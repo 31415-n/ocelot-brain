@@ -1,10 +1,9 @@
 package totoro.ocelot.brain.util
 
-import java.util.concurrent._
-import java.util.concurrent.atomic.AtomicInteger
-
 import totoro.ocelot.brain.{Ocelot, Settings}
 
+import java.util.concurrent._
+import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.mutable
 
 object ThreadPoolFactory {

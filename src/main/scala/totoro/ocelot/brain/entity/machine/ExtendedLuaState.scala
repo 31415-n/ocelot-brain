@@ -1,10 +1,9 @@
 package totoro.ocelot.brain.entity.machine
 
-import java.util
-
 import li.cil.repack.com.naef.jnlua.{LuaState, LuaType}
 import totoro.ocelot.brain.{Ocelot, Settings}
 
+import java.util
 import scala.collection.{immutable, mutable}
 import scala.jdk.CollectionConverters._
 import scala.language.implicitConversions
@@ -18,7 +17,7 @@ object ExtendedLuaState {
   class ExtendedLuaState(val lua: LuaState) {
     def pushScalaFunction(f: LuaState => Int): Unit = lua.pushJavaFunction((state: LuaState) => f(state))
 
-    def pushValue(value: Any, memo: util.IdentityHashMap[Any, Int] = new util.IdentityHashMap()) {
+    def pushValue(value: Any, memo: util.IdentityHashMap[Any, Int] = new util.IdentityHashMap()): Unit = {
       val recursive = memo.size > 0
       val oldTop = lua.getTop
       if (memo.containsKey(value)) {
@@ -62,7 +61,7 @@ object ExtendedLuaState {
       }
     }
 
-    def pushList(obj: Any, list: Iterator[(Any, Int)], memo: util.IdentityHashMap[Any, Int]) {
+    def pushList(obj: Any, list: Iterator[(Any, Int)], memo: util.IdentityHashMap[Any, Int]): Unit = {
       lua.newTable()
       val tableIndex = lua.getTop
       memo.put(obj, tableIndex)
@@ -80,7 +79,7 @@ object ExtendedLuaState {
       lua.rawSet(-3)
     }
 
-    def pushTable(obj: AnyRef, map: Map[_, _], memo: util.IdentityHashMap[Any, Int]) {
+    def pushTable(obj: AnyRef, map: Map[_, _], memo: util.IdentityHashMap[Any, Int]): Unit = {
       lua.newTable(0, map.size)
       val tableIndex = lua.getTop
       memo.put(obj, tableIndex)

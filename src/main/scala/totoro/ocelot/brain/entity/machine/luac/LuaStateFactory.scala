@@ -1,9 +1,5 @@
 package totoro.ocelot.brain.entity.machine.luac
 
-import java.io.{File, FileInputStream, FileOutputStream}
-import java.nio.channels.Channels
-import java.util.regex.Pattern
-
 import com.google.common.base.Strings
 import com.google.common.io.PatternFilenameFilter
 import li.cil.repack.com.naef.jnlua
@@ -13,6 +9,9 @@ import totoro.ocelot.brain.entity.machine.ExtendedLuaState._
 import totoro.ocelot.brain.entity.machine.Machine
 import totoro.ocelot.brain.{Ocelot, Settings}
 
+import java.io.{File, FileInputStream, FileOutputStream}
+import java.nio.channels.Channels
+import java.util.regex.Pattern
 import scala.util.Random
 
 object LuaStateFactory {
@@ -135,7 +134,7 @@ abstract class LuaStateFactory {
   // libraries compiled for that system. It also means we have to unpack the
   // shared libraries somewhere so that we can load them, because we cannot
   // load them directly from a JAR.
-  def init() {
+  def init(): Unit = {
     if (libraryName == null) {
       return
     }

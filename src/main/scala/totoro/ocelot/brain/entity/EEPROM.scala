@@ -63,7 +63,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
       return result((), "storage is readonly")
     }
     label = args.optString(0, "EEPROM").trim.take(24)
-    if (label.length == 0) label = "EEPROM"
+    if (label.isEmpty) label = "EEPROM"
     result(label)
   }
 
@@ -104,7 +104,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   private final val ReadonlyTag = "readonly"
   private final val UserdataTag = "userdata"
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace) {
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
     codeData = nbt.getByteArray(EEPROMTag)
     if (nbt.hasKey(LabelTag)) {
@@ -114,7 +114,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
     volatileData = nbt.getByteArray(UserdataTag)
   }
 
-  override def save(nbt: NBTTagCompound) {
+  override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
     nbt.setByteArray(EEPROMTag, codeData)
     nbt.setString(LabelTag, label)

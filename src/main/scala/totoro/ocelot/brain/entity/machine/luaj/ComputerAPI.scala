@@ -7,7 +7,7 @@ import totoro.ocelot.brain.entity.machine.ScalaClosure._
 import totoro.ocelot.brain.entity.traits.{MutableProcessor, Processor}
 
 class ComputerAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
-  override def initialize() {
+  override def initialize(): Unit = {
     // Computer API, stuff that kinda belongs to os, but we don't want to
     // clutter it.
     val computer = LuaValue.tableOf()

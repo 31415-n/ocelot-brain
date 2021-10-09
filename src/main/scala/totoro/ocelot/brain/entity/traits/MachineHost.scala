@@ -2,7 +2,6 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.entity.machine.Machine
 import totoro.ocelot.brain.network.Node
-import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * This interface has to be implemented by 'hosts' of machine instances.

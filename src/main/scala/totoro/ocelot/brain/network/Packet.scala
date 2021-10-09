@@ -63,9 +63,9 @@ class Packet(var source: String, var destination: String, var port: Int, var dat
     * Restore a packet saved like this using the factory method in the
     * [[Network]] class.
     */
-  def save(nbt: NBTTagCompound) {
+  def save(nbt: NBTTagCompound): Unit = {
     nbt.setString("source", source)
-    if (destination != null && !destination.isEmpty) nbt.setString("dest", destination)
+    if (destination != null && destination.nonEmpty) nbt.setString("dest", destination)
     nbt.setInteger("port", port)
     nbt.setInteger("ttl", ttl)
     nbt.setInteger("dataLength", data.length)

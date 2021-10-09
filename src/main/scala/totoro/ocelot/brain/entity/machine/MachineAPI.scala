@@ -1,12 +1,11 @@
 package totoro.ocelot.brain.entity.machine
 
-import java.util.concurrent.ScheduledExecutorService
-
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.entity.traits.MachineHost
 import totoro.ocelot.brain.util.ThreadPoolFactory
 
+import java.util.concurrent.ScheduledExecutorService
 import scala.collection.mutable
 
 object MachineAPI {
@@ -22,7 +21,7 @@ object MachineAPI {
     * @param architecture the architecture to register.
     * @throws IllegalArgumentException if the specified architecture is invalid.
     */
-  def add(architecture: Class[_ <: Architecture], name: String) {
+  def add(architecture: Class[_ <: Architecture], name: String): Unit = {
     if (!checked.contains(architecture)) {
       try
         architecture.getConstructor(classOf[Machine])
