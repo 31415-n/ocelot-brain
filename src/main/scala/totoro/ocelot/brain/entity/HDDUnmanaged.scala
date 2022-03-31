@@ -9,9 +9,9 @@ class HDDUnmanaged(override var tier: Int, name: String)
   extends Entity with DiskUnmanaged with Tiered with DeviceInfo {
 
   val label: Label = new ReadWriteLabel(name)
-  val capacity: Int = Settings.get.hddSizes(tier) * 1024
-  val platterCount: Int = Settings.get.hddPlatterCounts(tier)
-  val speed: Int = tier + 2
+  def capacity: Int = Settings.get.hddSizes(tier) * 1024
+  def platterCount: Int = Settings.get.hddPlatterCounts(tier)
+  def speed: Int = tier + 2
 
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Disk,
