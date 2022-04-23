@@ -125,6 +125,7 @@ object Registry {
     converted.toArray
   }
 
+  //noinspection ScalaUnusedExpression
   def convertMap(obj: AnyRef, map: Map[_, _], memo: util.IdentityHashMap[Any, AnyRef]): AnyRef = {
     val converted = memo.asScala.getOrElseUpdate(obj, mutable.Map.empty[AnyRef, AnyRef]) match {
       case map: mutable.Map[AnyRef, AnyRef]@unchecked => map
@@ -133,6 +134,7 @@ object Registry {
     val fn: PartialFunction[(_, _), Unit] = {
       case (key: AnyRef, value: AnyRef) => converted += convertRecursively(key, memo) -> convertRecursively(value, memo)
     }
+    map.collect(fn)
     memo.get(obj)
   }
 }
