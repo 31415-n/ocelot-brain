@@ -53,7 +53,7 @@ object Loot {
     override protected def generateEnvironment(address: String): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
         FileSystemAPI.fromClass(Ocelot.getClass, Settings.resourceDomain, "loot/" + path),
-        label
+        label, activityType.orNull
       )
     }
 

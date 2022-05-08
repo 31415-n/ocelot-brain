@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.entity.fs
 
+import totoro.ocelot.brain.event.FileSystemActivityType.ActivityType
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
@@ -199,11 +200,11 @@ object FileSystemAPI extends {
     * @param speed       the speed multiplier for this file system.
     * @return the network node wrapping the file system.
     */
-  def asManagedEnvironment(fileSystem: FileSystemTrait, label: Label, speed: Int): FileSystem =
-    Option(fileSystem).flatMap(fs => Some(new FileSystem(fs, label, (speed - 1) max 0 min 5))).orNull
+  def asManagedEnvironment(fileSystem: FileSystemTrait, label: Label, speed: Int, activityType: ActivityType): FileSystem =
+    Option(fileSystem).flatMap(fs => Some(new FileSystem(fs, label, (speed - 1) max 0 min 5, Option(activityType)))).orNull
 
-  def asManagedEnvironment(address: String, fileSystem: FileSystemTrait, label: Label, speed: Int): FileSystem =
-    Option(fileSystem).flatMap(fs => Some(new FileSystem(address, fs, label, (speed - 1) max 0 min 5))).orNull
+  def asManagedEnvironment(address: String, fileSystem: FileSystemTrait, label: Label, speed: Int, activityType: ActivityType): FileSystem =
+    Option(fileSystem).flatMap(fs => Some(new FileSystem(address, fs, label, (speed - 1) max 0 min 5, Option(activityType)))).orNull
 
   /**
     * Creates a network node that makes the specified file system available via
@@ -216,17 +217,17 @@ object FileSystemAPI extends {
     * @param label       the read-only label of the file system.
     * @return the network node wrapping the file system.
     */
-  def asManagedEnvironment(fileSystem: FileSystemTrait, label: String, speed: Int): FileSystem =
-    asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), speed)
+  def asManagedEnvironment(fileSystem: FileSystemTrait, label: String, speed: Int, activityType: ActivityType): FileSystem =
+    asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), speed, activityType)
 
-  def asManagedEnvironment(fileSystem: FileSystemTrait, label: Label): FileSystem =
-    asManagedEnvironment(fileSystem, label, 1)
+  def asManagedEnvironment(fileSystem: FileSystemTrait, label: Label, activityType: ActivityType): FileSystem =
+    asManagedEnvironment(fileSystem, label, 1, activityType)
 
-  def asManagedEnvironment(fileSystem: FileSystemTrait, label: String): FileSystem =
-    asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), 1)
+  def asManagedEnvironment(fileSystem: FileSystemTrait, label: String, activityType: ActivityType): FileSystem =
+    asManagedEnvironment(fileSystem, new ReadOnlyLabel(label), 1, activityType)
 
-  def asManagedEnvironment(fileSystem: FileSystemTrait): FileSystem =
-    asManagedEnvironment(fileSystem, null: Label, 1)
+  def asManagedEnvironment(fileSystem: FileSystemTrait, activityType: ActivityType): FileSystem =
+    asManagedEnvironment(fileSystem, null: Label, 1, activityType)
 
   private class ReadOnlyLabel(val label: String) extends Label {
     def setLabel(value: String): Unit = throw new IllegalArgumentException("label is read only")

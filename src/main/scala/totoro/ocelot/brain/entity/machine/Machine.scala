@@ -25,7 +25,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   val tmp: Option[FileSystem] = if (Settings.get.tmpSize > 0) {
     Option(FileSystemAPI.asManagedEnvironment(FileSystemAPI.
-      fromMemory(Settings.get.tmpSize * 1024), "tmpfs", 5))
+      fromMemory(Settings.get.tmpSize * 1024), "tmpfs", 5, null))
   } else None
 
   var architecture: Architecture = _

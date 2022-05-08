@@ -2,6 +2,7 @@ package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.fs.{Label, ReadWriteLabel}
+import totoro.ocelot.brain.event.FileSystemActivityType.{ActivityType, Floppy}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.DyeColor
 import totoro.ocelot.brain.workspace.Workspace
@@ -10,6 +11,8 @@ abstract class Floppy(private var name: String, var color: DyeColor) extends Ent
   val label: Label = new ReadWriteLabel(name)
   val capacity: Int = Settings.get.floppySize * 1024
   val speed: Int = 1
+
+  override val activityType: Option[ActivityType] = Some(Floppy)
 
   def getName: String = name
 

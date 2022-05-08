@@ -38,7 +38,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
     if (isLocked) {
       fs = FileSystemAPI.asReadOnly(fs)
     }
-    FileSystemAPI.asManagedEnvironment(finalAddress, fs, new ReadWriteLabel(finalAddress), speed)
+    FileSystemAPI.asManagedEnvironment(finalAddress, fs, new ReadWriteLabel(finalAddress), speed, activityType.orNull)
   }
 
   // ----------------------------------------------------------------------- //

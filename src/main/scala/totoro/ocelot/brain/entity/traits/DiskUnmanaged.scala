@@ -210,7 +210,7 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
 
   // ----------------------------------------------------------------------- //
 
-  private var container: DiskActivityAware = _
+  private var container: Environment with DiskActivityAware = _
 
   override def onConnect(node: Node): Unit = {
     node.host match {
@@ -228,7 +228,11 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
   }
 
   private def diskActivity(): Unit = {
-    EventBus.sendDiskActivity(node)
-    if (container != null) container.lastDiskAccess = System.currentTimeMillis()
+    activityType match {
+      case Some(activityType) =>
+        EventBus.sendDiskActivity(node, activityType)
+        if (container != null) container.lastDiskAccess = System.currentTimeMillis()
+      case _ =>
+    }
   }
 }

@@ -1,3 +1,5 @@
 package totoro.ocelot.brain.event
 
-case class FileSystemActivityEvent(address: String) extends Event
+import totoro.ocelot.brain.event.FileSystemActivityType.ActivityType
+
+case class FileSystemActivityEvent(address: String, activityType: ActivityType) extends Event

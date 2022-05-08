@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.entity.traits
 
+import totoro.ocelot.brain.event.FileSystemActivityType.ActivityType
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
 import totoro.ocelot.brain.workspace.Workspace
@@ -10,6 +11,8 @@ import totoro.ocelot.brain.workspace.Workspace
 trait Disk extends Environment with Persistable {
   def capacity: Int
   def speed: Int
+
+  val activityType: Option[ActivityType]
 
   // ----------------------------------------------------------------------- //
 

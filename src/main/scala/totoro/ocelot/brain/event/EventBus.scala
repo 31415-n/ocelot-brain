@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.event
 
+import totoro.ocelot.brain.event.FileSystemActivityType.ActivityType
 import totoro.ocelot.brain.network.Node
 
 import scala.collection.mutable
@@ -25,11 +26,11 @@ object EventBus {
   }
 
   private val fileSystemAccessTimeouts = mutable.WeakHashMap.empty[Node, Long]
-  def sendDiskActivity(node: Node): Unit = {
+  def sendDiskActivity(node: Node, activityType: ActivityType): Unit = {
     fileSystemAccessTimeouts.get(node) match {
       case Some(timeout) if timeout > System.currentTimeMillis() => // Cooldown.
       case _ =>
-        send(FileSystemActivityEvent(node.address))
+        send(FileSystemActivityEvent(node.address, activityType))
         fileSystemAccessTimeouts.put(node, System.currentTimeMillis() + 500)
     }
   }
