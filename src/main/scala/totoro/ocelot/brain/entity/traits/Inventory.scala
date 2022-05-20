@@ -14,12 +14,14 @@ import scala.collection.mutable
   * Such as computer case.
   */
 trait Inventory extends WorkspaceAware with Persistable {
-  /**
-    * Returns the collection of entites indide of the container
-    */
+  // invariant: (i, e) ∈ slots iff (e, i) ∈ entitySlotIndices
+  // in other words, entitySlotIndices is the inverse of slots
   private val slots: mutable.HashMap[Int, Entity] = mutable.HashMap.empty
   private val entitySlotIndices: mutable.HashMap[Entity, Int] = mutable.HashMap.empty
 
+  /**
+    * A proxy to the inventory contents.
+    */
   final val inventory: InventoryProxy = new InventoryProxy
 
   /**
