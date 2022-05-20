@@ -225,7 +225,7 @@ class LuaJLuaArchitecture(val machine: Machine) extends Architecture {
 
     apis.foreach(_.initialize())
 
-    recomputeMemory(machine.host.inventory)
+    recomputeMemory(machine.host.inventory.entities)
 
     val kernel = lua.load(classOf[Machine].getResourceAsStream(Settings.scriptPath + "machine.lua"), "=machine", "t", lua)
     thread = new LuaThread(lua, kernel) // Left as the first value on the stack.

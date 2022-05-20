@@ -20,10 +20,13 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   override def onMachineDisconnect(node: Node): Unit = this.onDisconnect(node)
 
-  override def componentSlot(address: String): Int =
-    inventory.indexWhere {
+  override def componentSlot(address: String): Int = {
+    val entity = inventory.entities.find {
       case env: Environment => env.node != null && env.node.address == address
     }
+
+    entity.flatMap(inventory.slot).map(_.index).getOrElse(-1)
+  }
 
   // ----------------------------------------------------------------------- //
 

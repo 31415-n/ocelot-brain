@@ -213,7 +213,7 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
             // (which may change across releases).
             lua.gc(LuaState.GcAction.COLLECT, 0)
             kernelMemory = math.max(lua.getTotalMemory - lua.getFreeMemory, 1)
-            recomputeMemory(machine.host.inventory)
+            recomputeMemory(machine.host.inventory.entities)
 
             // Fake zero sleep to avoid stopping if there are no signals.
             lua.pushInteger(0)
@@ -386,7 +386,7 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
     }
 
     // Limit memory again.
-    recomputeMemory(machine.host.inventory)
+    recomputeMemory(machine.host.inventory.entities)
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
@@ -433,6 +433,6 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
     }
 
     // Limit memory again.
-    recomputeMemory(machine.host.inventory)
+    recomputeMemory(machine.host.inventory.entities)
   }
 }
