@@ -1,13 +1,13 @@
 name := "ocelot-brain"
 
 // do not forget to change the version in `Ocelot.scala`
-version := "0.6.12"
+version := "0.6.13"
 
 scalaVersion := "2.13.8"
 
 libraryDependencies ++= Seq(
-  "org.apache.logging.log4j" % "log4j-core" % "2.17.2",
-  "org.apache.logging.log4j" % "log4j-api" % "2.17.2",
+  "org.apache.logging.log4j" % "log4j-core" % "2.18.0",
+  "org.apache.logging.log4j" % "log4j-api" % "2.18.0",
   "com.google.guava" % "guava" % "28.1-jre",
   "commons-codec" % "commons-codec" % "1.15",
   "com.typesafe" % "config" % "1.4.2",
