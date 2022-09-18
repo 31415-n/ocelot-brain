@@ -3,6 +3,7 @@ package totoro.ocelot.brain.entity
 import totoro.ocelot.brain.entity.fs.{Label, ReadWriteLabel}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, DiskUnmanaged, Entity, Tiered}
+import totoro.ocelot.brain.event.FileSystemActivityType.{ActivityType, HDD}
 import totoro.ocelot.brain.{Constants, Settings}
 
 class HDDUnmanaged(override var tier: Int, name: String)
@@ -12,6 +13,8 @@ class HDDUnmanaged(override var tier: Int, name: String)
   def capacity: Int = Settings.get.hddSizes(tier) * 1024
   def platterCount: Int = Settings.get.hddPlatterCounts(tier)
   def speed: Int = tier + 2
+
+  override val activityType: Option[ActivityType] = Some(HDD)
 
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Disk,

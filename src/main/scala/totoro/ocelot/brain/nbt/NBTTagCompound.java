@@ -13,10 +13,8 @@ public class NBTTagCompound extends NBTBase {
     void write(DataOutput dataoutput) throws IOException {
 
         for (String o : this.map.keySet()) {
-            String s = o;
-            NBTBase nbtbase = this.map.get(s);
-
-            a(s, nbtbase, dataoutput);
+            NBTBase nbtbase = this.map.get(o);
+            a(o, nbtbase, dataoutput);
         }
 
         dataoutput.writeByte(0);
@@ -229,9 +227,7 @@ public class NBTTagCompound extends NBTBase {
         NBTTagCompound nbttagcompound = new NBTTagCompound();
 
         for (String o : this.map.keySet()) {
-            String s = o;
-
-            nbttagcompound.setTag(s, this.map.get(s).clone());
+            nbttagcompound.setTag(o, this.map.get(o).clone());
         }
 
         return nbttagcompound;

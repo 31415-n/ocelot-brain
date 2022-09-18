@@ -76,16 +76,16 @@ object NBTPersistence {
   class TieredConstructor extends InstanceConstructor {
     override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
       val clazz = Class.forName(className)
-      val constructor = clazz.getConstructors()(0)
+      val constructor = clazz.getConstructor(classOf[Int])
       val tier: Int = nbt.getCompoundTag(DataTag).getInteger(Tiered.TierTag)
-      constructor.newInstance(tier.asInstanceOf[Object]).asInstanceOf[Persistable]
+      constructor.newInstance(tier).asInstanceOf[Persistable]
     }
   }
 
   class WorkspaceAwareConstructor extends InstanceConstructor {
     override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
       val clazz = Class.forName(className)
-      val constructor = clazz.getConstructors()(0)
+      val constructor = clazz.getConstructor(classOf[Int], classOf[Workspace])
       val tier: Int = nbt.getCompoundTag(DataTag).getInteger(Tiered.TierTag)
       constructor.newInstance(tier, workspace).asInstanceOf[Persistable]
     }

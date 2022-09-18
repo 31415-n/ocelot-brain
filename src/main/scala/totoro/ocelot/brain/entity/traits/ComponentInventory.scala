@@ -14,7 +14,7 @@ trait ComponentInventory extends Inventory with Environment with Entity {
 
   override def update(): Unit = {
     super.update()
-    inventory.foreach { _.update() }
+    inventory.entities.foreach { _.update() }
   }
 
   override def dispose(): Unit = {
@@ -53,13 +53,13 @@ trait ComponentInventory extends Inventory with Environment with Entity {
   }
 
   private def connectComponents(): Unit = {
-    inventory.foreach {
+    inventory.entities.foreach {
       case environment: Environment => node.connect(environment.node)
     }
   }
 
   private def disconnectComponents(): Unit = {
-    inventory.foreach {
+    inventory.entities.foreach {
       case environment: Environment => environment.node.remove()
     }
   }

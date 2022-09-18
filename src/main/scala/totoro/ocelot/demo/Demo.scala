@@ -44,16 +44,16 @@ object Demo extends App {
     * because they are added to the Case internal inventory (and the case is added to the workspace).
     */
   val cpu = new CPU(Tier.Three)
-  computer.add(cpu)
+  computer.inventory(0) = cpu
 
   val gpu = new GraphicsCard(Tier.Three)
-  computer.add(gpu)
+  computer.inventory(1) = gpu
 
   val memory = new Memory(Tier.Six)
-  computer.add(memory)
+  computer.inventory(2) = memory
 
   val redstone = new Redstone.Tier1()
-  computer.add(redstone)
+  computer.inventory(3) = redstone
 
   /**
     * When creating a new hard drive, you can specify its address.
@@ -61,7 +61,7 @@ object Demo extends App {
     */
 
   val hdd = new HDDManaged(Tier.One)
-  computer.add(hdd)
+  computer.inventory(4) = hdd
 
   /**
   Custom EEPROM can be created like this:
@@ -116,8 +116,8 @@ object Demo extends App {
 //  eeprom.label = "Test BIOS"
 //  computer.add(eeprom)
 
-  computer.add(Loot.OpenOsEEPROM.create())
-  computer.add(Loot.OpenOsFloppy.create())
+  computer.inventory(5) = Loot.OpenOsEEPROM.create()
+  computer.inventory(6) = Loot.OpenOsFloppy.create()
 
   val screen = workspace.add(new Screen(Tier.One))
   computer.connect(screen)
@@ -139,7 +139,7 @@ object Demo extends App {
     println(s"[EVENT] Machine crash! (address = ${event.address}, ${event.message})")
   })
   EventBus.listenTo(classOf[FileSystemActivityEvent], { case event: FileSystemActivityEvent =>
-    println(s"[EVENT] Filesystem activity (address = ${event.address})")
+    println(s"[EVENT] Filesystem activity (address = ${event.address}, type = ${event.activityType})")
   })
   EventBus.listenTo(classOf[TextBufferSetEvent], { case event: TextBufferSetEvent =>
     println(s"[EVENT] Text buffer set (address = ${event.address}, ${event.x}, ${event.y}, ${event.value}, ${event.vertical})")

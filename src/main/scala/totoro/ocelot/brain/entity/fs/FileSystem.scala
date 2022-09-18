@@ -5,6 +5,7 @@ import totoro.ocelot.brain.entity.result
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, DiskActivityAware, Environment}
 import totoro.ocelot.brain.event.EventBus
+import totoro.ocelot.brain.event.FileSystemActivityType.ActivityType
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagIntArray, NBTTagList}
 import totoro.ocelot.brain.network._
@@ -14,11 +15,11 @@ import totoro.ocelot.brain.{Constants, Settings}
 import java.io.{FileNotFoundException, IOException}
 import scala.collection.mutable
 
-class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: Int)
+class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: Int, val activityType: Option[ActivityType])
   extends Environment with DeviceInfo {
 
-  def this(address: String, fileSystem: FileSystemTrait, label: Label, speed: Int) = {
-    this(fileSystem, label, speed)
+  def this(address: String, fileSystem: FileSystemTrait, label: Label, speed: Int, activityType: Option[ActivityType]) = {
+    this(fileSystem, label, speed, activityType)
     node.address = address
   }
 
@@ -270,7 +271,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
     }
   }
 
-  private var container: DiskActivityAware = _
+  private var container: Environment with DiskActivityAware = _
 
   override def onConnect(node: Node): Unit = {
     node.host match {
@@ -358,7 +359,11 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
       throw new IOException("bad file descriptor")
 
   private def diskActivity(): Unit = {
-    EventBus.sendDiskActivity(node)
-    if (container != null) container.lastDiskAccess = System.currentTimeMillis()
+    activityType match {
+      case Some(activityType) =>
+        EventBus.sendDiskActivity(node, activityType)
+        if (container != null) container.lastDiskAccess = System.currentTimeMillis()
+      case _ =>
+    }
   }
 }

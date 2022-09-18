@@ -11,7 +11,7 @@ class FloppyDiskDrive extends Entity with Environment with ComponentInventory wi
     withComponent("disk_drive").
     create()
 
-  def filesystemNode: Option[Node] = inventory.headOption match {
+  def filesystemNode: Option[Node] = inventory(0).get match {
     case Some(environment: Environment) => Option(environment.node)
     case _ => None
   }
@@ -36,7 +36,7 @@ class FloppyDiskDrive extends Entity with Environment with ComponentInventory wi
 
   @Callback(doc = """function([velocity:number]):boolean -- Eject the currently present medium from the drive.""")
   def eject(context: Context, args: Arguments): Array[AnyRef] = {
-    result(clear())
+    result(inventory.clear())
   }
 
   @Callback(doc = """function(): string -- Return the internal floppy disk address""")

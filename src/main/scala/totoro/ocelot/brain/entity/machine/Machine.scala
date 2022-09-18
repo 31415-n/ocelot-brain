@@ -25,7 +25,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
 
   val tmp: Option[FileSystem] = if (Settings.get.tmpSize > 0) {
     Option(FileSystemAPI.asManagedEnvironment(FileSystemAPI.
-      fromMemory(Settings.get.tmpSize * 1024), "tmpfs", 5))
+      fromMemory(Settings.get.tmpSize * 1024), "tmpfs", 5, null))
   } else None
 
   var architecture: Architecture = _
@@ -79,7 +79,7 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
   // ----------------------------------------------------------------------- //
 
   def onHostChanged(): Unit = {
-    val components = host.inventory
+    val components = host.inventory.entities
     maxComponents = components.foldLeft(0)((sum, entity) => sum + (entity match {
       case processor: Processor => processor.supportedComponents
       case _ => 0

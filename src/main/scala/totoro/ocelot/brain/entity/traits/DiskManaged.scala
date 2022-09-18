@@ -14,8 +14,10 @@ import java.util.UUID
 trait DiskManaged extends Disk with WorkspaceAware {
   protected var envLock = false // refactor later
 
+  protected var _address: Option[String] = None
+
   def fileSystem: FileSystem = {
-    if (_fileSystem == null) _fileSystem = generateEnvironment(null)
+    if (_fileSystem == null) _fileSystem = generateEnvironment()
     _fileSystem
   }
 
@@ -32,13 +34,13 @@ trait DiskManaged extends Disk with WorkspaceAware {
 
   protected var _fileSystem: FileSystem = _
 
-  protected def generateEnvironment(address: String): FileSystem = {
-    val finalAddress = if (address == null) UUID.randomUUID().toString else address
-    var fs: FileSystemTrait = FileSystemAPI.fromSaveDirectory(workspace.path, finalAddress, capacity max 0, Settings.get.bufferChanges)
+  protected def generateEnvironment(): FileSystem = {
+    if (_address.isEmpty) _address = Option(UUID.randomUUID().toString)
+    var fs: FileSystemTrait = FileSystemAPI.fromSaveDirectory(workspace.path, _address.get, capacity max 0, Settings.get.bufferChanges)
     if (isLocked) {
       fs = FileSystemAPI.asReadOnly(fs)
     }
-    FileSystemAPI.asManagedEnvironment(finalAddress, fs, new ReadWriteLabel(finalAddress), speed)
+    FileSystemAPI.asManagedEnvironment(_address.get, fs, new ReadWriteLabel(_address.get), speed, activityType.orNull)
   }
 
   // ----------------------------------------------------------------------- //
@@ -52,7 +54,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
         val nbt = new NBTTagCompound()
         fileSystem.save(nbt)
         // regenerate filesystem instance
-        _fileSystem = generateEnvironment(fileSystem.node.address)
+        _fileSystem = generateEnvironment()
         // restore parameters
         _fileSystem.load(nbt, workspace)
       }
@@ -78,9 +80,9 @@ trait DiskManaged extends Disk with WorkspaceAware {
     this.workspace = workspace
     if (nbt.hasKey(FileSystemTag)) {
       val nodeNbt = nbt.getCompoundTag(Environment.NodeTag)
-      val address = nodeNbt.getString(Node.AddressTag)
       val fsNbt = nbt.getCompoundTag(FileSystemTag)
-      _fileSystem = generateEnvironment(address)
+      _address = Option(nodeNbt.getString(Node.AddressTag))
+      _fileSystem = generateEnvironment()
       _fileSystem.load(fsNbt, workspace)
     }
     envLock = false

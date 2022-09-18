@@ -240,6 +240,14 @@ object ExtendedNBT {
       }
     }
 
+    def iterator[Tag <: NBTBase]: Iterator[Tag] = new Iterator[Tag] {
+      private val iterable = nbt.copy(): NBTTagList
+
+      override def hasNext: Boolean = iterable.tagCount > 0
+
+      override def next(): Tag = iterable.removeTag(0).asInstanceOf[Tag]
+    }
+
     def append(values: NBTBase*): Unit = append(values)
 
     def foreach[Tag <: NBTBase](f: Tag => Unit): Unit = {

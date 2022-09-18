@@ -11,6 +11,7 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.channels.Channels
+import java.nio.file.Paths
 import java.util.regex.Pattern
 import scala.util.Random
 
@@ -165,8 +166,11 @@ abstract class LuaStateFactory {
       else if (path.endsWith("/") || path.endsWith("\\")) path
       else path + "/"
     }
-    else "./"
-    val tmpLibFile = new File(tmpBasePath + tmpLibName)
+    else {
+      val location = Paths.get(this.getClass.getProtectionDomain.getCodeSource.getLocation.toURI)
+      (if (location.toString.endsWith("jar")) location.getParent else location).toString
+    }
+    val tmpLibFile = Paths.get(tmpBasePath, tmpLibName).toFile
 
     // Clean up old library files when not in tmp dir.
     if (!Settings.get.nativeInTmpDir) {
