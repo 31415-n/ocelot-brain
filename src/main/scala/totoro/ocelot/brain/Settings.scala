@@ -176,7 +176,7 @@ class Settings(val config: Config) {
 
   // >= 1.7.4
   val maxSignalQueueSize: Int =
-    (if (config.hasPath("computer.maxSignalQueueSize")) config.getInt("computer.maxSignalQueueSize") else 256) min 256
+    (if (config.hasPath("computer.maxSignalQueueSize")) config.getInt("computer.maxSignalQueueSize") else 256) max 256
 
   // >= 1.7.6
   val vramSizes: Array[Double] = Array(config.getDoubleList("gpu.vramSizes").asScala.toArray: _*) match {
