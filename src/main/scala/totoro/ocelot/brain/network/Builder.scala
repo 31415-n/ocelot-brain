@@ -53,7 +53,7 @@ object Builder {
 trait Builder[T <: Node] {
   /**
     * Finalizes the construction of the node.
-    * <p/>
+    * <br>
     * This performs the actual creation of the node, initializes it to the
     * settings defined by the current builder and returns it.
     *
