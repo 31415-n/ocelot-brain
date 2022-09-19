@@ -90,10 +90,13 @@ trait Buffered extends OutputStreamFileSystem {
       }
       setLastModified(path, directory.lastModified())
     }
+
     if (fileRoot.list() == null || fileRoot.list().isEmpty) {
       fileRoot.delete()
     }
-    else recurse("", fileRoot)
+    else {
+      recurse("", fileRoot)
+    }
   }
 
   override def save(nbt: NBTTagCompound): Unit = {

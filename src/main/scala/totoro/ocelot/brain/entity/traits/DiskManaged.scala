@@ -15,8 +15,9 @@ import java.util.UUID
 trait DiskManaged extends Disk with WorkspaceAware {
   protected var envLock = false // refactor later
 
-  protected var _address: Option[String] = None
+  protected var address: Option[String] = None
 
+  protected var _fileSystem: FileSystem = _
   def fileSystem: FileSystem = {
     if (_fileSystem == null)
       _fileSystem = generateEnvironment()
@@ -35,7 +36,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
 
   // ----------------------------------------------------------------------- //
 
-  protected var _fileSystem: FileSystem = _
+  def defaultRealPath: Path = workspace.path.resolve(address.get)
 
   private var _realPath: Path = _
   def realPath: Path = _realPath
@@ -46,43 +47,43 @@ trait DiskManaged extends Disk with WorkspaceAware {
   }
 
   protected def generateEnvironment(): FileSystem = {
-    if (_address.isEmpty)
-      _address = Option(UUID.randomUUID().toString)
+    if (address.isEmpty)
+      address = Option(UUID.randomUUID().toString)
 
-    if (realPath != null && Files.exists(realPath)) {
-      Ocelot.log.info(s"Real path was set to ${realPath.toString}")
-    }
-    else {
-      _realPath = workspace.path.resolve(_address.get)
+    // Restoring default path if component was just inserted to slot (without NBT data loading)
+    // or if user has changed/deleted/renamed previously set path
+    if (realPath == null || !Files.exists(realPath) || !Files.isDirectory(realPath))
+      _realPath = defaultRealPath
 
-      Ocelot.log.info(s"Real path was (re)initialized to ${realPath.toString}")
-    }
+    var fileSystemTrait: FileSystemTrait = FileSystemAPI.fromDirectory(realPath.toFile, capacity max 0, Settings.get.bufferChanges)
 
-    var fs: FileSystemTrait = FileSystemAPI.fromDirectory(realPath.toFile, capacity max 0, Settings.get.bufferChanges)
+    if (isLocked)
+      fileSystemTrait = FileSystemAPI.asReadOnly(fileSystemTrait)
 
-    if (isLocked) {
-      fs = FileSystemAPI.asReadOnly(fs)
-    }
-
-    FileSystemAPI.asManagedEnvironment(_address.get, fs, new ReadWriteLabel(_address.get), speed, activityType.orNull)
+    FileSystemAPI.asManagedEnvironment(address.get, fileSystemTrait, new ReadWriteLabel(address.get), speed, activityType.orNull)
   }
 
   // ----------------------------------------------------------------------- //
 
+  def saveToNbtAndLoad(): Unit = {
+    if (_fileSystem == null)
+      return
+
+    // save changes
+    val nbt = new NBTTagCompound()
+    fileSystem.save(nbt)
+    // regenerate filesystem instance
+    _fileSystem = generateEnvironment()
+    // restore parameters
+    _fileSystem.load(nbt, workspace)
+  }
+
   override def onLockChange(oldLockInfo: String): Unit = {
     super.onLockChange(oldLockInfo)
+
     // do no touch the file system without need
-    if (isLocked(oldLockInfo) != isLocked) {
-      if (_fileSystem != null) {
-        // save changes
-        val nbt = new NBTTagCompound()
-        fileSystem.save(nbt)
-        // regenerate filesystem instance
-        _fileSystem = generateEnvironment()
-        // restore parameters
-        _fileSystem.load(nbt, workspace)
-      }
-    }
+    if (isLocked(oldLockInfo) != isLocked)
+        saveToNbtAndLoad()
   }
 
   // ----------------------------------------------------------------------- //
@@ -92,6 +93,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
+
     if (_fileSystem != null) {
       val fsNbt = new NBTTagCompound
       _fileSystem.save(fsNbt)
@@ -111,11 +113,8 @@ trait DiskManaged extends Disk with WorkspaceAware {
       val nodeNbt = nbt.getCompoundTag(Environment.NodeTag)
       val fsNbt = nbt.getCompoundTag(FileSystemTag)
 
-      _address = Option(nodeNbt.getString(Node.AddressTag))
-
-      // GenerateEnvironment will be called in setter
-      realPath = if (nbt.hasKey(RealPathTag)) Paths.get(nbt.getString(RealPathTag)) else workspace.path
-
+      address = Option(nodeNbt.getString(Node.AddressTag))
+      realPath = if (nbt.hasKey(RealPathTag)) Paths.get(nbt.getString(RealPathTag)) else null
       _fileSystem.load(fsNbt, workspace)
     }
 

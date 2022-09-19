@@ -329,7 +329,7 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
     val ownersNbt = new NBTTagList()
     for ((address, handles) <- owners) {
       val ownerNbt = new NBTTagCompound()
-      ownerNbt.setString("address", address)
+      ownerNbt.setString(Node.AddressTag, address)
       ownerNbt.setTag("handles", new NBTTagIntArray(handles.toArray))
       ownersNbt.appendTag(ownerNbt)
     }

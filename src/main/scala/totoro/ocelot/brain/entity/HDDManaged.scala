@@ -10,7 +10,8 @@ class HDDManaged(override var tier: Int) extends Entity with DiskManaged with Ti
 
   def this(tier: Int, address: String) {
     this(tier)
-    _address = Option(address)
+
+    this.address = Option(address)
   }
 
   override val activityType: Option[ActivityType] = Some(HDD)
