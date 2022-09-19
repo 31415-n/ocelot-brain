@@ -6,6 +6,7 @@ import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 import java.io
+import java.io.File
 import java.net.{MalformedURLException, URISyntaxException, URL}
 import java.nio.file.Path
 import java.util.UUID
@@ -129,18 +130,22 @@ object FileSystemAPI extends {
     * game crashes, but introduces additional memory overhead, since all files
     * in the file system have to be kept in memory.
     *
-    * @param root     the name of the file system.
+    * @param file     the file of the filesystem
     * @param capacity the amount of space in bytes to allow being used.
     * @param buffered whether data should only be written to disk when saving.
     * @return a file system wrapping the specified folder.
     */
-  def fromSaveDirectory(saveDirectory: Path, root: String, capacity: Long, buffered: Boolean): Capacity = {
-    val path = new io.File(saveDirectory.toFile, root)
-    if (!path.isDirectory) path.delete()
-    path.mkdirs()
-    if (path.exists() && path.isDirectory) if (buffered) new BufferedFileSystem(path, capacity)
-    else new ReadWriteFileSystem(path, capacity)
-    else null
+  def fromDirectory(file: File, capacity: Long, buffered: Boolean): Capacity = {
+    if (!file.isDirectory) file.delete()
+      file.mkdirs()
+
+    if (file.exists() && file.isDirectory)
+      if (buffered)
+        new BufferedFileSystem(file, capacity)
+      else
+        new ReadWriteFileSystem(file, capacity)
+    else
+      null
   }
 
   /**
