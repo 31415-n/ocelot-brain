@@ -84,7 +84,6 @@ object Loot {
     override def create(): EEPROM = {
       val eeprom = new EEPROM()
       eeprom.label = label
-      eeprom.codeData = codeData
       eeprom.readonly = readonly
       eeprom
     }
