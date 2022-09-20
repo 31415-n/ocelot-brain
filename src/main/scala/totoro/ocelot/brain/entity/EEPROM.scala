@@ -9,12 +9,14 @@ import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
+import java.nio.file.{Files, Path, Paths}
+import scala.reflect.ClassTag.Nothing
+
 class EEPROM extends Entity with Environment with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Neighbors).
     withComponent("eeprom", Visibility.Neighbors).
     create()
 
-  var codeData = Array.empty[Byte]
 
   var volatileData = Array.empty[Byte]
 
@@ -22,7 +24,44 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   var label = "EEPROM"
 
-  def checksum: String = Hashing.crc32().hashBytes(codeData).toString
+  // ----------------------------------------------------------------------- //
+
+  var _codeData: Option[Array[Byte]] = None
+
+  def codeBytes: Option[Array[Byte]] = _codeData
+
+  def codeBytes_=(value: Option[Array[Byte]]): Unit = {
+    _codeData = value
+    _codePath = None
+  }
+
+
+  // ----------------------------------------------------------------------- //
+
+  var _codePath: Option[Path] = None
+
+  def codePath: Option[Path] = _codePath
+
+  def codePath_=(value: Option[Path]): Unit = {
+    _codePath = value
+    _codeData = None
+  }
+
+  // ----------------------------------------------------------------------- //
+
+  private def getBytes: Array[Byte] = {
+    if (codeBytes.isDefined) {
+      codeBytes.get
+    }
+    else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
+      Files.readAllBytes(codePath.get)
+    }
+    else {
+      Array.empty[Byte]
+    }
+  }
+
+  def checksum: String = Hashing.crc32().hashBytes(getBytes).toString
 
   // ----------------------------------------------------------------------- //
 
@@ -40,16 +79,27 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   // ----------------------------------------------------------------------- //
 
   @Callback(direct = true, doc = """function():string -- Get the currently stored byte array.""")
-  def get(context: Context, args: Arguments): Array[AnyRef] = result(codeData)
+  def get(context: Context, args: Arguments): Array[AnyRef] = {
+    result(getBytes)
+  }
 
   @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
   def set(context: Context, args: Arguments): Array[AnyRef] = {
-    if (readonly) {
+    if (readonly)
       return result((), "storage is readonly")
-    }
+
     val newData = args.optByteArray(0, Array.empty[Byte])
-    if (newData.length > Settings.get.eepromSize) throw new IllegalArgumentException("not enough space")
-    codeData = newData
+
+    if (newData.length > Settings.get.eepromSize)
+      throw new IllegalArgumentException("not enough space")
+
+    if (codeBytes.isDefined) {
+      _codeData = Some(newData)
+    }
+    else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
+      Files.write(codePath.get, newData)
+    }
+
     context.pause(2) // deliberately slow to discourage use as normal storage medium
     null
   }
@@ -99,24 +149,42 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  private final val EEPROMTag = "eeprom"
+  private final val CodeDataTag = "eeprom"
+  private final val CodePathTag = "eepromPath"
   private final val LabelTag = "label"
   private final val ReadonlyTag = "readonly"
   private final val UserdataTag = "userdata"
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
-    codeData = nbt.getByteArray(EEPROMTag)
-    if (nbt.hasKey(LabelTag)) {
+
+    _codeData = if (nbt.hasKey(CodeDataTag)) Some(nbt.getByteArray(CodePathTag)) else None
+    _codePath = if (nbt.hasKey(CodePathTag)) Some(Paths.get(nbt.getString(CodePathTag))) else None
+
+    if (nbt.hasKey(LabelTag))
       label = nbt.getString(LabelTag)
-    }
+
     readonly = nbt.getBoolean(ReadonlyTag)
     volatileData = nbt.getByteArray(UserdataTag)
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
-    nbt.setByteArray(EEPROMTag, codeData)
+
+    if (codeBytes.isDefined) {
+      nbt.setByteArray(CodeDataTag, codeBytes.get)
+    }
+    else {
+      nbt.removeTag(CodeDataTag)
+    }
+
+    if (codePath.isDefined) {
+      nbt.setString(CodePathTag, codePath.get.toString)
+    }
+    else {
+      nbt.removeTag(CodePathTag)
+    }
+
     nbt.setString(LabelTag, label)
     nbt.setBoolean(ReadonlyTag, readonly)
     nbt.setByteArray(UserdataTag, volatileData)
