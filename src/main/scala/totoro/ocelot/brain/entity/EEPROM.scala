@@ -26,15 +26,14 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  var _codeData: Option[Array[Byte]] = None
+  var _codeBytes: Option[Array[Byte]] = None
 
-  def codeBytes: Option[Array[Byte]] = _codeData
+  def codeBytes: Option[Array[Byte]] = _codeBytes
 
   def codeBytes_=(value: Option[Array[Byte]]): Unit = {
-    _codeData = value
+    _codeBytes = value
     _codePath = None
   }
-
 
   // ----------------------------------------------------------------------- //
 
@@ -44,7 +43,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   def codePath_=(value: Option[Path]): Unit = {
     _codePath = value
-    _codeData = None
+    _codeBytes = None
   }
 
   // ----------------------------------------------------------------------- //
@@ -94,7 +93,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
       throw new IllegalArgumentException("not enough space")
 
     if (codeBytes.isDefined) {
-      _codeData = Some(newData)
+      _codeBytes = Some(newData)
     }
     else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
       Files.write(codePath.get, newData)
@@ -158,7 +157,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
-    _codeData = if (nbt.hasKey(CodeDataTag)) Some(nbt.getByteArray(CodePathTag)) else None
+    _codeBytes = if (nbt.hasKey(CodeDataTag)) Some(nbt.getByteArray(CodePathTag)) else None
     _codePath = if (nbt.hasKey(CodePathTag)) Some(Paths.get(nbt.getString(CodePathTag))) else None
 
     if (nbt.hasKey(LabelTag))

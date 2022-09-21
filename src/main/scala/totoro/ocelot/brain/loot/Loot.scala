@@ -85,6 +85,7 @@ object Loot {
       val eeprom = new EEPROM()
       eeprom.label = label
       eeprom.readonly = readonly
+      eeprom.codeBytes = Some(codeData)
       eeprom
     }
   }
