@@ -148,7 +148,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  private final val CodeDataTag = "eeprom"
+  private final val CodeBytesTag = "eeprom"
   private final val CodePathTag = "eepromPath"
   private final val LabelTag = "label"
   private final val ReadonlyTag = "readonly"
@@ -157,7 +157,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
-    _codeBytes = if (nbt.hasKey(CodeDataTag)) Some(nbt.getByteArray(CodePathTag)) else None
+    _codeBytes = if (nbt.hasKey(CodeBytesTag)) Some(nbt.getByteArray(CodeBytesTag)) else None
     _codePath = if (nbt.hasKey(CodePathTag)) Some(Paths.get(nbt.getString(CodePathTag))) else None
 
     if (nbt.hasKey(LabelTag))
@@ -171,10 +171,10 @@ class EEPROM extends Entity with Environment with DeviceInfo {
     super.save(nbt)
 
     if (codeBytes.isDefined) {
-      nbt.setByteArray(CodeDataTag, codeBytes.get)
+      nbt.setByteArray(CodeBytesTag, codeBytes.get)
     }
     else {
-      nbt.removeTag(CodeDataTag)
+      nbt.removeTag(CodeBytesTag)
     }
 
     if (codePath.isDefined) {
