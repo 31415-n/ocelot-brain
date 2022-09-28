@@ -11,7 +11,7 @@ import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 import java.io.{BufferedReader, ByteArrayOutputStream, IOException, InputStream, InputStreamReader}
-import java.net.URL
+import java.net.{MalformedURLException, URL}
 import java.nio.file.{Files, Path, Paths}
 import scala.reflect.ClassTag.Nothing
 
@@ -197,8 +197,23 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
+    // Raw
     _codeBytes = if (nbt.hasKey(CodeBytesTag)) Some(nbt.getByteArray(CodeBytesTag)) else None
-    _codeURL = if (nbt.hasKey(CodeURLTag)) Some(new URL(nbt.getString(CodeURLTag))) else None
+
+    // Url
+    if (nbt.hasKey(CodeURLTag)) {
+      try {
+        _codeURL = Some(new URL(nbt.getString(CodeURLTag)))
+      }
+      catch {
+        case _: MalformedURLException => _codeURL = None
+      }
+    }
+    else {
+      _codeURL = None
+    }
+
+    // File
     _codePath = if (nbt.hasKey(CodePathTag)) Some(Paths.get(nbt.getString(CodePathTag))) else None
 
     if (nbt.hasKey(LabelTag))
