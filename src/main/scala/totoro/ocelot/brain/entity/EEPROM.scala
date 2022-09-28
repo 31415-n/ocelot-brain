@@ -1,6 +1,7 @@
 package totoro.ocelot.brain.entity
 
 import com.google.common.hash.Hashing
+import org.apache.commons.io.IOUtils
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
@@ -9,6 +10,8 @@ import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
+import java.io.{BufferedReader, ByteArrayOutputStream, IOException, InputStream, InputStreamReader}
+import java.net.URL
 import java.nio.file.{Files, Path, Paths}
 import scala.reflect.ClassTag.Nothing
 
@@ -33,6 +36,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   def codeBytes_=(value: Option[Array[Byte]]): Unit = {
     _codeBytes = value
     _codePath = None
+    _codeURL = None
   }
 
   // ----------------------------------------------------------------------- //
@@ -44,14 +48,48 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   def codePath_=(value: Option[Path]): Unit = {
     _codePath = value
     _codeBytes = None
+    _codeURL = None
+  }
+
+  // ----------------------------------------------------------------------- //
+
+  var _codeURL: Option[URL] = None
+
+  def codeURL: Option[URL] = _codeURL
+
+  def codeURL_=(value: Option[URL]): Unit = {
+    _codeURL = value
+    _codeBytes = None
+    _codePath = None
   }
 
   // ----------------------------------------------------------------------- //
 
   private def getBytes: Array[Byte] = {
+    // Raw bytes
     if (codeBytes.isDefined) {
       codeBytes.get
     }
+    // URL
+    else if (codeURL.isDefined) {
+      var result: Array[Byte] = null
+      var input: InputStream = null
+
+      try {
+        input = codeURL.get.openStream()
+        result = IOUtils.toByteArray(input)
+      }
+      catch {
+        case _: IOException => result = Array.empty[Byte]
+      }
+      finally {
+        if (input != null)
+          input.close()
+      }
+
+      result
+    }
+    // Local file
     else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
       Files.readAllBytes(codePath.get)
     }
@@ -150,6 +188,8 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   private final val CodeBytesTag = "eeprom"
   private final val CodePathTag = "eepromPath"
+  private final val CodeURLTag = "eepromURL"
+
   private final val LabelTag = "label"
   private final val ReadonlyTag = "readonly"
   private final val UserdataTag = "userdata"
@@ -158,6 +198,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
     super.load(nbt, workspace)
 
     _codeBytes = if (nbt.hasKey(CodeBytesTag)) Some(nbt.getByteArray(CodeBytesTag)) else None
+    _codeURL = if (nbt.hasKey(CodeURLTag)) Some(new URL(nbt.getString(CodeURLTag))) else None
     _codePath = if (nbt.hasKey(CodePathTag)) Some(Paths.get(nbt.getString(CodePathTag))) else None
 
     if (nbt.hasKey(LabelTag))
@@ -170,6 +211,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
 
+    // Raw bytes
     if (codeBytes.isDefined) {
       nbt.setByteArray(CodeBytesTag, codeBytes.get)
     }
@@ -177,6 +219,15 @@ class EEPROM extends Entity with Environment with DeviceInfo {
       nbt.removeTag(CodeBytesTag)
     }
 
+    // Url
+    if (codeURL.isDefined) {
+      nbt.setString(CodeURLTag, codeURL.get.toString)
+    }
+    else {
+      nbt.removeTag(CodeURLTag)
+    }
+
+    // File
     if (codePath.isDefined) {
       nbt.setString(CodePathTag, codePath.get.toString)
     }
