@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.{Ocelot, Settings}
+import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.fs.{FileSystem, FileSystemAPI, FileSystemTrait, ReadWriteLabel}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
@@ -42,7 +42,6 @@ trait DiskManaged extends Disk with WorkspaceAware {
   def realPath: Path = _realPath
   def realPath_=(value: Path): Unit = {
     _realPath = value
-
     _fileSystem = generateEnvironment()
   }
 
@@ -98,7 +97,8 @@ trait DiskManaged extends Disk with WorkspaceAware {
       val fsNbt = new NBTTagCompound
       _fileSystem.save(fsNbt)
       nbt.setTag(FileSystemTag, fsNbt)
-      nbt.setString(RealPathTag, realPath.toString)
+      if (realPath != null)
+        nbt.setString(RealPathTag, realPath.toString)
     }
   }
 
