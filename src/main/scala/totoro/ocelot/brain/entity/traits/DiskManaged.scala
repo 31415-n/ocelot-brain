@@ -6,8 +6,9 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.workspace.Workspace
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, InvalidPathException, Path, Paths}
 import java.util.UUID
+import scala.util.Try
 
 /**
   * Basic trait for all managed-disk-like entities.
@@ -38,10 +39,10 @@ trait DiskManaged extends Disk with WorkspaceAware {
 
   def defaultRealPath: Path = workspace.path.resolve(address.get)
 
-  private var _realPath: Path = _
-  def realPath: Path = _realPath
-  def realPath_=(value: Path): Unit = {
-    _realPath = value
+  private var _customRealPath: Option[Path] = None
+  def customRealPath: Option[Path] = _customRealPath
+  def customRealPath_=(value: Option[Path]): Unit = {
+    _customRealPath = value
     _fileSystem = generateEnvironment()
   }
 
@@ -51,11 +52,13 @@ trait DiskManaged extends Disk with WorkspaceAware {
 
     // Restoring default path if component was just inserted to slot (without NBT data loading)
     // or if user has changed/deleted/renamed previously set path
-    if (realPath == null || !Files.exists(realPath) || !Files.isDirectory(realPath))
-      _realPath = defaultRealPath
+    val realPath = if (customRealPath.isEmpty || !Files.exists(customRealPath.get) || !Files.isDirectory(customRealPath.get)) defaultRealPath else customRealPath.get
 
     var fileSystemTrait: FileSystemTrait = FileSystemAPI.fromDirectory(
-      realPath.toFile, capacity max 0, Settings.get.bufferChanges)
+      realPath.toFile,
+      capacity max 0,
+      Settings.get.bufferChanges
+    )
 
     if (isLocked)
       fileSystemTrait = FileSystemAPI.asReadOnly(fileSystemTrait)
@@ -99,8 +102,12 @@ trait DiskManaged extends Disk with WorkspaceAware {
       val fsNbt = new NBTTagCompound
       _fileSystem.save(fsNbt)
       nbt.setTag(FileSystemTag, fsNbt)
-      if (realPath != null)
-        nbt.setString(RealPathTag, realPath.toString)
+
+      // Custom real path
+      if (customRealPath.isDefined)
+        nbt.setString(RealPathTag, customRealPath.get.toString)
+      else
+        nbt.removeTag(RealPathTag)
     }
   }
 
@@ -116,7 +123,8 @@ trait DiskManaged extends Disk with WorkspaceAware {
       val fsNbt = nbt.getCompoundTag(FileSystemTag)
 
       address = Option(nodeNbt.getString(Node.AddressTag))
-      realPath = if (nbt.hasKey(RealPathTag)) Paths.get(nbt.getString(RealPathTag)) else null
+      customRealPath = if (nbt.hasKey(RealPathTag)) Some(Paths.get(nbt.getString(RealPathTag))) else None
+
       _fileSystem.load(fsNbt, workspace)
     }
 

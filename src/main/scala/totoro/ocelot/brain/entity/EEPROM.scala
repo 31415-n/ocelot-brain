@@ -126,10 +126,10 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
     val newData = args.optByteArray(0, Array.empty[Byte])
 
-    if (newData.length > Settings.get.eepromSize)
-      throw new IllegalArgumentException("not enough space")
-
     if (codeBytes.isDefined) {
+      if (newData.length > Settings.get.eepromSize)
+        throw new IllegalArgumentException("not enough space")
+
       _codeBytes = Some(newData)
     }
     else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
