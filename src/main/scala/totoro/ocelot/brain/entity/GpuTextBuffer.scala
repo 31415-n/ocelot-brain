@@ -1,6 +1,6 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.entity.traits.{Environment, TextBufferProxy, VideoRamRasterizer}
+import totoro.ocelot.brain.entity.traits.TextBufferProxy
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Message, Node}
 import totoro.ocelot.brain.user.User

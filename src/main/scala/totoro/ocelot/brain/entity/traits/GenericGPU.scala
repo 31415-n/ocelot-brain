@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.Settings
+import totoro.ocelot.brain.entity.machine._
 import totoro.ocelot.brain.entity.{GpuTextBuffer, TextBuffer}
-import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context, LimitReachedException, Machine}
 import totoro.ocelot.brain.nbt.{NBTTagCompound, NBTTagList}
 import totoro.ocelot.brain.network.{Message, Network, Node, Visibility}
 import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor}
@@ -221,7 +221,7 @@ trait GenericGPU extends Environment with Tiered with VideoRamDevice {
         val fromRow = args.optInteger(7, 1)
 
         var budgetCost: Double = determineBitbltBudgetCost(dst, src)
-        val tierCredit: Double = ((tier + 1) * .5)
+        val tierCredit: Double = (tier + 1) * .5
         val overBudget: Double = budgetCost - tierCredit
 
         if (overBudget > 0) {

@@ -8,7 +8,6 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 import java.io
 import java.io.File
 import java.net.{MalformedURLException, URISyntaxException, URL}
-import java.nio.file.Path
 import java.util.UUID
 import scala.util.Try
 

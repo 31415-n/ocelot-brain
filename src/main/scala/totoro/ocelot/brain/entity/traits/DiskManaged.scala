@@ -54,12 +54,14 @@ trait DiskManaged extends Disk with WorkspaceAware {
     if (realPath == null || !Files.exists(realPath) || !Files.isDirectory(realPath))
       _realPath = defaultRealPath
 
-    var fileSystemTrait: FileSystemTrait = FileSystemAPI.fromDirectory(realPath.toFile, capacity max 0, Settings.get.bufferChanges)
+    var fileSystemTrait: FileSystemTrait = FileSystemAPI.fromDirectory(
+      realPath.toFile, capacity max 0, Settings.get.bufferChanges)
 
     if (isLocked)
       fileSystemTrait = FileSystemAPI.asReadOnly(fileSystemTrait)
 
-    FileSystemAPI.asManagedEnvironment(address.get, fileSystemTrait, new ReadWriteLabel(address.get), speed, activityType.orNull)
+    FileSystemAPI.asManagedEnvironment(
+      address.get, fileSystemTrait, new ReadWriteLabel(address.get), speed, activityType.orNull)
   }
 
   // ----------------------------------------------------------------------- //

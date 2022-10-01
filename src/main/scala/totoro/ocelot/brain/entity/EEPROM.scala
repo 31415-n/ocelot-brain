@@ -10,10 +10,9 @@ import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
-import java.io.{BufferedReader, ByteArrayOutputStream, IOException, InputStream, InputStreamReader}
+import java.io.{IOException, InputStream}
 import java.net.{MalformedURLException, URL}
 import java.nio.file.{Files, Path, Paths}
-import scala.reflect.ClassTag.Nothing
 
 class EEPROM extends Entity with Environment with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Neighbors).
