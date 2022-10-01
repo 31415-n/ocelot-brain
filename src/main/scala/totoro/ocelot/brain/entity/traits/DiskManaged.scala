@@ -123,7 +123,8 @@ trait DiskManaged extends Disk with WorkspaceAware {
       val fsNbt = nbt.getCompoundTag(FileSystemTag)
 
       address = Option(nodeNbt.getString(Node.AddressTag))
-      customRealPath = if (nbt.hasKey(RealPathTag)) Some(Paths.get(nbt.getString(RealPathTag))) else None
+
+      Try { customRealPath = if (nbt.hasKey(RealPathTag)) Some(Paths.get(nbt.getString(RealPathTag))) else None }.recover(_ => customRealPath = None)
 
       _fileSystem.load(fsNbt, workspace)
     }
