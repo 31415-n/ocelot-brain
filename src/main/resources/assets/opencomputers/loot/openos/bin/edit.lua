@@ -57,7 +57,7 @@ local function loadConfig()
     newline = {{"enter"}},
 
     save = {{"control", "s"}},
-    close = {{"control", "e"}},
+    close = {{"control", "w"}},
     find = {{"control", "f"}},
     findnext = {{"control", "g"}, {"control", "n"}, {"f3"}},
     cut = {{"control", "k"}},
