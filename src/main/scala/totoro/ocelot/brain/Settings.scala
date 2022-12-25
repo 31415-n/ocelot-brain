@@ -223,11 +223,13 @@ object Settings {
       val config = ConfigFactory.parseString(plain)
       settings = new Settings(config.getConfig("opencomputers"))
       source.close()
+      Ocelot.log.info(s"Loaded Ocelot Brain configuration from: ${file.getCanonicalPath}")
     }
     catch {
       case e: Throwable =>
+        Ocelot.log.info("Using default Ocelot Brain configuration.")
         if (file.exists()) {
-          Ocelot.log.warn("Failed loading config, using defaults.", e)
+          Ocelot.log.warn(s"(Failed to parse ${file.getCanonicalPath}!)", e)
         }
         settings = new Settings(defaults.getConfig("opencomputers"))
     }
@@ -235,6 +237,7 @@ object Settings {
 
   val cidrPattern: Regex = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})""".r
 
+  //noinspection UnstableApiUsage
   class AddressValidator(val value: String) {
     val validator: (InetAddress, String) => Option[Boolean] = try cidrPattern.findFirstIn(value) match {
       case Some(cidrPattern(address, prefix)) =>
