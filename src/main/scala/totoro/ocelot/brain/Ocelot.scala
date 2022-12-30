@@ -15,7 +15,7 @@ import java.io.File
 object Ocelot {
   final val Name = "Ocelot"
   // do not forget to change the version in `build.sbt`
-  final val Version = "0.8.1"
+  final val Version = "0.9.0"
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
