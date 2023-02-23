@@ -4,7 +4,7 @@ import scala.collection.mutable
 
 // Just because the name is so fancy!
 object QuantumNetwork {
-  val tunnels = mutable.Map.empty[String, mutable.WeakHashMap[QuantumNode, Unit]]
+  private val tunnels = mutable.Map.empty[String, mutable.WeakHashMap[QuantumNode, Unit]]
 
   def add(card: QuantumNode): Unit = {
     tunnels.getOrElseUpdate(card.tunnel, mutable.WeakHashMap.empty).put(card, ())

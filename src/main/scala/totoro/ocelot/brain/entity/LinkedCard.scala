@@ -13,13 +13,21 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
     withComponent("tunnel", Visibility.Neighbors).
     create()
 
-  var tunnel: String = "creative"
+  var _tunnel: String = "creative"
+
+  def tunnel: String = _tunnel
+
+  def tunnel_=(value: String): Unit = {
+    QuantumNetwork.remove(this)
+    _tunnel = value
+    QuantumNetwork.add(this)
+  }
 
   // ----------------------------------------------------------------------- //
 
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Network,
-    DeviceAttribute.Description -> "Quantumnet controller",
+    DeviceAttribute.Description -> "QuantumNet controller",
     DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
     DeviceAttribute.Product -> "AetherComm V",
     DeviceAttribute.Capacity -> Settings.get.maxNetworkPacketSize.toString,
