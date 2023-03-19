@@ -3,7 +3,9 @@ package totoro.ocelot.brain.entity
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.{Entity, Environment}
 import totoro.ocelot.brain.event.{EventBus, NoteBlockTriggerEvent}
+import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
+import totoro.ocelot.brain.workspace.Workspace
 
 class NoteBlock extends Entity with Environment {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
@@ -39,5 +41,20 @@ class NoteBlock extends Entity with Environment {
       throw new IllegalArgumentException("invalid pitch")
     }
     pitch = value
+  }
+
+  private final val PitchTag = "Pitch"
+  private final val InstrumentTag = "Instrument"
+
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
+    pitch = nbt.getByte(PitchTag)
+    instrument = nbt.getString(InstrumentTag)
+  }
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    super.save(nbt)
+    nbt.setByte(PitchTag, pitch.toByte)
+    nbt.setString(InstrumentTag, instrument)
   }
 }
