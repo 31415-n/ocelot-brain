@@ -129,26 +129,22 @@ object Demo extends App {
   computer.setCustomData(new PersistableString("xxx"))
 
   // register some event listeners
-  EventBus.subscribe[BeepEvent] { event =>
-    println(s"[EVENT] Beep (address = ${event.address}, frequency = ${event.frequency}, duration = ${event.duration})")
-  }
-  EventBus.subscribe[BeepPatternEvent] { event =>
-    println(s"[EVENT] Beep (address = ${event.address}, pattern = ${event.pattern})")
-  }
-  EventBus.subscribe[MachineCrashEvent] { event =>
-    println(s"[EVENT] Machine crash! (address = ${event.address}, ${event.message})")
-  }
-  EventBus.subscribe[FileSystemActivityEvent] { event =>
-    println(s"[EVENT] Filesystem activity (address = ${event.address}, type = ${event.activityType})")
-  }
-  EventBus.subscribe[TextBufferSetEvent] { event =>
-    println(s"[EVENT] Text buffer set (address = ${event.address}, ${event.x}, ${event.y}, ${event.value}, ${event.vertical})")
-  }
-  EventBus.subscribe[TextBufferSetForegroundColorEvent] { event =>
-    println(s"[EVENT] Foreground color changed (address = ${event.address}, ${event.color})")
-  }
-  EventBus.subscribe[TextBufferSetBackgroundColorEvent] { event =>
-    println(s"[EVENT] Background color changed (address = ${event.address}, ${event.color})")
+  EventBus.subscribe {
+    case event: BeepEvent =>
+      println(s"[EVENT] Beep (address = ${event.address}, frequency = ${event.frequency}, duration = ${event.duration})")
+    case event: BeepPatternEvent =>
+      println(s"[EVENT] Beep (address = ${event.address}, pattern = ${event.pattern})")
+    case event: MachineCrashEvent =>
+      println(s"[EVENT] Machine crash! (address = ${event.address}, ${event.message})")
+    case event: FileSystemActivityEvent =>
+      println(s"[EVENT] Filesystem activity (address = ${event.address}, type = ${event.activityType})")
+    case event: TextBufferSetEvent =>
+      println(s"[EVENT] Text buffer set (address = ${event.address}, ${event.x}, ${event.y}, ${event.value}, ${event.vertical})")
+    case event: TextBufferSetForegroundColorEvent =>
+      println(s"[EVENT] Foreground color changed (address = ${event.address}, ${event.color})")
+    case event: TextBufferSetBackgroundColorEvent =>
+      println(s"[EVENT] Background color changed (address = ${event.address}, ${event.color})")
+
   }
 
   /**
