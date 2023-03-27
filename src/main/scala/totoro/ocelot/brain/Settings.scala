@@ -187,6 +187,12 @@ class Settings(val config: Config) {
   }
 
   val bitbltCost: Double = if (config.hasPath("gpu.bitbltCost")) config.getDouble("gpu.bitbltCost") else 0.5
+
+  // sound card
+  val soundCardSampleRate: Int = config.getInt("soundCard.sampleRate")
+  val soundCardMaxDelay: Int = config.getInt("soundCard.maxDelay")
+  val soundCardQueueSize: Int = config.getInt("soundCard.queueSize")
+  val soundCardChannelCount: Int = config.getInt("soundCard.channelCount")
 }
 
 object Settings {
