@@ -8,6 +8,8 @@ import scala.collection.mutable
 sealed abstract class SignalGenerator {
   def generate(offset: Float): Float
 
+  def nextPeriod(): Unit = {}
+
   def save(nbt: NBTTagCompound): Unit = {
     nbt.setByte("t", this match {
       case _: LFSR => 0
@@ -60,21 +62,28 @@ object SignalGenerator {
   }
 
   class LFSR(var value: Int, var mask: Int) extends SignalGenerator {
+    private var sample: Int = 1
+
     def this(nbt: NBTTagCompound) = this(nbt.getInteger("v"), nbt.getInteger("m"))
 
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
       nbt.setInteger("v", value)
       nbt.setInteger("m", mask)
+      nbt.setInteger("s", sample)
     }
 
     override def generate(offset: Float): Float = {
+      sample
+    }
+
+    override def nextPeriod(): Unit = {
       if ((value & 1) != 0) {
         value = (value >>> 1) ^ mask
-        1
+        sample = 1
       } else {
         value >>>= 1
-        -1
+        sample = -1
       }
     }
   }
@@ -82,24 +91,22 @@ object SignalGenerator {
   class Noise extends SignalGenerator {
     def this(nbt: NBTTagCompound) = {
       this()
-      prevOffset = nbt.getFloat("o")
       value = nbt.getFloat("v")
     }
 
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
-      nbt.setFloat("o", prevOffset)
       nbt.setFloat("v", value)
     }
 
-    private var prevOffset = 0f
     private var value = math.random().toFloat
 
     override def generate(offset: Float): Float = {
-      if (offset < prevOffset)
-        value = math.random().toFloat
-      prevOffset = offset
       value
+    }
+
+    override def nextPeriod(): Unit = {
+      value = math.random().toFloat
     }
   }
 

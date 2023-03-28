@@ -35,6 +35,7 @@ class AudioChannel extends Persistable {
 
     if (offset > 1f) {
       offset %= 1f
+      generator.nextPeriod()
     }
 
     if (amplitudeMod.isDefined && !isFmMod && !isAmMod)
