@@ -2,13 +2,17 @@ package totoro.ocelot.brain.entity.sound_card
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.event.{EventBus, SoundCardAudioEvent}
+import totoro.ocelot.brain.nbt.{NBT, NBTBase, NBTTagCompound, NBTTagList}
+import totoro.ocelot.brain.util.Persistable
 import totoro.ocelot.brain.util.ResultWrapper.result
+import totoro.ocelot.brain.workspace.Workspace
 
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util
+import scala.jdk.CollectionConverters.{IteratorHasAsScala, SeqHasAsJava}
 
-class SoundBoard {
+class SoundBoard extends Persistable {
   val process = new AudioProcess
 
   private val buildBuffer: util.ArrayDeque[Instruction] = new util.ArrayDeque[Instruction]
@@ -131,6 +135,56 @@ class SoundBoard {
       buf.put(data.toByteArray)
       buf.flip()
       EventBus.send(SoundCardAudioEvent(address, buf, soundVolume))
+    }
+  }
+
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    process.load(nbt.getCompoundTag("process"), workspace)
+
+    buildBuffer.synchronized {
+      buildBuffer.clear()
+      buildBuffer.addAll(loadInstrBuffer(nbt.getTagList("buildBuffer", NBT.TAG_COMPOUND)))
+    }
+
+    nextBuffer.synchronized {
+      nextBuffer.clear()
+      nextBuffer.addAll(loadInstrBuffer(nbt.getTagList("nextBuffer", NBT.TAG_COMPOUND)))
+    }
+
+    buildDelay = nbt.getInteger("buildDelay")
+    nextDelay = nbt.getInteger("nextDelay")
+    soundVolume = nbt.getFloat("soundVolume")
+    timeout = nbt.getLong("timeout")
+  }
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    val processNBT = new NBTTagCompound
+    process.save(processNBT)
+    nbt.setTag("process", processNBT)
+
+    nbt.setTagList("buildBuffer", saveInstrBuffer(buildBuffer))
+    nbt.setTagList("nextBuffer", saveInstrBuffer(buildBuffer))
+    nbt.setInteger("buildDelay", buildDelay)
+    nbt.setInteger("nextDelay", nextDelay)
+    nbt.setFloat("soundVolume", soundVolume)
+    nbt.setLong("timeout", timeout)
+  }
+
+  private def loadInstrBuffer(nbt: NBTTagList): util.ArrayDeque[Instruction] = {
+    val buffer = new util.ArrayDeque[Instruction](nbt.tagCount())
+    for (i <- 0 until nbt.tagCount()) {
+      buffer.push(Instruction.load(nbt.getCompoundTagAt(i)))
+    }
+    buffer
+  }
+
+  private def saveInstrBuffer(buffer: util.ArrayDeque[Instruction]): util.List[NBTBase] = {
+    buffer.synchronized {
+      buffer.iterator().asScala.map(instr => {
+        val nbt = new NBTTagCompound
+        instr.save(nbt)
+        nbt: NBTBase
+      }).toList.asJava
     }
   }
 }

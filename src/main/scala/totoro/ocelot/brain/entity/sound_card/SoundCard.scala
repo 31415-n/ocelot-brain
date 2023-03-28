@@ -4,7 +4,9 @@ import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.result
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
+import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
+import totoro.ocelot.brain.workspace.Workspace
 
 class SoundCard extends Entity with Environment with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Neighbors).
@@ -25,6 +27,16 @@ class SoundCard extends Entity with Environment with DeviceInfo {
   override def update(): Unit = {
     super.update()
     board.update(node.address)
+  }
+
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
+    board.load(nbt, workspace)
+  }
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    super.save(nbt)
+    board.save(nbt)
   }
 
   @Callback(doc = "This is a bidirectional table of all valid modes.", direct = true, getter = true)
