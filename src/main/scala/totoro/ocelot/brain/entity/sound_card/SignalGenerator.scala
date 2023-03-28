@@ -112,7 +112,7 @@ object SignalGenerator {
   }
 
   object Triangle extends SignalGenerator {
-    override def generate(offset: Float): Float = 1f - 4f * math.abs(offset - 0f)
+    override def generate(offset: Float): Float = 1f - 4f * math.abs(offset - 0.5f)
   }
 
   object Sawtooth extends SignalGenerator {
