@@ -23,7 +23,7 @@ class SoundBoard extends Persistable {
   private var timeout = System.currentTimeMillis
 
   def setTotalVolume(volume: Double): Unit = {
-    soundVolume = (volume.min(1).max(0) * 127).toInt.toFloat
+    soundVolume = (volume.min(1).max(0) * 127).toInt.toFloat / 127
   }
 
   def checkChannel(channel: Int): Int = {
