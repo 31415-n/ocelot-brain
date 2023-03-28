@@ -13,7 +13,7 @@ class FrequencyModulator(val modulatorIndex: Int, val depth: Float) extends Modu
 
   override def modulate(process: AudioProcess, channel: AudioChannel, value: Float): Float = {
     val modulator = process.channels(modulatorIndex)
-    val deviation = channel.generate(process, isModulating = true) * depth
+    val deviation = modulator.generate(process, isModulating = true) * depth * 100
     channel.offset += (channel.frequency + deviation) / Settings.get.soundCardSampleRate
     value
   }

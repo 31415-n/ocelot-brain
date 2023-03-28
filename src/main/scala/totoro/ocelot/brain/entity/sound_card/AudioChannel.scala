@@ -12,13 +12,14 @@ class AudioChannel extends Persistable {
   var volume: Float = 1
   var isOpen: Boolean = false
 
-  var isModulator: Boolean = false
+  var isFmMod: Boolean = false
+  var isAmMod: Boolean = false
   var amplitudeMod: Option[AmplitudeModulator] = None
   var frequencyMod: Option[FrequencyModulator] = None
   var envelope: Option[ADSREnvelope] = None
 
   def generate(process: AudioProcess, isModulating: Boolean = false): Float = {
-    if (!isModulating && isModulator)
+    if (!isModulating && (isFmMod || isAmMod))
       return 0
 
     if (!isOpen && (envelope.isEmpty || envelope.get.isClosed))
@@ -26,7 +27,7 @@ class AudioChannel extends Persistable {
 
     var value = generator.generate(offset)
 
-    if (frequencyMod.isDefined && !isModulator) {
+    if (frequencyMod.isDefined && !isFmMod && !isAmMod) {
       value = frequencyMod.get.modulate(process, this, value)
     } else {
       offset += frequency / Settings.get.soundCardSampleRate
@@ -36,7 +37,7 @@ class AudioChannel extends Persistable {
       offset %= 1f
     }
 
-    if (amplitudeMod.isDefined && !isModulator)
+    if (amplitudeMod.isDefined && !isFmMod && !isAmMod)
       value = amplitudeMod.get.modulate(process, this, value)
     if (envelope.isDefined)
       value = envelope.get.modulate(process, this, value)
@@ -50,7 +51,8 @@ class AudioChannel extends Persistable {
     offset = nbt.getFloat("offset")
     volume = nbt.getFloat("volume")
     isOpen = nbt.getBoolean("isOpen")
-    isModulator = nbt.getBoolean("isModulator")
+    isFmMod = nbt.getBoolean("isFmMod")
+    isAmMod = nbt.getBoolean("isAmMod")
     if (nbt.hasKey("am")) amplitudeMod = Some(new AmplitudeModulator(nbt.getCompoundTag("am")))
     if (nbt.hasKey("fm")) frequencyMod = Some(new FrequencyModulator(nbt.getCompoundTag("fm")))
     if (nbt.hasKey("env")) envelope = Some(new ADSREnvelope(nbt.getCompoundTag("env")))
@@ -65,7 +67,8 @@ class AudioChannel extends Persistable {
     nbt.setFloat("offset", offset)
     nbt.setFloat("volume", volume)
     nbt.setBoolean("isOpen", isOpen)
-    nbt.setBoolean("isModulator", isModulator)
+    nbt.setBoolean("isFmMod", isFmMod)
+    nbt.setBoolean("isAmMod", isAmMod)
 
     for (am <- amplitudeMod) {
       val amNBT = new NBTTagCompound

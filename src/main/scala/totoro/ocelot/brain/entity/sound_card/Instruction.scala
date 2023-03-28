@@ -111,15 +111,15 @@ object Instruction {
     }
 
     override def execute(process: AudioProcess, channel: AudioChannel): Unit = {
-      if (channel.isModulator)
+      if (channel.isFmMod || channel.isAmMod)
         return
 
       // FIXME: this is a Computronics bug; consider if 2 or more channels are modulated by the same carrier
       for (old <- channel.frequencyMod)
-        process.channels(old.modulatorIndex).isModulator = false
+        process.channels(old.modulatorIndex).isFmMod = false
 
       val modulator = process.channels(fm.modulatorIndex)
-      modulator.isModulator = true
+      modulator.isFmMod = true
       channel.frequencyMod = Some(fm)
     }
   }
@@ -130,7 +130,7 @@ object Instruction {
     override def execute(process: AudioProcess, channel: AudioChannel): Unit = {
       // same bug
       for (old <- channel.frequencyMod)
-        process.channels(old.modulatorIndex).isModulator = false
+        process.channels(old.modulatorIndex).isFmMod = false
 
       channel.frequencyMod = None
     }
@@ -147,15 +147,15 @@ object Instruction {
     }
 
     override def execute(process: AudioProcess, channel: AudioChannel): Unit = {
-      if (channel.isModulator)
+      if (channel.isFmMod || channel.isAmMod)
         return
 
       // same bug
       for (old <- channel.amplitudeMod)
-        process.channels(old.modulatorIndex).isModulator = false
+        process.channels(old.modulatorIndex).isAmMod = false
 
       val modulator = process.channels(am.modulatorIndex)
-      modulator.isModulator = true
+      modulator.isAmMod = true
       channel.amplitudeMod = Some(new AmplitudeModulator(am.modulatorIndex))
     }
   }
@@ -166,7 +166,7 @@ object Instruction {
     override def execute(process: AudioProcess, channel: AudioChannel): Unit = {
       // same bug
       for (old <- channel.amplitudeMod)
-        process.channels(old.modulatorIndex).isModulator = false
+        process.channels(old.modulatorIndex).isAmMod = false
 
       channel.amplitudeMod = None
     }
