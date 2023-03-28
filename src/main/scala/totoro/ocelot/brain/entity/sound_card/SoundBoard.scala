@@ -15,11 +15,11 @@ class SoundBoard {
   private val nextBuffer: util.ArrayDeque[Instruction] = new util.ArrayDeque[Instruction]
   private var buildDelay = 0
   private var nextDelay = 0
-  private var soundVolume = 127
+  private var soundVolume = 1f
   private var timeout = System.currentTimeMillis
 
   def setTotalVolume(volume: Double): Unit = {
-    soundVolume = (volume.min(1).max(0) * 127).toInt
+    soundVolume = (volume.min(1).max(0) * 127).toInt.toFloat
   }
 
   def checkChannel(channel: Int): Int = {
@@ -130,7 +130,7 @@ class SoundBoard {
       val buf = ByteBuffer.allocateDirect(data.size())
       buf.put(data.toByteArray)
       buf.flip()
-      EventBus.send(SoundCardAudioEvent(address, buf))
+      EventBus.send(SoundCardAudioEvent(address, buf, soundVolume))
     }
   }
 }
