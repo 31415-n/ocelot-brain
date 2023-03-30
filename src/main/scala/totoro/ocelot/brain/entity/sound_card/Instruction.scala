@@ -7,7 +7,7 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 sealed abstract class Instruction {
   def execute(process: AudioProcess): Unit
 
-  def isValid: Boolean = {}
+  def isValid: Boolean = true
 
   def save(nbt: NBTTagCompound): Unit = {
     nbt.setByte("t", this match {
