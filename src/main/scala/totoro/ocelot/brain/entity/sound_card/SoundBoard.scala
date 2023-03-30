@@ -163,7 +163,7 @@ class SoundBoard extends Persistable {
     nbt.setTag("process", processNBT)
 
     nbt.setTagList("buildBuffer", saveInstrBuffer(buildBuffer))
-    nbt.setTagList("nextBuffer", saveInstrBuffer(buildBuffer))
+    nbt.setTagList("nextBuffer", saveInstrBuffer(nextBuffer))
     nbt.setInteger("buildDelay", buildDelay)
     nbt.setInteger("nextDelay", nextDelay)
     nbt.setFloat("soundVolume", soundVolume)
