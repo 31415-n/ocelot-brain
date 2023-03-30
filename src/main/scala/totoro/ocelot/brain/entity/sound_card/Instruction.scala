@@ -172,7 +172,7 @@ object Instruction {
 
       val modulator = process.channels(am.modulatorIndex)
       modulator.isAmMod = true
-      channel.amplitudeMod = Some(new AmplitudeModulator(am.modulatorIndex))
+      channel.amplitudeMod = Some(am)
     }
   }
 
