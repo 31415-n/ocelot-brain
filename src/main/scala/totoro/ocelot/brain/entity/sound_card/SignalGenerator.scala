@@ -64,7 +64,10 @@ object SignalGenerator {
   class LFSR(var value: Int, var mask: Int) extends SignalGenerator {
     private var sample: Int = 1
 
-    def this(nbt: NBTTagCompound) = this(nbt.getInteger("v"), nbt.getInteger("m"))
+    def this(nbt: NBTTagCompound) = {
+      this(nbt.getInteger("v"), nbt.getInteger("m"))
+      sample = nbt.getInteger("s")
+    }
 
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
