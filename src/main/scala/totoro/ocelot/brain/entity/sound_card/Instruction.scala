@@ -57,6 +57,7 @@ object Instruction {
 
   sealed abstract class ChannelSpecific(channelIndex: Int) extends Instruction {
     override def save(nbt: NBTTagCompound): Unit = {
+      super.save(nbt)
       nbt.setInteger("c", channelIndex)
     }
 
