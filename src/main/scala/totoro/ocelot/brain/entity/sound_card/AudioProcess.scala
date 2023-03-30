@@ -16,8 +16,7 @@ class AudioProcess extends Persistable {
     delay = nbt.getInteger("delay")
     error = nbt.getFloat("error")
     val list = nbt.getTagList("channels", NBT.TAG_COMPOUND)
-    channels = Array.ofDim[AudioChannel](list.tagCount())
-    for (i <- 0 until list.tagCount()) {
+    for (i <- 0 until list.tagCount().min(Settings.get.soundCardChannelCount)) {
       channels(i) = new AudioChannel
       channels(i).load(list.getCompoundTagAt(i), workspace)
     }

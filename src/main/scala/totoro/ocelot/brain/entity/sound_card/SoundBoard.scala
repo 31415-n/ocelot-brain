@@ -126,7 +126,7 @@ class SoundBoard extends Persistable {
         process.delay = 0
       } else {
         val inst = buffer.poll
-        inst.execute(process)
+        if (inst.isValid) inst.execute(process)
       }
     }
 

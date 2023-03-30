@@ -1,10 +1,13 @@
 package totoro.ocelot.brain.entity.sound_card
 
+import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.sound_card.Instruction._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 
 sealed abstract class Instruction {
   def execute(process: AudioProcess): Unit
+
+  def isValid: Boolean = {}
 
   def save(nbt: NBTTagCompound): Unit = {
     nbt.setByte("t", this match {
@@ -55,10 +58,18 @@ object Instruction {
     }
   }
 
+  private def isChannelValid(ch: Int): Boolean = {
+    0 <= ch && ch < Settings.get.soundCardChannelCount
+  }
+
   sealed abstract class ChannelSpecific(channelIndex: Int) extends Instruction {
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
       nbt.setInteger("c", channelIndex)
+    }
+
+    override def isValid: Boolean = {
+      isChannelValid(channelIndex)
     }
 
     def execute(process: AudioProcess, channel: AudioChannel): Unit
@@ -111,6 +122,8 @@ object Instruction {
       nbt.setTag("fm", fmNBT)
     }
 
+    override def isValid: Boolean = super.isValid && isChannelValid(fm.modulatorIndex)
+
     override def execute(process: AudioProcess, channel: AudioChannel): Unit = {
       if (channel.isFmMod || channel.isAmMod)
         return
@@ -146,6 +159,8 @@ object Instruction {
       am.save(amNBT)
       nbt.setTag("am", amNBT)
     }
+
+    override def isValid: Boolean = super.isValid && isChannelValid(am.modulatorIndex)
 
     override def execute(process: AudioProcess, channel: AudioChannel): Unit = {
       if (channel.isFmMod || channel.isAmMod)
