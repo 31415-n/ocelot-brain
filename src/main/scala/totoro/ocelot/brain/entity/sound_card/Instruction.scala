@@ -144,7 +144,7 @@ object Instruction {
       super.save(nbt)
       val amNBT = new NBTTagCompound
       am.save(amNBT)
-      nbt.setTag("fm", amNBT)
+      nbt.setTag("am", amNBT)
     }
 
     override def execute(process: AudioProcess, channel: AudioChannel): Unit = {
