@@ -10,6 +10,7 @@ import totoro.ocelot.brain.workspace.Workspace
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util
+import scala.collection.mutable
 import scala.jdk.CollectionConverters.{IteratorHasAsScala, SeqHasAsJava}
 
 class SoundBoard extends Persistable {
@@ -106,7 +107,8 @@ class SoundBoard extends Persistable {
 
   private def sendSound(address: String, buffer: util.Queue[Instruction]): Unit = {
     val sampleRate = Settings.get.soundCardSampleRate
-    val data = new ByteArrayOutputStream
+    val data = new mutable.ArrayBuffer[Byte]
+    val cleanData = new mutable.ArrayBuffer[Float]
 
     while (!buffer.isEmpty || process.delay > 0) {
       if (process.delay > 0) {
@@ -121,7 +123,8 @@ class SoundBoard extends Persistable {
           val value = sample.min(1).max(-1) * 127 + process.error
           process.error = value - value.floor
 
-          data.write(value.floor.toByte ^ 0x80)
+          data += (value.floor.toByte ^ 0x80).toByte
+          cleanData += sample
         }
         process.delay = 0
       } else {
@@ -130,11 +133,11 @@ class SoundBoard extends Persistable {
       }
     }
 
-    if (data.size > 0) {
-      val buf = ByteBuffer.allocateDirect(data.size())
-      buf.put(data.toByteArray)
+    if (data.nonEmpty) {
+      val buf = ByteBuffer.allocateDirect(data.length)
+      buf.put(data.toArray)
       buf.flip()
-      EventBus.send(SoundCardAudioEvent(address, buf, soundVolume))
+      EventBus.send(SoundCardAudioEvent(address, buf, cleanData.toArray, soundVolume))
     }
   }
 
