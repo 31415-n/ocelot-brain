@@ -142,7 +142,7 @@ class SoundBoard extends Persistable {
   }
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
-    process.load(nbt.getCompoundTag("process"), workspace)
+    process.load(nbt.getCompoundTag("process"))
 
     buildBuffer.synchronized {
       buildBuffer.clear()

@@ -2,10 +2,8 @@ package totoro.ocelot.brain.entity.sound_card
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.util.Persistable
-import totoro.ocelot.brain.workspace.Workspace
 
-class AudioChannel extends Persistable {
+class AudioChannel {
   var generator: SignalGenerator = SignalGenerator.Square
   var frequency: Float = 0
   var offset: Float = 0
@@ -46,7 +44,7 @@ class AudioChannel extends Persistable {
     value * volume
   }
 
-  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+  def load(nbt: NBTTagCompound): Unit = {
     generator = SignalGenerator.load(nbt.getCompoundTag("generator"))
     frequency = nbt.getFloat("frequency")
     offset = nbt.getFloat("offset")
@@ -59,7 +57,7 @@ class AudioChannel extends Persistable {
     if (nbt.hasKey("env")) envelope = Some(new ADSREnvelope(nbt.getCompoundTag("env")))
   }
 
-  override def save(nbt: NBTTagCompound): Unit = {
+  def save(nbt: NBTTagCompound): Unit = {
     val generatorTag = new NBTTagCompound
     generator.save(generatorTag)
     nbt.setTag("generator", generatorTag)
