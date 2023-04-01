@@ -7,17 +7,15 @@ import totoro.ocelot.brain.util.Persistable
 import totoro.ocelot.brain.util.ResultWrapper.result
 import totoro.ocelot.brain.workspace.Workspace
 
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
-import java.util
 import scala.collection.mutable
-import scala.jdk.CollectionConverters.{IteratorHasAsScala, SeqHasAsJava}
+import scala.jdk.CollectionConverters.SeqHasAsJava
 
 class SoundBoard extends Persistable {
   val process = new AudioProcess
 
-  private val buildBuffer: util.ArrayDeque[Instruction] = new util.ArrayDeque[Instruction]
-  private val nextBuffer: util.ArrayDeque[Instruction] = new util.ArrayDeque[Instruction]
+  private val buildBuffer: mutable.ArrayBuffer[Instruction] = new mutable.ArrayBuffer[Instruction]
+  private val nextBuffer: mutable.ArrayBuffer[Instruction] = new mutable.ArrayBuffer[Instruction]
   private var buildDelay = 0
   private var nextDelay = 0
   private var soundVolume = 1f
@@ -37,7 +35,7 @@ class SoundBoard extends Persistable {
     buildBuffer.synchronized {
       if (buildBuffer.size >= Settings.get.soundCardQueueSize)
         return result(false, "too many instructions")
-      buildBuffer.add(inst)
+      buildBuffer.append(inst)
     }
     result(true)
   }
@@ -71,11 +69,11 @@ class SoundBoard extends Persistable {
   def startProcess(): Array[AnyRef] = {
     buildBuffer.synchronized {
       if (nextBuffer.isEmpty) {
-        if (buildBuffer.size == 0)
+        if (buildBuffer.isEmpty)
           return result(true)
 
         nextBuffer.synchronized {
-          nextBuffer.addAll(new util.ArrayDeque[Instruction](buildBuffer))
+          nextBuffer.appendAll(buildBuffer)
         }
 
         nextDelay = buildDelay
@@ -93,24 +91,25 @@ class SoundBoard extends Persistable {
   }
 
   def update(address: String): Unit = {
-    if (nextBuffer != null && !nextBuffer.isEmpty && System.currentTimeMillis >= timeout - 100) {
-      val clone = nextBuffer.synchronized {
-        val clone = nextBuffer.clone
+    if (nextBuffer != null && nextBuffer.nonEmpty && System.currentTimeMillis >= timeout - 100) {
+      val array = nextBuffer.synchronized {
+        val array = nextBuffer.toArray
         timeout = timeout + nextDelay
         nextBuffer.clear()
-        clone
+        array
       }
 
-      sendSound(address, clone)
+      sendSound(address, array)
     }
   }
 
-  private def sendSound(address: String, buffer: util.Queue[Instruction]): Unit = {
+  private def sendSound(address: String, instructions: Array[Instruction]): Unit = {
     val sampleRate = Settings.get.soundCardSampleRate
     val data = new mutable.ArrayBuffer[Byte]
     val cleanData = new mutable.ArrayBuffer[Float]
 
-    while (!buffer.isEmpty || process.delay > 0) {
+    var i = 0
+    while (i < instructions.length || process.delay > 0) {
       if (process.delay > 0) {
         val sampleCount = process.delay * sampleRate / 1000
         for (_ <- 0 until sampleCount) {
@@ -128,7 +127,8 @@ class SoundBoard extends Persistable {
         }
         process.delay = 0
       } else {
-        val inst = buffer.poll
+        val inst = instructions(i)
+        i += 1
         if (inst.isValid) inst.execute(process)
       }
     }
@@ -137,7 +137,7 @@ class SoundBoard extends Persistable {
       val buf = ByteBuffer.allocateDirect(data.length)
       buf.put(data.toArray)
       buf.flip()
-      EventBus.send(SoundCardAudioEvent(address, buf, cleanData.toArray, soundVolume))
+      EventBus.send(SoundCardAudioEvent(address, buf, cleanData.toArray, soundVolume, instructions))
     }
   }
 
@@ -173,17 +173,17 @@ class SoundBoard extends Persistable {
     nbt.setLong("timeout", timeout)
   }
 
-  private def loadInstrBuffer(nbt: NBTTagList): util.ArrayDeque[Instruction] = {
-    val buffer = new util.ArrayDeque[Instruction](nbt.tagCount())
+  private def loadInstrBuffer(nbt: NBTTagList): mutable.ArrayBuffer[Instruction] = {
+    val buffer = new mutable.ArrayBuffer[Instruction](nbt.tagCount())
     for (i <- 0 until nbt.tagCount()) {
-      buffer.push(Instruction.load(nbt.getCompoundTagAt(i)))
+      buffer.append(Instruction.load(nbt.getCompoundTagAt(i)))
     }
     buffer
   }
 
-  private def saveInstrBuffer(buffer: util.ArrayDeque[Instruction]): util.List[NBTBase] = {
+  private def saveInstrBuffer(buffer: mutable.ArrayBuffer[Instruction]): java.util.List[NBTBase] = {
     buffer.synchronized {
-      buffer.iterator().asScala.map(instr => {
+      buffer.map(instr => {
         val nbt = new NBTTagCompound
         instr.save(nbt)
         nbt: NBTBase
