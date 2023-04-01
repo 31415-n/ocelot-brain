@@ -106,7 +106,9 @@ class SoundBoard extends Persistable {
   private def sendSound(address: String, instructions: Array[Instruction]): Unit = {
     val sampleRate = Settings.get.soundCardSampleRate
     val data = new mutable.ArrayBuffer[Byte]
-    val cleanData = new mutable.ArrayBuffer[Float]
+    val cleanData = Array.fill(process.channels.length) {
+      new mutable.ArrayBuffer[Float]
+    }
 
     var i = 0
     while (i < instructions.length || process.delay > 0) {
@@ -114,16 +116,16 @@ class SoundBoard extends Persistable {
         val sampleCount = process.delay * sampleRate / 1000
         for (_ <- 0 until sampleCount) {
           var sample = 0f
-          for (channel <- process.channels) {
+          for ((channel, i) <- process.channels.zipWithIndex) {
             val x = channel.generate(process)
             sample += x
+            cleanData(i) += sample
           }
 
           val value = sample.min(1).max(-1) * 127 + process.error
           process.error = value - value.floor
 
           data += (value.floor.toByte ^ 0x80).toByte
-          cleanData += sample
         }
         process.delay = 0
       } else {
@@ -137,7 +139,7 @@ class SoundBoard extends Persistable {
       val buf = ByteBuffer.allocateDirect(data.length)
       buf.put(data.toArray)
       buf.flip()
-      EventBus.send(SoundCardAudioEvent(address, buf, cleanData.toArray, soundVolume, instructions))
+      EventBus.send(SoundCardAudioEvent(address, buf, cleanData.map(_.toArray), soundVolume, instructions))
     }
   }
 
