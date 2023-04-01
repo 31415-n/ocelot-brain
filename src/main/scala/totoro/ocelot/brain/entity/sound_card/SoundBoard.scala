@@ -119,7 +119,7 @@ class SoundBoard extends Persistable {
           for ((channel, i) <- process.channels.zipWithIndex) {
             val x = channel.generate(process)
             sample += x
-            cleanData(i) += sample
+            cleanData(i) += x
           }
 
           val value = sample.min(1).max(-1) * 127 + process.error
