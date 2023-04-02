@@ -62,7 +62,7 @@ object Instruction {
     0 <= ch && ch < Settings.get.soundCardChannelCount
   }
 
-  sealed abstract class ChannelSpecific(channelIndex: Int) extends Instruction {
+  sealed abstract class ChannelSpecific(val channelIndex: Int) extends Instruction {
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
       nbt.setInteger("c", channelIndex)
