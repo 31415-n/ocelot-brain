@@ -122,9 +122,8 @@ class SoundCard extends Entity with Tiered with Environment with DeviceInfo {
 
   @Callback(doc = "function(channel:number, attack:number, decay:number, attenuation:number, release:number); Instruction; Assigns ADSR to the specified channel with the specified phase durations in milliseconds and attenuation between 0 and 1.", direct = true)
   def setADSR(context: Context, args: Arguments): Array[AnyRef] = {
-    val envelope = new ADSREnvelope(args.checkInteger(1), args.checkInteger(2),
-      args.checkDouble(3).toFloat, args.checkInteger(4))
-    board.tryAdd(new Instruction.SetEnvelope(checkChannel(args), envelope))
+    board.tryAdd(new Instruction.SetEnvelope(checkChannel(args), args.checkInteger(1), args.checkInteger(2),
+      args.checkDouble(3).toFloat, args.checkInteger(4)))
   }
 
   @Callback(doc = "function(channel:number); Instruction; Removes ADSR from the specified channel.", direct = true)

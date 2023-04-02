@@ -188,17 +188,19 @@ object Instruction {
     }
   }
 
-  class SetEnvelope(channelIndex: Int, envelope: ADSREnvelope) extends ChannelSpecific(channelIndex) {
-    def this(nbt: NBTTagCompound) = this(nbt.getInteger("c"), new ADSREnvelope(nbt.getCompoundTag("e")))
+  class SetEnvelope(channelIndex: Int, attack: Int, decay: Int, sustain: Float, release: Int) extends ChannelSpecific(channelIndex) {
+    def this(nbt: NBTTagCompound) = this(nbt.getInteger("c"), nbt.getInteger("a"), nbt.getInteger("d"), nbt.getFloat("s"), nbt.getInteger("r"))
 
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
-      val envelopeNBT = new NBTTagCompound
-      envelope.save(envelopeNBT)
-      nbt.setTag("e", envelopeNBT)
+      nbt.setInteger("a", attack)
+      nbt.setInteger("d", decay)
+      nbt.setFloat("s", sustain)
+      nbt.setInteger("r", release)
     }
 
     override def execute(process: AudioProcess, channel: AudioChannel): Unit = {
+      val envelope = new ADSREnvelope(attack, decay, sustain, release)
       for (oldEnvelope <- channel.envelope) {
         envelope.phase = oldEnvelope.phase
         envelope.factor = oldEnvelope.factor
