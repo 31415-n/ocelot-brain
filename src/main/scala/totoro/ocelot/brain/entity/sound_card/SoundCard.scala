@@ -8,7 +8,7 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.workspace.Workspace
 
-class SoundCard extends Entity with Tiered with Environment with DeviceInfo {
+class SoundCard extends Entity with Environment with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Neighbors).
     withComponent("sound").
     create()
@@ -23,8 +23,6 @@ class SoundCard extends Entity with Tiered with Environment with DeviceInfo {
   val board = new SoundBoard
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
-
-  override var tier: Int = 1
 
   override def update(): Unit = {
     super.update()
