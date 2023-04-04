@@ -75,7 +75,7 @@ class AudioChannel {
       nbt.setTag("am", amNBT)
     }
 
-    for (fm <- amplitudeMod) {
+    for (fm <- frequencyMod) {
       val fmNBT = new NBTTagCompound
       fm.save(fmNBT)
       nbt.setTag("fm", fmNBT)
