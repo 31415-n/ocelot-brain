@@ -14,7 +14,8 @@ libraryDependencies ++= Seq(
   "org.apache.commons" % "commons-lang3" % "3.12.0",
   "org.apache.commons" % "commons-text" % "1.9",
   "commons-io" % "commons-io" % "2.11.0",
-  "org.ow2.asm" % "asm" % "9.3"
+  "org.ow2.asm" % "asm" % "9.3",
+  "com.github.sarxos" % "webcam-capture" % "0.3.12"
 )
 
 assemblyJarName := s"ocelot-brain-${version.value}.jar"
