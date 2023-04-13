@@ -1,14 +1,19 @@
 package totoro.ocelot.brain.entity
 
+import totoro.ocelot.brain.Constants
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
-import totoro.ocelot.brain.entity.traits.{Entity, Environment}
+import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
+import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.util.WebcamCapture
+import totoro.ocelot.brain.workspace.Workspace
+import com.github.sarxos.webcam.Webcam
 
-class Camera() extends Entity with Environment {
+class Camera() extends Entity with Environment with DeviceInfo {
   var webcamCapture: WebcamCapture = new WebcamCapture
   private val cameraThread = new Thread(webcamCapture)
-  //cameraThread.setPriority(Thread.MIN_PRIORITY)
+  cameraThread.setPriority(Thread.MIN_PRIORITY)
   cameraThread.start()
 
   override val node: Component = Network.newNode(this, Visibility.Network).
@@ -28,5 +33,37 @@ class Camera() extends Entity with Environment {
     }
 
     result(webcamCapture.ray(x, y))
+  }
+
+  override def getDeviceInfo: Map[String, String] = Map(
+    DeviceAttribute.Class -> DeviceClass.Multimedia,
+    DeviceAttribute.Description -> "Dungeon Scanner 3D",
+    DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
+    DeviceAttribute.Product -> webcamCapture.toString
+  )
+
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
+
+    if (nbt.hasKey("device"))
+      try webcamCapture.webcam = Webcam.getWebcamByName(nbt.getString("device"))
+
+    if (nbt.hasKey("flipHorizontally"))
+      webcamCapture.flipHorizontally = nbt.getBoolean("flipHorizontally")
+
+    if (nbt.hasKey("flipVertically"))
+      webcamCapture.flipVertically = nbt.getBoolean("flipVertically")
+
+    if (nbt.hasKey("invertColor"))
+      webcamCapture.invertColor = nbt.getBoolean("invertColor")
+  }
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    super.save(nbt)
+
+    nbt.setString("device", webcamCapture.webcam.getName)
+    nbt.setBoolean("flipHorizontally", webcamCapture.flipHorizontally)
+    nbt.setBoolean("flipVertically", webcamCapture.flipVertically)
+    nbt.setBoolean("invertColor", webcamCapture.invertColor)
   }
 }

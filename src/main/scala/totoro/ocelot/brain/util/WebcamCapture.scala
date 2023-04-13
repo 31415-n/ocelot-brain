@@ -1,56 +1,88 @@
 package totoro.ocelot.brain.util
 
-import com.github.sarxos.webcam.Webcam
+import com.github.sarxos.webcam.{Webcam, WebcamLockException}
 
 import java.awt.Color
 import java.awt.image.BufferedImage
 
 object WebcamCapture {
-  private val frameTimeout = 1000
-  private val maxDistance = 32f
+  private final val frameTimeout: Long = 1000
+  private final val deviceTimeout: Long = 10000
+  private final val maxDistance: Float = 32f
 }
 
 class WebcamCapture extends Runnable {
-  private var _webcam: Webcam = Webcam.getDefault()
+
+  private var _webcam: Webcam = Webcam.getDefault
+  private var lastUsageTime: Long = -1
   private var frame: Option[BufferedImage] = None
+  private var deviceOpen: Boolean = false
+  var flipHorizontally: Boolean = false
+  var flipVertically: Boolean = false
+  var invertColor: Boolean = false
 
   override def run(): Unit = {
-    while(true) {
-      if (!webcam.isOpen)
-          webcam.open()
+    while (true) {
+      if (lastUsageTime < 0 || System.currentTimeMillis - lastUsageTime >= WebcamCapture.deviceTimeout) {
+        close()
+      }
 
-      while(available) {
-        this.synchronized {
+      else {
+        open()
+
+        synchronized {
           frame = Option(webcam.getImage)
         }
-
-        Thread.sleep(WebcamCapture.frameTimeout)
       }
+
+      Thread.sleep(WebcamCapture.frameTimeout)
     }
   }
 
-  def webcam: Webcam = _webcam
+  private def open(): Unit = {
+    if (!webcam.isOpen)
+      webcam.open()
 
-  def webcam_=(newWebcam: Webcam): Unit = {
-    _webcam = newWebcam
+    deviceOpen = true
   }
 
-  def available: Boolean = webcam.isOpen
+  private def close(): Unit = {
+    if (webcam.isOpen && deviceOpen) {
+      webcam.close()
+      deviceOpen = false
+    }
+  }
+
+  private def requestFrameUpdate(): Boolean = {
+    lastUsageTime = System.currentTimeMillis
+    frame.isDefined
+  }
 
   override def toString: String = webcam.getName
 
+  def webcam: Webcam = _webcam
+  def webcam_=(newWebcam: Webcam): Unit = {
+    close()
+
+    synchronized {
+      _webcam = newWebcam
+      lastUsageTime = -1
+    }
+  }
+
   def ray(x: Float, y: Float): Float = {
-    if (!available || frame.isEmpty)
+    if (!requestFrameUpdate)
       return 0
 
-    val grayscale = this.synchronized {
-      val frameX = (1f - (0f max x min 1f)) * (frame.get.getWidth - 1).toFloat
-      val frameY = (0f max y min 1f) * (frame.get.getHeight - 1).toFloat
+    val normalizedDistance = synchronized {
+      val clampedX = 0f max x min 1f
+      val clampedY = 0f max y min 1f
+      val frameX = (if (flipHorizontally) 1f - clampedX else clampedX) * (frame.get.getWidth - 1).toFloat
+      val frameY = (if (flipVertically) 1f - clampedY else clampedY) * (frame.get.getHeight - 1).toFloat
       val color = new Color(frame.get.getRGB(frameX.toInt, frameY.toInt))
-
       (color.getRed + color.getGreen + color.getBlue).toFloat / (3f * 255f)
     }
 
-    WebcamCapture.maxDistance * (1f - grayscale)
+    WebcamCapture.maxDistance * (if (invertColor) normalizedDistance else 1f - normalizedDistance)
   }
 }
