@@ -12,7 +12,7 @@ trait GenericCamera extends Environment {
   @Callback(direct = true, doc = "function([x:number, y:number]):number; " +
     "Returns the distance to the block the ray is shot at with the specified x-y offset, " +
     "or if the block directly in front")
-  def distance(context: Context, args: Arguments): Array[AnyRef] = {
-    result(-1)
-  }
+  def distance(context: Context, args: Arguments): Array[AnyRef] = distanceImpl(context, args)
+
+  protected def distanceImpl(context: Context, args: Arguments): Array[AnyRef]
 }
