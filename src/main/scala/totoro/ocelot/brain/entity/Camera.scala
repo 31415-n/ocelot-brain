@@ -8,13 +8,11 @@ import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.util.WebcamCapture
 import totoro.ocelot.brain.workspace.Workspace
-import com.github.sarxos.webcam.Webcam
 
 class Camera() extends Entity with Environment with DeviceInfo {
-  var webcamCapture: WebcamCapture = new WebcamCapture
-  private val cameraThread = new Thread(webcamCapture)
-  cameraThread.setPriority(Thread.MIN_PRIORITY)
-  cameraThread.start()
+  var webcamCapture: WebcamCapture = WebcamCapture.getDefault
+  var flipHorizontally: Boolean = false
+  var flipVertically: Boolean = false
 
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("camera", Visibility.Network).
@@ -28,11 +26,11 @@ class Camera() extends Entity with Environment with DeviceInfo {
     var y: Float = 0f
     if (args.count() == 2) {
       // [-1; 1] => [0; 1]
-      x = 1f - (args.checkDouble(0).toFloat + 1f) / 2f
-      y = 1f - (args.checkDouble(1).toFloat + 1f) / 2f
+      x = (args.checkDouble(0).toFloat + 1f) / 2f
+      y = (args.checkDouble(1).toFloat + 1f) / 2f
     }
 
-    result(webcamCapture.ray(x, y))
+    result(webcamCapture.ray(if (flipHorizontally) x else 1f - x, if (flipVertically) y else 1f - y))
   }
 
   override def getDeviceInfo: Map[String, String] = Map(
@@ -46,8 +44,9 @@ class Camera() extends Entity with Environment with DeviceInfo {
     super.load(nbt, workspace)
 
     if (nbt.hasKey("device"))
-      try webcamCapture.webcam = Webcam.getWebcamByName(nbt.getString("device"))
+      try webcamCapture = WebcamCapture.getInstance(nbt.getString("device"))
 
+    /*
     if (nbt.hasKey("flipHorizontally"))
       webcamCapture.flipHorizontally = nbt.getBoolean("flipHorizontally")
 
@@ -56,14 +55,18 @@ class Camera() extends Entity with Environment with DeviceInfo {
 
     if (nbt.hasKey("invertColor"))
       webcamCapture.invertColor = nbt.getBoolean("invertColor")
+    */
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
 
-    nbt.setString("device", webcamCapture.webcam.getName)
+    nbt.setString("device", webcamCapture.name)
+
+    /*
     nbt.setBoolean("flipHorizontally", webcamCapture.flipHorizontally)
     nbt.setBoolean("flipVertically", webcamCapture.flipVertically)
     nbt.setBoolean("invertColor", webcamCapture.invertColor)
+    */
   }
 }
