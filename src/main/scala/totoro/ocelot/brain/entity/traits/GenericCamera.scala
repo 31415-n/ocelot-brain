@@ -1,7 +1,6 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
-import totoro.ocelot.brain.entity.result
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
 
 trait GenericCamera extends Environment {
