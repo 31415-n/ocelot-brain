@@ -22,7 +22,7 @@ import scala.util.matching.Regex
 // saved, but before the computer was saved, leading to mismatching states in
 // the save file - a Bad Thing (TM).
 
-trait GenericGPU extends Environment with Tiered with VideoRamDevice {
+trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
     withComponent("gpu").
     create()

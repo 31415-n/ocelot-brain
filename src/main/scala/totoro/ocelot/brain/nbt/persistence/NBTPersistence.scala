@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.nbt.persistence
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.traits.Tiered
+import totoro.ocelot.brain.entity.traits.MultiTiered
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
 import totoro.ocelot.brain.workspace.Workspace
@@ -86,7 +86,7 @@ object NBTPersistence {
     override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
       val clazz = Class.forName(className)
       val constructor = clazz.getConstructor(classOf[Int])
-      val tier: Int = nbt.getCompoundTag(DataTag).getInteger(Tiered.TierTag)
+      val tier: Int = nbt.getCompoundTag(DataTag).getInteger(MultiTiered.TierTag)
       constructor.newInstance(tier).asInstanceOf[Persistable]
     }
   }
@@ -95,7 +95,7 @@ object NBTPersistence {
     override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
       val clazz = Class.forName(className)
       val constructor = clazz.getConstructor(classOf[Int], classOf[Workspace])
-      val tier: Int = nbt.getCompoundTag(DataTag).getInteger(Tiered.TierTag)
+      val tier: Int = nbt.getCompoundTag(DataTag).getInteger(MultiTiered.TierTag)
       constructor.newInstance(tier, workspace).asInstanceOf[Persistable]
     }
   }

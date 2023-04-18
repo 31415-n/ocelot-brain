@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, TextBufferProxy, Tiered, VideoRamRasterizer}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, TextBufferProxy, MultiTiered, VideoRamRasterizer}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
@@ -17,7 +17,7 @@ import scala.collection.mutable
   * This trait implements functionality for displaying and manipulating
   * text, like screens and robots.
   */
-class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBufferProxy with VideoRamRasterizer with DeviceInfo with Tiered {
+class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBufferProxy with VideoRamRasterizer with DeviceInfo with MultiTiered {
   override val node: Component =  Network.newNode(this, Visibility.Network).
     withComponent("screen").
     create()
