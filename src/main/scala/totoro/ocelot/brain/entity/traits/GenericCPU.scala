@@ -5,7 +5,7 @@ import totoro.ocelot.brain.entity.machine.{Architecture, MachineAPI}
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.util.Tier
 
-trait GenericCPU extends Environment with MutableProcessor with Tiered {
+trait GenericCPU extends Environment with MutableProcessor with MultiTiered {
 
   override val node: Node = Network.newNode(this, Visibility.Neighbors).create()
 

@@ -48,6 +48,27 @@ class Workspace(var path: Path) {
     ingameTimePaused = paused
   }
 
+  // ----------------------------------------------------------------------- //
+
+  /**
+   * List of tasks that should be invoked after update() call
+   * Works the same way as Java's Platform.runLater()
+   */
+  private val deferredTasks: mutable.ListBuffer[() => Unit] = mutable.ListBuffer.empty
+
+  def runLater(callback: () => Unit): Unit = {
+    deferredTasks += callback
+  }
+
+  private def runDeferredTasks(): Unit = {
+    if (deferredTasks.nonEmpty) {
+      for (task <- deferredTasks)
+        task()
+
+      deferredTasks.clear()
+    }
+  }
+
   // Entities
   // ----------------------------------------------------------------------- //
   /**
@@ -81,9 +102,16 @@ class Workspace(var path: Path) {
     */
   def update(): Unit = {
     entities.foreach(entity => {
-      if (entity.needUpdate) entity.update()
+      if (entity.needUpdate)
+        entity.update()
     })
-    if (!ingameTimePaused) ingameTime += 1
+
+    if (!ingameTimePaused)
+      ingameTime += 1
+
+    // Running deferred tasks if any in workspace thread after
+    // processing all its' entities
+    runDeferredTasks()
   }
 
   def entityByAddress(address: String): Option[Entity] = {

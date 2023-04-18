@@ -2,12 +2,12 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
-import totoro.ocelot.brain.entity.traits.{Entity, Tiered}
+import totoro.ocelot.brain.entity.traits.{Entity, MultiTiered}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.user.User
 import totoro.ocelot.brain.workspace.Workspace
 
-class Screen(tier: Int) extends TextBuffer(tier) with Entity with Tiered {
+class Screen(tier: Int) extends TextBuffer(tier) with Entity with MultiTiered {
 
   var invertTouchMode = false
 
