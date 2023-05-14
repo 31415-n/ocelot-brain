@@ -195,7 +195,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
   override def onBufferCopy(col: Int, row: Int, w: Int, h: Int, tx: Int, ty: Int): Unit =
     EventBus.send(TextBufferCopyEvent(this.node.address, col, row, w, h, tx, ty))
 
-  override def onBufferFill(col: Int, row: Int, w: Int, h: Int, c: Char): Unit =
+  override def onBufferFill(col: Int, row: Int, w: Int, h: Int, c: Int): Unit =
     EventBus.send(TextBufferFillEvent(this.node.address, col, row, w, h, c))
 
   override def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean): Unit =
@@ -210,7 +210,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
   override def onBufferRamDestroy(ram: GpuTextBuffer): Unit =
     EventBus.send(TextBufferRamDestroyEvent(this.node.address, ram))
 
-  override def rawSetText(column: Int, row: Int, text: Array[Array[Char]]): Unit =
+  override def rawSetText(column: Int, row: Int, text: Array[Array[Int]]): Unit =
     super.rawSetText(column, row, text)
 
   override def rawSetForeground(column: Int, row: Int, color: Array[Array[Int]]): Unit =

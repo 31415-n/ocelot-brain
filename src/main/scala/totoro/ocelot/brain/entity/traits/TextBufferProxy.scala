@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.user.User
-import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor}
+import totoro.ocelot.brain.util.{ColorDepth, ExtendedUnicodeHelper, GenericTextBuffer, PackedColor}
 
 trait TextBufferProxy extends Environment {
   def data: GenericTextBuffer
@@ -259,7 +259,7 @@ trait TextBufferProxy extends Environment {
     if (data.copy(column, row, width, height, horizontalTranslation, verticalTranslation))
       onBufferCopy(column, row, width, height, horizontalTranslation, verticalTranslation)
 
-  def onBufferFill(col: Int, row: Int, w: Int, h: Int, c: Char): Unit = {}
+  def onBufferFill(col: Int, row: Int, w: Int, h: Int, c: Int): Unit = {}
 
   /**
     * Fill a portion of the text buffer.
@@ -271,12 +271,36 @@ trait TextBufferProxy extends Environment {
     * @param width  the width of the area to fill.
     * @param height the height of the area to fill.
     * @param value  the character to fill the area with.
+    * @deprecated Please use the int variant.
     */
+  @Deprecated
   def fill(column: Int, row: Int, width: Int, height: Int, value: Char): Unit =
+    fill(column, row, width, height, value.toInt)
+
+  /**
+    * Fill a portion of the text buffer.
+    *
+    * This will set the area's colors to the currently active ones.
+    *
+    * @param column the starting horizontal index of the area to fill.
+    * @param row    the starting vertical index of the area to fill.
+    * @param width  the width of the area to fill.
+    * @param height the height of the area to fill.
+    * @param value  the code point to fill the area with.
+    */
+  def fill(column: Int, row: Int, width: Int, height: Int, value: Int): Unit =
     if (data.fill(column, row, width, height, value))
       onBufferFill(column, row, width, height, value)
 
   def onBufferSet(col: Int, row: Int, s: String, vertical: Boolean): Unit = {}
+
+  private def truncate(s: String, sLength: Int, leftOffset: Int, maxWidth: Int): String = {
+    val subFrom = s.offsetByCodePoints(0, leftOffset)
+    val width = math.min(sLength, maxWidth)
+    if (width <= 0) ""
+    else if ((sLength - leftOffset) <= width) s
+    else s.substring(subFrom, s.offsetByCodePoints(subFrom, width))
+  }
 
   /**
     * Write a string into the text buffer.
@@ -288,22 +312,24 @@ trait TextBufferProxy extends Environment {
     * @param value    the string to write.
     * @param vertical `true` if the string should be written vertically instead of horizontally.
     */
-  def set(column: Int, row: Int, value: String, vertical: Boolean): Unit =
-    if (column < data.width && (column >= 0 || -column < value.length)) {
+  def set(column: Int, row: Int, value: String, vertical: Boolean): Unit = {
+    val sLength = ExtendedUnicodeHelper.length(value)
+    if (column < data.width && (column >= 0 || -column < sLength)) {
       // Make sure the string isn't longer than it needs to be, in particular to
       // avoid sending too much data to our clients.
       val (x, y, truncated) =
       if (vertical) {
-        if (row < 0) (column, 0, value.substring(-row))
-        else (column, row, value.substring(0, math.min(value.length, data.height - row)))
+        if (row < 0) (column, 0, truncate(value, sLength, -row, data.height))
+        else (column, row, truncate(value, sLength, 0, data.height - row))
       }
       else {
-        if (column < 0) (0, row, value.substring(-column))
-        else (column, row, value.substring(0, math.min(value.length, data.width - column)))
+        if (column < 0) (0, row, truncate(value, sLength, -column, data.width))
+        else (column, row, truncate(value, sLength, 0, data.width - column))
       }
       if (data.set(x, y, truncated, vertical))
         onBufferSet(x, row, truncated, vertical)
     }
+  }
 
   /**
     * Get the character in the text buffer at the specified location.
@@ -311,8 +337,19 @@ trait TextBufferProxy extends Environment {
     * @param column the horizontal index.
     * @param row    the vertical index.
     * @return the character at that index.
+    * @deprecated Please use getCodePoint going forward.
     */
-  def get(column: Int, row: Int): Char = data.get(column, row)
+  @Deprecated
+  def get(column: Int, row: Int): Char = data.get(column, row).toChar
+
+  /**
+    * Get the code point in the text buffer at the specified location.
+    *
+    * @param column the horizontal index.
+    * @param row    the vertical index.
+    * @return the character at that index.
+    */
+  def getCodePoint(column: Int, row: Int): Int = data.get(column, row)
 
   /**
     * Get the foreground color of the text buffer at the specified location.
@@ -388,8 +425,36 @@ trait TextBufferProxy extends Environment {
     * @param column the horizontal index.
     * @param row    the vertical index.
     * @param text   the text to write.
+    * @deprecated Please use the int[][] variant.
     */
+  @Deprecated
   def rawSetText(column: Int, row: Int, text: Array[Array[Char]]): Unit = {
+    for (y <- row until ((row + text.length) min data.height)) {
+      val line = text(y - row)
+      Array.copy(line, 0, data.buffer(y), column, line.length min data.width)
+    }
+  }
+
+  /**
+    * Overwrites a portion of the text in raw mode.
+    *
+    * This will copy the given char array into the buffer, starting at the
+    * specified column and row. The array is expected to be indexed row-
+    * first, i.e. the first dimension is the vertical axis, the second
+    * the horizontal.
+    *
+    * '''Important''': this performs no checks as to whether something
+    * actually changed. It will always send the changed patch to clients.
+    * It will also not crop the specified array to the actually used range.
+    * In other words, this is not intended to be exposed as-is to user code,
+    * it should always be called with validated, and, as necessary, cropped
+    * values.
+    *
+    * @param column the horizontal index.
+    * @param row    the vertical index.
+    * @param text   the text code points to write.
+    */
+  def rawSetText(column: Int, row: Int, text: Array[Array[Int]]): Unit = {
     for (y <- row until ((row + text.length) min data.height)) {
       val line = text(y - row)
       Array.copy(line, 0, data.buffer(y), column, line.length min data.width)

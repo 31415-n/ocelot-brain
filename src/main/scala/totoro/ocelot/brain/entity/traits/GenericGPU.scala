@@ -5,7 +5,7 @@ import totoro.ocelot.brain.entity.machine._
 import totoro.ocelot.brain.entity.{GpuTextBuffer, TextBuffer}
 import totoro.ocelot.brain.nbt.{NBTTagCompound, NBTTagList}
 import totoro.ocelot.brain.network.{Message, Network, Node, Visibility}
-import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor}
+import totoro.ocelot.brain.util.{ColorDepth, ExtendedUnicodeHelper, GenericTextBuffer, PackedColor}
 import totoro.ocelot.brain.workspace.Workspace
 
 import scala.util.matching.Regex
@@ -463,7 +463,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
           (bgValue, ())
         }
 
-      result(s.get(x, y), fgColor, bgColor, fgIndex, bgIndex)
+      result(new java.lang.StringBuilder().appendCodePoint(s.getCodePoint(x, y)).toString, fgColor, bgColor, fgIndex, bgIndex)
     })
   }
 
@@ -507,9 +507,10 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
     val w = math.max(0, args.checkInteger(2))
     val h = math.max(0, args.checkInteger(3))
     val value = args.checkString(4)
-    if (value.length == 1) screen(s => {
+    if (ExtendedUnicodeHelper.length(value) == 1) screen(s => {
+      val c = value.codePointAt(0)
       if (resolveInvokeCosts(bufferIndex, context, fillCosts(tier))) {
-        s.fill(x, y, w, h, value.charAt(0))
+        s.fill(x, y, w, h, c)
         result(true)
       }
       else {
@@ -544,7 +545,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
           case machine: Machine if machine.lastError != null =>
             if (s.getColorDepth.id > ColorDepth.OneBit.id) s.setBackgroundColor(0x0000FF)
             else s.setBackgroundColor(0x000000)
-            s.fill(0, 0, w, h, ' ')
+            s.fill(0, 0, w, h, 0x20)
             try {
               val wrapRegEx = s"(.{1,${math.max(1, w - 2)}})\\s".r
               val lines = wrapRegEx.replaceAllIn(machine.lastError.replace("\t", "  ") + "\n", m => Regex.quoteReplacement(m.group(1) + "\n")).linesIterator.toArray
@@ -565,7 +566,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
             }
           case _ =>
             s.setBackgroundColor(0x000000)
-            s.fill(0, 0, w, h, ' ')
+            s.fill(0, 0, w, h, 0x20)
         }
         null // For screen()
       })
