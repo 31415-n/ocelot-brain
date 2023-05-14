@@ -47,6 +47,7 @@ class Settings(val config: Config) {
   val allowGC: Boolean = config.getBoolean("computer.lua.allowGC")
   val enableLua53: Boolean = config.getBoolean("computer.lua.enableLua53")
   val defaultLua53: Boolean = config.getBoolean("computer.lua.defaultLua53")
+  val enableLua54: Boolean = config.getBoolean("computer.lua.enableLua54")
   val ramSizes: Array[Int] = Array(config.getIntList("computer.lua.ramSizes").asScala.toArray: _*) match {
     case Array(tier1, tier2, tier3, tier4, tier5, tier6) =>
       Array(tier1: Int, tier2: Int, tier3: Int, tier4: Int, tier5: Int, tier6: Int)

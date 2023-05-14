@@ -3,7 +3,7 @@ package totoro.ocelot.brain.entity.machine.luac
 import com.google.common.base.Strings
 import com.google.common.io.PatternFilenameFilter
 import li.cil.repack.com.naef.jnlua
-import li.cil.repack.com.naef.jnlua.{LuaState, LuaStateFiveThree}
+import li.cil.repack.com.naef.jnlua.{LuaState, LuaStateFiveFour, LuaStateFiveThree}
 import org.apache.commons.lang3.SystemUtils
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState._
 import totoro.ocelot.brain.entity.machine.Machine
@@ -17,10 +17,11 @@ import scala.util.Random
 
 object LuaStateFactory {
   def isAvailable: Boolean = {
-    // Force initialization of both.
+    // Force initialization of all.
     val lua52 = Lua52.isAvailable
     val lua53 = Lua53.isAvailable
-    lua52 || lua53
+    val lua54 = Lua54.isAvailable
+    lua52 || lua53 || lua54
   }
 
   def luajRequested: Boolean = Settings.get.forceLuaJ || Settings.get.registerLuaJArchitecture
@@ -31,10 +32,12 @@ object LuaStateFactory {
 
   def include53: Boolean = Lua53.isAvailable && Settings.get.enableLua53 && !Settings.get.forceLuaJ
 
+  def include54: Boolean = Lua54.isAvailable && Settings.get.enableLua54 && !Settings.get.forceLuaJ
+
   def default53: Boolean = include53 && Settings.get.defaultLua53
 
   object Lua52 extends LuaStateFactory {
-    override def version: String = "lua52"
+    override def version: String = "52"
 
     override protected def create(maxMemory: Option[Int]): LuaState = maxMemory.fold(new jnlua.LuaState())(new jnlua.LuaState(_))
 
@@ -52,9 +55,27 @@ object LuaStateFactory {
   }
 
   object Lua53 extends LuaStateFactory {
-    override def version: String = "lua53"
+    override def version: String = "53"
 
     override protected def create(maxMemory: Option[Int]): LuaStateFiveThree = maxMemory.fold(new jnlua.LuaStateFiveThree())(new jnlua.LuaStateFiveThree(_))
+
+    override protected def openLibs(state: jnlua.LuaState): Unit = {
+      state.openLib(jnlua.LuaState.Library.BASE)
+      state.openLib(jnlua.LuaState.Library.COROUTINE)
+      state.openLib(jnlua.LuaState.Library.DEBUG)
+      state.openLib(jnlua.LuaState.Library.ERIS)
+      state.openLib(jnlua.LuaState.Library.MATH)
+      state.openLib(jnlua.LuaState.Library.STRING)
+      state.openLib(jnlua.LuaState.Library.TABLE)
+      state.openLib(jnlua.LuaState.Library.UTF8)
+      state.pop(8)
+    }
+  }
+
+  object Lua54 extends LuaStateFactory {
+    override def version: String = "54"
+
+    override protected def create(maxMemory: Option[Int]): LuaStateFiveFour = maxMemory.fold(new jnlua.LuaStateFiveFour())(new jnlua.LuaStateFiveFour(_))
 
     override protected def openLibs(state: jnlua.LuaState): Unit = {
       state.openLib(jnlua.LuaState.Library.BASE)
@@ -93,32 +114,35 @@ abstract class LuaStateFactory {
   private val libraryName = {
     if (!Strings.isNullOrEmpty(Settings.get.forceNativeLib)) Settings.get.forceNativeLib
 
-    else if (SystemUtils.IS_OS_FREE_BSD && Architecture.IS_OS_X64) "native.64.bsd.so"
-    else if (SystemUtils.IS_OS_FREE_BSD && Architecture.IS_OS_X86) "native.32.bsd.so"
+    else {
+      val libExtension = {
+        if (SystemUtils.IS_OS_MAC) ".dylib"
+        else if (SystemUtils.IS_OS_WINDOWS) ".dll"
+        else ".so"
+      }
 
-    else if (SystemUtils.IS_OS_LINUX && Architecture.IS_OS_ARM) "native.32.arm.so"
-    else if (SystemUtils.IS_OS_LINUX && Architecture.IS_OS_X64) "native.64.so"
-    else if (SystemUtils.IS_OS_LINUX && Architecture.IS_OS_X86) "native.32.so"
+      val systemName = {
+        if (SystemUtils.IS_OS_FREE_BSD) "freebsd"
+        else if (SystemUtils.IS_OS_NET_BSD) "netbsd"
+        else if (SystemUtils.IS_OS_OPEN_BSD) "openbsd"
+        else if (SystemUtils.IS_OS_SOLARIS) "solaris"
+        else if (SystemUtils.IS_OS_LINUX) "linux"
+        else if (SystemUtils.IS_OS_MAC) "darwin"
+        else if (SystemUtils.IS_OS_WINDOWS) "windows"
+        else "unknown"
+      }
 
-    else if (SystemUtils.IS_OS_MAC && Architecture.IS_OS_X64) "native.64.dylib"
-    else if (SystemUtils.IS_OS_MAC && Architecture.IS_OS_X86) "native.32.dylib"
+      val archName = {
+        if (Architecture.IS_OS_ARM64) "aarch64"
+        else if (Architecture.IS_OS_ARM) "arm"
+        else if (Architecture.IS_OS_X64) "x86_64"
+        else if (Architecture.IS_OS_X86) "x86"
+        else "unknown"
+      }
 
-    else if (SystemUtils.IS_OS_WINDOWS && Architecture.IS_OS_X64) "native.64.dll"
-    else if (SystemUtils.IS_OS_WINDOWS && Architecture.IS_OS_X86) "native.32.dll"
-
-    else null
+      "libjnlua" + version + "-" + systemName + "-" + archName + libExtension
+    }
   }
-
-  // Register a custom library loader with JNLua. We have to trigger
-  // library loads through JNLua to ensure the LuaState class is the
-  // one loading the library and not the other way around - the native
-  // library also references the LuaState class, and if it is loaded
-  // that way, it will fail to access native methods in its static
-  // initializer, because the native lib will not have been completely
-  // loaded at the time the initializer runs.
-  private def prepareLoad(lib: String): Unit = jnlua.NativeSupport.getInstance().setLoader(() => {
-    System.load(lib)
-  })
 
   protected def create(maxMemory: Option[Int] = None): jnlua.LuaState
 
@@ -153,7 +177,7 @@ abstract class LuaStateFactory {
       }
     }
 
-    val libraryUrl = classOf[Machine].getResource(s"/assets/${Settings.resourceDomain}/lib/$version/$libraryName")
+    val libraryUrl = classOf[Machine].getResource(s"/assets/${Settings.resourceDomain}/lib/$libraryName")
     if (libraryUrl == null) {
       Ocelot.log.warn(s"Native library with name '$version/$libraryName' not found.")
       return
@@ -260,7 +284,7 @@ abstract class LuaStateFactory {
     currentLib = tmpLibFile.getAbsolutePath
     try {
       LuaStateFactory.synchronized {
-        prepareLoad(currentLib)
+        System.load(currentLib)
         try {
           create().close()
         } catch {
@@ -273,7 +297,7 @@ abstract class LuaStateFactory {
     catch {
       case t: Throwable =>
         if (Settings.get.logFullLibLoadErrors) {
-          Ocelot.log.trace(s"Could not load native library '${tmpLibFile.getName}'.", t)
+          Ocelot.log.warn(s"Could not load native library '${tmpLibFile.getName}'.", t)
         }
         else {
           Ocelot.log.trace(s"Could not load native library '${tmpLibFile.getName}'.")
@@ -297,7 +321,7 @@ abstract class LuaStateFactory {
 
     try {
       val state = LuaStateFactory.synchronized {
-        prepareLoad(currentLib)
+        System.load(currentLib)
         if (Settings.get.limitMemory) create(Some(Int.MaxValue))
         else create()
       }
@@ -363,7 +387,7 @@ abstract class LuaStateFactory {
         state.setField(-2, "random")
 
         state.pushScalaFunction(lua => {
-          random.setSeed(lua.checkNumber(1).toLong)
+          random.setSeed(lua.checkInteger(1))
           0
         })
         state.setField(-2, "randomseed")
@@ -395,6 +419,8 @@ abstract class LuaStateFactory {
     }
 
     val IS_OS_ARM: Boolean = isOSArchMatch("arm")
+
+    val IS_OS_ARM64: Boolean = isOSArchMatch("aarch64")
 
     val IS_OS_X86: Boolean = isOSArchMatch("x86") || isOSArchMatch("i386")
 

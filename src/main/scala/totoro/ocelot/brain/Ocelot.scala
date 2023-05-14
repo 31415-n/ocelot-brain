@@ -2,7 +2,7 @@ package totoro.ocelot.brain
 
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
-import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture}
+import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture, NativeLua54Architecture}
 import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
 import totoro.ocelot.brain.loot.Loot
@@ -33,23 +33,18 @@ object Ocelot {
   private def init(): Unit = {
     log.info("Registering available machine architectures...")
 
-    // Weird JNLua bug identified
-    // When loading JNLua (for either 5.2 or 5.3 lua state) there is a static section that the library loads
-    // being static, it loads once regardless of which lua state is loaded first
-    // static { REGISTRYINDEX = lua_registryindex(); }
-    // The problem is that lua_registryindex was removed in 5.3
-    // Thus, if we load JNLua from a lua5.3 state first, this static section fails
-    // We must load 5.2 first, AND we know 5.3 will likely fail to load if 5.2 failed
-    val include52: Boolean = LuaStateFactory.include52
-
-    // now that JNLua has been initialized from a lua52 state, we are safe to check 5.3
-    if (LuaStateFactory.include53) {
-      MachineAPI.add(classOf[NativeLua53Architecture], "Lua 5.3")
+    if (LuaStateFactory.isAvailable) {
+      if (LuaStateFactory.include53) {
+        MachineAPI.add(classOf[NativeLua53Architecture], "Lua 5.3")
+      }
+      if (LuaStateFactory.include54) {
+        MachineAPI.add(classOf[NativeLua54Architecture], "Lua 5.4")
+      }
+      if (LuaStateFactory.include52) {
+        MachineAPI.add(classOf[NativeLua52Architecture], "Lua 5.2")
+      }
     }
-    if (include52) {
-      MachineAPI.add(classOf[NativeLua52Architecture], "Lua 5.2")
-    }
-    if (MachineAPI.architectures.isEmpty) {
+    if (LuaStateFactory.includeLuaJ) {
       MachineAPI.add(classOf[LuaJLuaArchitecture], "LuaJ")
     }
 

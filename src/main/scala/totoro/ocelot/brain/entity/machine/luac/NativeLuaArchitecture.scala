@@ -18,6 +18,10 @@ class NativeLua53Architecture(machine: Machine) extends NativeLuaArchitecture(ma
   override def factory: LuaStateFactory.Lua53.type = LuaStateFactory.Lua53
 }
 
+class NativeLua54Architecture(machine: Machine) extends NativeLuaArchitecture(machine) {
+  override def factory: LuaStateFactory.Lua54.type = LuaStateFactory.Lua54
+}
+
 abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture {
   protected def factory: LuaStateFactory
 

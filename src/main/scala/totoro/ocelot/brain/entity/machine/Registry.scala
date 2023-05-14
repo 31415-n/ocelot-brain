@@ -56,7 +56,7 @@ object Registry {
       case arg: java.lang.Long => arg
       case arg: java.lang.Float => arg
       case arg: java.lang.Double => arg
-      case arg: java.lang.Number => Double.box(arg.doubleValue())
+      case arg: java.lang.Number => Double.box(arg.doubleValue)
       case arg: java.lang.String => arg
 
       case arg: Array[Boolean] => arg

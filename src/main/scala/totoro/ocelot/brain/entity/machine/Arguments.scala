@@ -90,6 +90,25 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
   }
 
   /**
+    * Try to get a long value at the specified index.
+    *
+    * Throws an error if there are too few arguments.
+    *
+    * @param index the index from which to get the argument.
+    * @return the long value at the specified index.
+    * @throws IllegalArgumentException if there is no argument at that index,
+    *                                  or if the argument is not a number.
+    * @since OpenComputers 1.8.0
+    */
+  def checkLong(index: Int): Long = {
+    checkIndex(index, "number")
+    args(index) match {
+      case value: java.lang.Number => value.longValue
+      case value => throw typeError(index, value, "number")
+    }
+  }
+
+  /**
     * Try to get a double value at the specified index.
     * 
     * Throws an error if there are too few arguments.
@@ -221,6 +240,22 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
   }
 
   /**
+    * Try to get a long value at the specified index.
+    *
+    * Return the specified default value if there is no such element, behaves
+    * like `checkLong (int)` otherwise.
+    *
+    * @param index the index from which to get the argument.
+    * @return the long value at the specified index.
+    * @throws IllegalArgumentException if the argument exists but is not a number.
+    * @since OpenComputers 1.8.0
+    */
+  def optLong(index: Int, default: Long): Long = {
+    if (!isDefined(index)) default
+    else checkLong(index)
+  }
+
+  /**
     * Try to get a double value at the specified index.
     * 
     * Return the specified default value if there is no such element, behaves
@@ -316,6 +351,17 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
       case _: java.lang.Double => true
       case _ => false
     })
+
+  /**
+    * Tests whether the argument at the specified index is a long value.
+    *
+    * This will return false if there is ''no'' argument at the specified
+    * index, i.e. if there are too few arguments.
+    *
+    * @param index the index to check.
+    * @return true if the argument is a long; false otherwise.
+    */
+  def isLong (index: Int): Boolean = isInteger(index)
 
   /**
     * Tests whether the argument at the specified index is a double value.
@@ -427,6 +473,10 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
   private def typeName(value: AnyRef): String = value match {
     case null | None => "nil"
     case _: java.lang.Boolean => "boolean"
+    case _: java.lang.Byte => "integer"
+    case _: java.lang.Short => "integer"
+    case _: java.lang.Integer => "integer"
+    case _: java.lang.Long => "integer"
     case _: java.lang.Number => "double"
     case _: java.lang.String => "string"
     case _: Array[Byte] => "string"

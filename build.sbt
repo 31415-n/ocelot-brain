@@ -5,6 +5,24 @@ version := "0.13.0"
 
 scalaVersion := "2.13.8"
 
+//resolvers += Resolver.url(
+//  "asie dependency mirror",
+//  url("http://asie.pl/javadeps/")
+//)(Patterns(
+//  "[module]-[revision](-[classifier]).[ext]"
+//)).withAllowInsecureProtocol(true)
+
+//resolvers += Resolver.url("asie dependency mirror") artifacts
+//  "http://asie.pl/javadeps/[module]-[revision](-[classifier]).[ext]"
+
+//resolvers += Resolver.url(
+//  "asie dependency mirror",
+//  //url("http://asie.pl/javadeps/")
+//).withAllowInsecureProtocol(true).withPatterns(
+//  Patterns(false, "http://asie.pl/javadeps/[module]-[revision](-[classifier]).[ext]")
+//)
+
+
 libraryDependencies ++= Seq(
   "org.apache.logging.log4j" % "log4j-core" % "2.19.0",
   "org.apache.logging.log4j" % "log4j-api" % "2.19.0",
@@ -14,7 +32,10 @@ libraryDependencies ++= Seq(
   "org.apache.commons" % "commons-lang3" % "3.12.0",
   "org.apache.commons" % "commons-text" % "1.9",
   "commons-io" % "commons-io" % "2.11.0",
-  "org.ow2.asm" % "asm" % "9.3"
+  "org.ow2.asm" % "asm" % "9.3",
+  "li.cil.repack.com.naef" % "OC-LuaJ" % "20220904.0" from ("http://asie.pl/javadeps/OC-LuaJ-20220907.1.jar", true),
+  "li.cil.repack.com.naef" % "OC-JNLua" % "20220904.0" from ("http://asie.pl/javadeps/OC-JNLua-20220928.1.jar", true),
+  "li.cil.repack.com.naef" % "OC-JNLua-Natives" % "20220904.0" from ("http://asie.pl/javadeps/OC-JNLua-Natives-20220928.1.jar", true)
 )
 
 assemblyJarName := s"ocelot-brain-${version.value}.jar"
