@@ -29,7 +29,7 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
 
   private[machine] var kernelMemory = 0
 
-  private[machine] val ramScale = if (factory.is64Bit) Settings.get.ramScaleFor64Bit else 1.0
+  private[machine] var ramScale: Double = 1.0
 
   private val persistence = new PersistenceAPI(this)
 
@@ -137,16 +137,16 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
   override def isInitialized: Boolean = kernelMemory > 0
 
   override def recomputeMemory(components: Iterable[Entity]): Boolean = {
-    val memory = math.ceil(memoryInBytes(components) * ramScale).toInt
+    val memoryBytes = memoryInBytes(components)
     Option(lua) match {
       case Some(l) if Settings.get.limitMemory =>
         l.setTotalMemory(Int.MaxValue)
         if (kernelMemory > 0) {
-          l.setTotalMemory(kernelMemory + memory)
+          l.setTotalMemory(kernelMemory + math.ceil(memoryBytes * ramScale).toInt)
         }
       case _ =>
     }
-    memory > 0
+    memoryBytes > 0
   }
 
   private def memoryInBytes(components: Iterable[Entity]) =
@@ -312,6 +312,7 @@ abstract class NativeLuaArchitecture(val machine: Machine) extends Architecture 
         return false
       case Some(value) => lua = value
     }
+    ramScale = if (lua.getPointerWidth >= 8) Settings.get.ramScaleFor64Bit else 1.0
 
     apis.foreach(_.initialize())
 

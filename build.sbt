@@ -16,8 +16,8 @@ libraryDependencies ++= Seq(
   "commons-io" % "commons-io" % "2.11.0",
   "org.ow2.asm" % "asm" % "9.3",
   "li.cil.repack.com.naef" % "OC-LuaJ" % "20220907.1" from ("http://asie.pl/javadeps/OC-LuaJ-20220907.1.jar", true),
-  "li.cil.repack.com.naef" % "OC-JNLua" % "20220904.0" from ("http://asie.pl/javadeps/OC-JNLua-20220928.1.jar", true),
-  "li.cil.repack.com.naef" % "OC-JNLua-Natives" % "20220904.0" from ("http://asie.pl/javadeps/OC-JNLua-Natives-20220928.1.jar", true)
+  "li.cil.repack.com.naef" % "OC-JNLua" % "20220928.0" from ("http://asie.pl/javadeps/OC-JNLua-20220928.1.jar", true),
+  "li.cil.repack.com.naef" % "OC-JNLua-Natives" % "20220928.0" from ("http://asie.pl/javadeps/OC-JNLua-Natives-20220928.1.jar", true)
 )
 
 assemblyJarName := s"ocelot-brain-${version.value}.jar"
