@@ -247,7 +247,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
             result(true)
           } else {
             // at least one of the two buffers is a gpu buffer
-            GpuTextBuffer.bitblt(dst, col, row, w, h, src, fromRow, fromCol)
+            GpuTextBuffer.bitblt(dst, col, row, w, h, src, fromCol, fromRow)
             result(true)
           }
         } else result((), "not enough energy")
