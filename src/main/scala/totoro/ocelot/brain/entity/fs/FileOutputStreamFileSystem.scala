@@ -4,6 +4,7 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 
 import java.io
 import java.io.RandomAccessFile
+import java.nio.file.{Files, StandardCopyOption}
 
 trait FileOutputStreamFileSystem extends FileInputStreamFileSystem with OutputStreamFileSystem {
   override def spaceTotal: Long = -1
@@ -19,8 +20,18 @@ trait FileOutputStreamFileSystem extends FileInputStreamFileSystem with OutputSt
 
   override def makeDirectory(path: String): Boolean = new io.File(root, FileSystemAPI.validatePath(path)).mkdir()
 
-  override def rename(from: String, to: String): Boolean =
-    new io.File(root, FileSystemAPI.validatePath(from)).renameTo(new io.File(root, FileSystemAPI.validatePath(to)))
+  override def rename(from: String, to: String): Boolean = {
+    try {
+      Files.move(
+        new io.File(root, FileSystemAPI.validatePath(from)).toPath,
+        new io.File(root, FileSystemAPI.validatePath(to)).toPath,
+        StandardCopyOption.REPLACE_EXISTING
+      )
+      true
+    } catch {
+      case e: Exception => false
+    }
+  }
 
   override def setLastModified(path: String, time: Long): Boolean = new io.File(root, FileSystemAPI.validatePath(path)).setLastModified(time)
 
