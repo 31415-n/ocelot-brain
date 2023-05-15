@@ -478,6 +478,7 @@ object Network {
       if (nbt.hasKey("data" + i)) nbt.getTag("data" + i) match {
         case tag: NBTTagByte => Boolean.box(tag.getByte == 1)
         case tag: NBTTagInt => Int.box(tag.getInt)
+        case tag: NBTTagLong => Long.box(tag.getLong)
         case tag: NBTTagDouble => Double.box(tag.getDouble)
         case tag: NBTTagString => tag.getString: AnyRef
         case tag: NBTTagByteArray => tag.getByteArray
