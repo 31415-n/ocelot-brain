@@ -7,16 +7,11 @@ import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.ThreadPoolFactory
 import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 
-import org.apache.http.client.config.RequestConfig
-import org.apache.http.client.methods.RequestBuilder
-import org.apache.http.entity.StringEntity
-import org.apache.http.impl.client.HttpClients
-
 import java.io._
 import java.net._
 import java.nio.ByteBuffer
 import java.nio.channels.{SelectionKey, Selector, SocketChannel}
-import java.util.{Locale, UUID}
+import java.util.UUID
 import java.util.concurrent.{Callable, ConcurrentLinkedQueue, ExecutionException, Future}
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
@@ -460,55 +455,35 @@ object InternetCard {
     private class RequestSender(val url: URL, val post: Option[String], val headers: Map[String, String], val method: Option[String]) extends Callable[InputStream] {
       override def call(): InputStream = try {
         checkLists(InetAddress.getByName(url.getHost), url.getHost)
+        url.openConnection() match {
+          case http: HttpURLConnection => try {
+            http.setDoInput(true)
+            http.setDoOutput(post.isDefined)
+            http.setRequestMethod(if (method.isDefined) method.get else if (post.isDefined) "POST" else "GET")
+            headers.foreach(Function.tupled(http.setRequestProperty))
+            if (post.isDefined) {
+              http.setReadTimeout(Settings.get.httpTimeout)
 
-        val methodStr = if (method.isDefined) method.get.toUpperCase(Locale.ROOT) else if (post.isDefined) "POST" else "GET"
-        if (Settings.get.httpMethodsEnabled.nonEmpty && !Settings.get.httpMethodsEnabled.contains(methodStr)) {
-          throw new IOException("method not allowed: " + methodStr)
+              val out = new BufferedWriter(new OutputStreamWriter(http.getOutputStream))
+              out.write(post.get)
+              out.close()
+            }
+
+            val input = http.getInputStream
+            HTTPRequest.this.synchronized {
+              response = Some((http.getResponseCode, http.getResponseMessage, http.getHeaderFields))
+            }
+            input
+          }
+          catch {
+            case t: Throwable =>
+              http.disconnect()
+              throw t
+          }
+          case _ => throw new IOException("unexpected connection type")
         }
-
-        val requestBuilder = RequestBuilder.create(methodStr)
-        headers.foreach(Function.tupled(requestBuilder.addHeader))
-        requestBuilder.setUri(url.toURI)
-
-        val httpRequestConfig = RequestConfig.custom()
-          .setConnectTimeout(Settings.get.httpTimeout)
-          .setConnectionRequestTimeout(Settings.get.httpTimeout)
-          .setSocketTimeout(Settings.get.httpTimeout)
-
-        val maxRedirects = Settings.get.httpRedirectsEnabled
-        if (maxRedirects > 0) {
-          httpRequestConfig.setMaxRedirects(maxRedirects)
-        } else if (maxRedirects == 0) {
-          httpRequestConfig
-            .setRedirectsEnabled(false)
-            .setRelativeRedirectsAllowed(false)
-        }
-
-        // TODO: add proxy configuration to Ocelot settings
-        // the following snippet was taken from the original mod and can be reused:
-        // if (proxy != null && proxy != Proxy.NO_PROXY) proxy.address() match {
-        //   case inetProxyAddress: InetSocketAddress => httpRequestConfig.setProxy(new HttpHost(inetProxyAddress.getAddress, inetProxyAddress.getPort))
-        // }
-
-        val clientBuilder = HttpClients.custom()
-        clientBuilder.setDefaultRequestConfig(httpRequestConfig.build())
-
-        if (post.isDefined) {
-          requestBuilder.setEntity(new StringEntity(post.get))
-        }
-
-        val r = clientBuilder.build().execute(requestBuilder.build())
-
-        val input = r.getEntity.getContent
-        HTTPRequest.this.synchronized {
-          response = Some((
-            r.getStatusLine.getStatusCode,
-            r.getStatusLine.getReasonPhrase,
-            r.getAllHeaders.groupBy(h => h.getName).map(i => i._1 -> i._2.toList.asJava).asJava
-          ))
-        }
-        input
-      } catch {
+      }
+      catch {
         case e: UnknownHostException =>
           throw new IOException("unknown host: " + Option(e.getMessage).getOrElse(e.toString))
         case e: Throwable =>
