@@ -10,7 +10,7 @@ import scala.collection.mutable
 
 object MachineAPI {
   // Keep registration order, to allow deterministic iteration of the architectures.
-  val checked: mutable.HashMap[Class[_ <: Architecture], String] = mutable.HashMap.empty
+  val checked: mutable.LinkedHashMap[Class[_ <: Architecture], String] = mutable.LinkedHashMap.empty
 
   /**
     * Register an architecture that can be used to create new machines.
