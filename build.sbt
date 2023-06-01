@@ -1,7 +1,7 @@
 name := "ocelot-brain"
 
 // do not forget to change the version in `Ocelot.scala`
-version := "0.14.1"
+version := "0.14.2"
 
 scalaVersion := "2.13.10"
 
