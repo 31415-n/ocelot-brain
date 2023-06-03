@@ -201,7 +201,10 @@ object InternetCard {
             selector = newSelector
           }
         } catch {
-          case e: IOException | CancelledKeyException =>
+          case e: IOException =>
+            Ocelot.log.error("Error in TCP selector loop.", e)
+            
+          case e: CancelledKeyException =>
             Ocelot.log.error("Error in TCP selector loop.", e)
         }
       }
