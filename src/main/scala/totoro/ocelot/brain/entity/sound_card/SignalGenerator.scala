@@ -102,14 +102,18 @@ object SignalGenerator {
       nbt.setFloat("v", value)
     }
 
-    private var value = math.random().toFloat
+    private var value = produceRandomValue()
 
     override def generate(offset: Float): Float = {
       value
     }
 
     override def nextPeriod(): Unit = {
-      value = math.random().toFloat
+      value = produceRandomValue()
+    }
+
+    private def produceRandomValue(): Float = {
+      math.random().toFloat * 2 - 1
     }
   }
 
