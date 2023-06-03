@@ -10,7 +10,7 @@ import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 import java.io._
 import java.net._
 import java.nio.ByteBuffer
-import java.nio.channels.{SelectionKey, Selector, SocketChannel}
+import java.nio.channels.{CancelledKeyException, SelectionKey, Selector, SocketChannel}
 import java.util.UUID
 import java.util.concurrent.{Callable, ConcurrentLinkedQueue, ExecutionException, Future}
 import scala.collection.mutable
@@ -201,7 +201,7 @@ object InternetCard {
             selector = newSelector
           }
         } catch {
-          case e: IOException =>
+          case e: IOException | CancelledKeyException =>
             Ocelot.log.error("Error in TCP selector loop.", e)
         }
       }
