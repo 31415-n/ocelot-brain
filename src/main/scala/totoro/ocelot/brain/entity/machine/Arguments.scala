@@ -82,10 +82,28 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     *                                  or if the argument is not a number.
     */
   def checkInteger(index: Int): Int = {
-    checkIndex(index, "number")
+    checkIndex(index, "integer")
     args(index) match {
+      case value: java.lang.Double =>
+        if (!java.lang.Double.isFinite(value) || value < java.lang.Integer.MIN_VALUE || value > java.lang.Integer.MAX_VALUE) {
+          throw intError(index, value)
+        } else {
+          value.intValue
+        }
+      case value: java.lang.Float =>
+        if (!java.lang.Float.isFinite(value) || value < java.lang.Integer.MIN_VALUE || value > java.lang.Integer.MAX_VALUE) {
+          throw intError(index, value)
+        } else {
+          value.intValue
+        }
+      case value: java.lang.Long =>
+        if (value < java.lang.Integer.MIN_VALUE || value > java.lang.Integer.MAX_VALUE) {
+          throw intError(index, value)
+        } else {
+          value.intValue
+        }
       case value: java.lang.Number => value.intValue
-      case value => throw typeError(index, value, "number")
+      case value => throw typeError(index, value, "integer")
     }
   }
 
@@ -101,10 +119,22 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     * @since OpenComputers 1.8.0
     */
   def checkLong(index: Int): Long = {
-    checkIndex(index, "number")
+    checkIndex(index, "integer")
     args(index) match {
+      case value: java.lang.Double =>
+        if (!java.lang.Double.isFinite(value) || value < java.lang.Long.MIN_VALUE || value > java.lang.Long.MAX_VALUE) {
+          throw intError(index, value)
+        } else {
+          value.longValue
+        }
+      case value: java.lang.Float =>
+        if (!java.lang.Float.isFinite(value) || value < java.lang.Long.MIN_VALUE || value > java.lang.Long.MAX_VALUE) {
+          throw intError(index, value)
+        } else {
+          value.longValue
+        }
       case value: java.lang.Number => value.longValue
-      case value => throw typeError(index, value, "number")
+      case value => throw typeError(index, value, "integer")
     }
   }
 
@@ -344,11 +374,13 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     */
   def isInteger(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case _: java.lang.Byte => true
-      case _: java.lang.Short => true
-      case _: java.lang.Integer => true
-      case _: java.lang.Long => true
-      case _: java.lang.Double => true
+      case value: java.lang.Double =>
+        java.lang.Double.isFinite(value) && value >= java.lang.Integer.MIN_VALUE && value <= java.lang.Integer.MAX_VALUE
+      case value: java.lang.Float =>
+        java.lang.Float.isFinite(value) && value >= java.lang.Integer.MIN_VALUE && value <= java.lang.Integer.MAX_VALUE
+      case value: java.lang.Long =>
+        value >= java.lang.Integer.MIN_VALUE && value <= java.lang.Integer.MAX_VALUE
+      case value: java.lang.Number => true
       case _ => false
     })
 
@@ -361,7 +393,15 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     * @param index the index to check.
     * @return true if the argument is a long; false otherwise.
     */
-  def isLong (index: Int): Boolean = isInteger(index)
+  def isLong (index: Int): Boolean =
+    index >= 0 && index < count && (args(index) match {
+      case value: java.lang.Double =>
+        java.lang.Double.isFinite(value) && value >= java.lang.Long.MIN_VALUE && value <= java.lang.Long.MAX_VALUE
+      case value: java.lang.Float =>
+        java.lang.Float.isFinite(value) && value >= java.lang.Long.MIN_VALUE && value <= java.lang.Long.MAX_VALUE
+      case value: java.lang.Number => true
+      case _ => false
+    })
 
   /**
     * Tests whether the argument at the specified index is a double value.
@@ -374,8 +414,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     */
   def isDouble(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case _: java.lang.Float => true
-      case _: java.lang.Double => true
+      case value: java.lang.Number => true
       case _ => false
     })
 
@@ -470,6 +509,10 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     new IllegalArgumentException(
       s"bad argument #${index + 1} ($want expected, got ${typeName(have)})")
 
+  private def intError(index: Int, have: AnyRef) =
+    new IllegalArgumentException(
+      s"bad argument #${index + 1} (${typeName(have)} has no integer representation)")
+
   private def typeName(value: AnyRef): String = value match {
     case null | None => "nil"
     case _: java.lang.Boolean => "boolean"
@@ -477,7 +520,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     case _: java.lang.Short => "integer"
     case _: java.lang.Integer => "integer"
     case _: java.lang.Long => "integer"
-    case _: java.lang.Number => "double"
+    case _: java.lang.Number => "number"
     case _: java.lang.String => "string"
     case _: Array[Byte] => "string"
     case _: java.util.Map[_, _] => "table"
