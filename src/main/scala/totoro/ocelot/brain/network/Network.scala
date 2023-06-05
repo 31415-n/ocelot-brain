@@ -477,8 +477,10 @@ object Network {
     val data = (for (i <- 0 until nbt.getInteger("dataLength")) yield {
       if (nbt.hasKey("data" + i)) nbt.getTag("data" + i) match {
         case tag: NBTTagByte => Boolean.box(tag.getByte == 1)
+        case tag: NBTTagShort => Short.box(tag.getShort)
         case tag: NBTTagInt => Int.box(tag.getInt)
         case tag: NBTTagLong => Long.box(tag.getLong)
+        case tag: NBTTagFloat => Float.box(tag.getFloat)
         case tag: NBTTagDouble => Double.box(tag.getDouble)
         case tag: NBTTagString => tag.getString: AnyRef
         case tag: NBTTagByteArray => tag.getByteArray

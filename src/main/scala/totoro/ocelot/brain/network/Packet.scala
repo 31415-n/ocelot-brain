@@ -34,13 +34,13 @@ class Packet(var source: String, var destination: String, var port: Int, var dat
     if (values.length > Settings.get.maxNetworkPacketParts) throw new IllegalArgumentException("packet has too many parts")
     values.length * 2 + values.foldLeft(0)((acc, arg) => {
       acc + (arg match {
-        case null | None => 4
-        case _: java.lang.Boolean => 4
-        case _: java.lang.Byte => 4
-        case _: java.lang.Short => 4
+        case null | Unit | None => 1
+        case _: java.lang.Boolean => 1
+        case _: java.lang.Byte => 2 /* FIXME: Bytes are currently sent as shorts */
+        case _: java.lang.Short => 2
         case _: java.lang.Integer => 4
         case _: java.lang.Long => 8
-        case _: java.lang.Float => 8
+        case _: java.lang.Float => 4
         case _: java.lang.Double => 8
         case value: java.lang.String => value.length max 1
         case value: Array[Byte] => value.length max 1
@@ -71,10 +71,13 @@ class Packet(var source: String, var destination: String, var port: Int, var dat
     nbt.setInteger("ttl", ttl)
     nbt.setInteger("dataLength", data.length)
     for (i <- data.indices) data(i) match {
-      case null | None =>
+      case null | Unit | None =>
       case value: java.lang.Boolean => nbt.setBoolean("data" + i, value)
+      case value: java.lang.Byte => nbt.setShort("data" + i, value.shortValue)
+      case value: java.lang.Short => nbt.setShort("data" + i, value)
       case value: java.lang.Integer => nbt.setInteger("data" + i, value)
       case value: java.lang.Long => nbt.setLong("data" + i, value)
+      case value: java.lang.Float => nbt.setFloat("data" + i, value)
       case value: java.lang.Double => nbt.setDouble("data" + i, value)
       case value: java.lang.String => nbt.setString("data" + i, value)
       case value: Array[Byte] => nbt.setByteArray("data" + i, value)
