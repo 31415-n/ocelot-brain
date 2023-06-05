@@ -31,12 +31,12 @@ object Loot {
 
     // Floppies
     NetworkFloppy = new FloppyFactory("Network (Network Stack)", DyeColor.LIME, "network")
-    Plan9kFloppy = new FloppyFactory("Plan9k (Operating System)", DyeColor.RED, "plan9k")
-    IrcFloppy = new FloppyFactory("OpenIRC (IRC Client)", DyeColor.LIGHT_BLUE, "irc")
-    OpenLoaderFloppy = new FloppyFactory("OpenLoader (Boot Loader)", DyeColor.MAGENTA, "openloader")
-    OpenOsFloppy = new FloppyFactory("OpenOS (Operating System)", DyeColor.GREEN, "openos")
-    OPPMFloppy = new FloppyFactory("OPPM (Package Manager)", DyeColor.CYAN, "oppm")
-    DataFloppy = new FloppyFactory("Data Card Software", DyeColor.PINK, "data")
+    Plan9kFloppy = new FloppyFactory("Plan9k (Operating System)", DyeColor.Red, "plan9k")
+    IrcFloppy = new FloppyFactory("OpenIRC (IRC Client)", DyeColor.LightBlue, "irc")
+    OpenLoaderFloppy = new FloppyFactory("OpenLoader (Boot Loader)", DyeColor.Magenta, "openloader")
+    OpenOsFloppy = new FloppyFactory("OpenOS (Operating System)", DyeColor.Green, "openos")
+    OPPMFloppy = new FloppyFactory("OPPM (Package Manager)", DyeColor.Cyan, "oppm")
+    DataFloppy = new FloppyFactory("Data Card Software", DyeColor.Pink, "data")
   }
 
   // ----------------------------------------------------------------------- //
@@ -48,7 +48,7 @@ object Loot {
   class LootFloppy(name: String, color: DyeColor, var path: String)
     extends FloppyManaged(name, color) {
 
-    def this() = this("noname", DyeColor.GRAY, null)
+    def this() = this("noname", DyeColor.Gray, null)
 
     override protected def generateEnvironment(): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
