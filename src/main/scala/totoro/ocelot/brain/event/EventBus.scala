@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.event
 
+import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.event.FileSystemActivityType.ActivityType
 import totoro.ocelot.brain.network.Node
 
@@ -42,14 +43,18 @@ object EventBus {
     canceledSet.clear()
   }
 
+  // Avoid spamming the network with disk activity notices.
   private val fileSystemAccessTimeouts = mutable.WeakHashMap.empty[Node, Long]
 
   def sendDiskActivity(node: Node, activityType: ActivityType): Unit = {
-    fileSystemAccessTimeouts.get(node) match {
-      case Some(timeout) if timeout > System.currentTimeMillis() => // Cooldown.
-      case _ =>
-        send(FileSystemActivityEvent(node.address, activityType))
-        fileSystemAccessTimeouts.put(node, System.currentTimeMillis() + 500)
+    val diskActivityPacketDelay = Settings.get.diskActivityPacketDelay
+    if (diskActivityPacketDelay >= 0) {
+      fileSystemAccessTimeouts.get(node) match {
+        case Some(timeout) if timeout > System.currentTimeMillis() => // Cooldown.
+        case _ =>
+          send(FileSystemActivityEvent(node.address, activityType))
+          fileSystemAccessTimeouts.put(node, System.currentTimeMillis() + diskActivityPacketDelay)
+      }
     }
   }
 
