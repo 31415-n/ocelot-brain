@@ -21,7 +21,8 @@ class Memory(var memoryTier: ExtendedTier) extends Entity with Environment with 
     DeviceAttribute.Class -> DeviceClass.Memory,
     DeviceAttribute.Description -> "Memory bank",
     DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product -> ("MRAM 1x" + tier.toString),
+    // TODO: is this zero-based? do I care?
+    DeviceAttribute.Product -> s"MRAM 1x$tier",
     DeviceAttribute.Clock -> (Settings.get.callBudgets(tier.id) * 1000).toInt.toString
   )
 
@@ -29,7 +30,7 @@ class Memory(var memoryTier: ExtendedTier) extends Entity with Environment with 
 
   override def amount: Double = {
     val sizes = Settings.get.ramSizes
-    sizes(tier.id)
+    sizes(memoryTier.id)
   }
 
   override def callBudget: Double = Settings.get.callBudgets(tier.id)
@@ -49,5 +50,5 @@ class Memory(var memoryTier: ExtendedTier) extends Entity with Environment with 
 }
 
 object Memory {
-  val TierTag = TieredPersistable.TierTag
+  val TierTag: String = TieredPersistable.TierTag
 }
