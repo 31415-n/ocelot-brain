@@ -8,7 +8,6 @@ import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.math.Ordering.Implicits.infixOrderingOps
 
-// FIXME: have `tier` be the CPU tier (instead of GPU)
 class APU(override var tier: Tier) extends Entity with GenericCPU with GenericGPU with DeviceInfo {
   private final lazy val deviceInfo = Map(
     DeviceAttribute.Class -> DeviceClass.Processor,

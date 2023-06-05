@@ -93,10 +93,10 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
 
 object WirelessNetworkCard {
   class Tier1 extends WirelessNetworkCard {
-    override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.One)
+    override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.One.id)
 
     // wired network card is before wireless cards in max port list
-    override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.One + 1)
+    override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.One.id + 1)
 
     override protected def shouldSendWiredTraffic = false
 
@@ -125,10 +125,10 @@ object WirelessNetworkCard {
   }
 
   class Tier2 extends Tier1 {
-    override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.Two)
+    override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.Two.id)
 
     // wired network card is before wireless cards in max port list
-    override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.Two + 1)
+    override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.Two.id + 1)
 
     override protected def shouldSendWiredTraffic = true
 
