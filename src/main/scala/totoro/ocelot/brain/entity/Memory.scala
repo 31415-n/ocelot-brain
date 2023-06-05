@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.entity
 
+import totoro.ocelot.brain.entity.Memory.TierTag
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, Entity, Environment, Tiered, TieredPersistable}
 import totoro.ocelot.brain.nbt.NBTTagCompound
@@ -37,12 +38,16 @@ class Memory(var memoryTier: ExtendedTier) extends Entity with Environment with 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
-    memoryTier = ExtendedTier(nbt.getByte(TieredPersistable.TierTag))
+    memoryTier = ExtendedTier(nbt.getByte(TierTag))
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
 
-    nbt.setByte(TieredPersistable.TierTag, memoryTier.id.toByte)
+    nbt.setByte(TierTag, memoryTier.id.toByte)
   }
+}
+
+object Memory {
+  val TierTag = TieredPersistable.TierTag
 }
