@@ -1,6 +1,5 @@
 local fs = require("filesystem")
 local shell = require("shell")
-local text = require("text")
 local lib = {}
 
 local function perr(ops, format, ...)
