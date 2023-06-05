@@ -14,7 +14,7 @@ class GpuTextBuffer(val owner: String, val id: Int, val data: GenericTextBuffer)
 
   // the gpu ram does not join nor is searchable to the network
   // this field is required because the api TextBuffer is an Environment
-  override def node(): Node = {
+  override def node: Node = {
     throw new InvalidObjectException("GpuTextBuffers do not have nodes")
   }
 

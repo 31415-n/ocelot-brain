@@ -1,5 +1,7 @@
 package totoro.ocelot.brain.entity.traits
 
+import totoro.ocelot.brain.util.Tier.Tier
+
 /**
  * This is implemented by most things that are tiered in some way.
  *
@@ -8,11 +10,5 @@ package totoro.ocelot.brain.entity.traits
  * behavior this way.
  */
 trait Tiered {
-  /**
-   * The zero-based tier of this... thing.
-   *
-   * For example, a tier one screen will return 0 here, a tier three screen
-   * will return 2.
-   */
-  var tier: Int
+  def tier: Tier
 }

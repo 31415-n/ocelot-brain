@@ -1,13 +1,13 @@
 package totoro.ocelot.brain.entity
 
-import totoro.ocelot.brain.Constants
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
-import totoro.ocelot.brain.event.SelfDestructingCardBoomEvent
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
-import totoro.ocelot.brain.event.{BeepEvent, EventBus}
+import totoro.ocelot.brain.event.{EventBus, SelfDestructingCardBoomEvent}
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.network.{Component, Network, Node, Visibility}
+import totoro.ocelot.brain.network.{Component, Network, Visibility}
+import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 
 class SelfDestructingCard extends Entity with Environment with DeviceInfo with Tiered {
@@ -17,7 +17,7 @@ class SelfDestructingCard extends Entity with Environment with DeviceInfo with T
     .withComponent("self_destruct", Visibility.Neighbors)
     .create()
 
-  override var tier: Int = 0
+  override def tier: Tier = Tier.One
 
   // --------------------------- Time countdown ---------------------------
 

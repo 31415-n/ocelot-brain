@@ -5,6 +5,8 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered, WakeMessageAware}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
+import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
@@ -13,7 +15,7 @@ class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode
     withComponent("tunnel", Visibility.Neighbors).
     create()
 
-  override var tier: Int = 2
+  override def tier: Tier = Tier.Three
 
   var _tunnel: String = "creative"
 
