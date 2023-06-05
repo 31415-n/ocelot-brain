@@ -190,7 +190,7 @@ class Settings(val config: Config) {
 
   val bitbltCost: Double = if (config.hasPath("gpu.bitbltCost")) config.getDouble("gpu.bitbltCost") else 0.5
 
-  val diskActivityPacketDelay: Int = config.getInt("misc.diskActivityPacketDelay") max -1
+  val diskActivitySoundDelay: Int = config.getInt("misc.diskActivitySoundDelay") max -1
 
   // sound card
   val soundCardSampleRate: Int = if (config.hasPath("soundCard.sampleRate")) config.getInt("soundCard.sampleRate") else 44100

@@ -47,13 +47,13 @@ object EventBus {
   private val fileSystemAccessTimeouts = mutable.WeakHashMap.empty[Node, Long]
 
   def sendDiskActivity(node: Node, activityType: ActivityType): Unit = {
-    val diskActivityPacketDelay = Settings.get.diskActivityPacketDelay
-    if (diskActivityPacketDelay >= 0) {
+    val diskActivitySoundDelay = Settings.get.diskActivitySoundDelay
+    if (diskActivitySoundDelay >= 0) {
       fileSystemAccessTimeouts.get(node) match {
         case Some(timeout) if timeout > System.currentTimeMillis() => // Cooldown.
         case _ =>
           send(FileSystemActivityEvent(node.address, activityType))
-          fileSystemAccessTimeouts.put(node, System.currentTimeMillis() + diskActivityPacketDelay)
+          fileSystemAccessTimeouts.put(node, System.currentTimeMillis() + diskActivitySoundDelay)
       }
     }
   }
