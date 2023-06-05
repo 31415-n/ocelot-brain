@@ -2,9 +2,10 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{AbstractValue, Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
 import totoro.ocelot.brain.network._
-import totoro.ocelot.brain.util.ThreadPoolFactory
+import totoro.ocelot.brain.util.{ThreadPoolFactory, Tier}
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 
 import java.io._
@@ -16,7 +17,7 @@ import java.util.concurrent.{Callable, ConcurrentLinkedQueue, ExecutionException
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
-class InternetCard extends Entity with Environment with DeviceInfo {
+class InternetCard extends Entity with Environment with DeviceInfo with Tiered {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("internet", Visibility.Neighbors).
     create()
@@ -35,6 +36,8 @@ class InternetCard extends Entity with Environment with DeviceInfo {
   )
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
+
+  override def tier: Tier = Tier.Two
 
   // ----------------------------------------------------------------------- //
 

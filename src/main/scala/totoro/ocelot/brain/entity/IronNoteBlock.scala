@@ -3,9 +3,7 @@ package totoro.ocelot.brain.entity
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.{Entity, Environment}
 import totoro.ocelot.brain.event.{EventBus, NoteBlockTriggerEvent}
-import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
-import totoro.ocelot.brain.workspace.Workspace
 
 class IronNoteBlock extends Entity with Environment {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).

@@ -18,7 +18,13 @@ import scala.collection.mutable
   * This trait implements functionality for displaying and manipulating
   * text, like screens and robots.
   */
-class TextBuffer(var bufferTier: Tier = Tier.One) extends Environment with TextBufferProxy with VideoRamRasterizer with DeviceInfo with TieredPersistable {
+class TextBuffer(var bufferTier: Tier = Tier.One)
+  extends Environment
+    with TextBufferProxy
+    with VideoRamRasterizer
+    with DeviceInfo
+    with TieredPersistable {
+
   override val node: Component =  Network.newNode(this, Visibility.Network).
     withComponent("screen").
     create()

@@ -6,9 +6,11 @@ import org.apache.commons.io.output.ByteArrayOutputStream
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.{AbstractValue, Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
+import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 
 import java.security._
@@ -18,7 +20,7 @@ import java.util.zip.{DeflaterOutputStream, InflaterOutputStream}
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, KeyAgreement, Mac}
 
-abstract class DataCard extends Entity with Environment with DeviceInfo {
+abstract class DataCard extends Entity with Environment with DeviceInfo with Tiered {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
     withComponent("data", Visibility.Neighbors).
     create()
@@ -54,6 +56,8 @@ object DataCard {
     )
 
     override def getDeviceInfo: Map[String, String] = deviceInfo
+
+    override def tier: Tier = Tier.One
 
     // ----------------------------------------------------------------------- //
 
@@ -116,6 +120,8 @@ object DataCard {
     )
 
     override def getDeviceInfo: Map[String, String] = deviceInfo
+
+    override def tier: Tier = Tier.Two
 
     // ----------------------------------------------------------------------- //
 
@@ -189,6 +195,8 @@ object DataCard {
     )
 
     override def getDeviceInfo: Map[String, String] = deviceInfo
+
+    override def tier: Tier = Tier.Three
 
     // ----------------------------------------------------------------------- //
 

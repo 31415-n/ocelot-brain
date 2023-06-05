@@ -10,7 +10,14 @@ import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
-class LinkedCard extends Entity with Environment with QuantumNetwork.QuantumNode with WakeMessageAware with DeviceInfo with Tiered {
+class LinkedCard
+  extends Entity
+    with Environment
+    with QuantumNetwork.QuantumNode
+    with WakeMessageAware
+    with DeviceInfo
+    with Tiered {
+
   override val node: Node = Network.newNode(this, Visibility.Network).
     withComponent("tunnel", Visibility.Neighbors).
     create()

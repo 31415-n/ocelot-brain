@@ -11,7 +11,14 @@ import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
-class Memory(var memoryTier: ExtendedTier) extends Entity with Environment with DeviceInfo with Tiered with traits.Memory with CallBudget {
+class Memory(var memoryTier: ExtendedTier)
+  extends Entity
+    with Environment
+    with DeviceInfo
+    with Tiered
+    with traits.Memory
+    with CallBudget {
+
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
     create()
 
