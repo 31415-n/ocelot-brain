@@ -84,7 +84,8 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
   def checkInteger(index: Int): Int = {
     checkIndex(index, "integer")
     args(index) match {
-      case value: java.lang.Double =>
+      // TODO: The below is correct behaviour, but breaks existing OC1 code (f.e. file:read(math.huge))
+      /* case value: java.lang.Double =>
         if (!java.lang.Double.isFinite(value) || value < java.lang.Integer.MIN_VALUE || value > java.lang.Integer.MAX_VALUE) {
           throw intError(index, value)
         } else {
@@ -101,7 +102,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
           throw intError(index, value)
         } else {
           value.intValue
-        }
+        } */
       case value: java.lang.Number => value.intValue
       case value => throw typeError(index, value, "integer")
     }
@@ -121,7 +122,8 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
   def checkLong(index: Int): Long = {
     checkIndex(index, "integer")
     args(index) match {
-      case value: java.lang.Double =>
+      // TODO: The below is correct behaviour, but breaks existing OC1 code (f.e. file:read(math.huge))
+      /* case value: java.lang.Double =>
         if (!java.lang.Double.isFinite(value) || value < java.lang.Long.MIN_VALUE || value > java.lang.Long.MAX_VALUE) {
           throw intError(index, value)
         } else {
@@ -132,7 +134,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
           throw intError(index, value)
         } else {
           value.longValue
-        }
+        } */
       case value: java.lang.Number => value.longValue
       case value => throw typeError(index, value, "integer")
     }
@@ -140,7 +142,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a double value at the specified index.
-    * 
+    *
     * Throws an error if there are too few arguments.
     *
     * @param index the index from which to get the argument.
@@ -158,9 +160,9 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a string value at the specified index.
-    * 
+    *
     * Throws an error if there are too few arguments.
-    * 
+    *
     * This will actually check for a byte array and convert it to a string
     * using UTF-8 encoding.
     *
@@ -180,7 +182,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a byte array at the specified index.
-    * 
+    *
     * Throws an error if there are too few arguments.
     *
     * @param index the index from which to get the argument.
@@ -199,7 +201,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a table at the specified index.
-    * 
+    *
     * Throws an error if there are too few arguments.
     *
     * @param index the index from which to get the argument.
@@ -219,10 +221,10 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Get whatever is at the specified index.
-    * 
+    *
     * Return the specified default value if there is no such element, behaves
     * like `checkAny(int)` otherwise.
-    * 
+    *
     * The returned object will be one of the following, based on the conversion
     * performed internally:
     *
@@ -241,7 +243,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a boolean value at the specified index.
-    * 
+    *
     * Return the specified default value if there is no such element, behaves
     * like `checkBoolean(int)` otherwise.
     *
@@ -256,7 +258,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get an integer value at the specified index.
-    * 
+    *
     * Return the specified default value if there is no such element, behaves
     * like `checkInteger(int)` otherwise.
     *
@@ -287,7 +289,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a double value at the specified index.
-    * 
+    *
     * Return the specified default value if there is no such element, behaves
     * like `checkDouble(int)` otherwise.
     *
@@ -302,10 +304,10 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a string value at the specified index.
-    * 
+    *
     * Return the specified default value if there is no such element, behaves
     * like `checkString(int)` otherwise.
-    * 
+    *
     * This will actually check for a byte array and convert it to a string
     * using UTF-8 encoding.
     *
@@ -320,7 +322,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a byte array at the specified index.
-    * 
+    *
     * Return the specified default value if there is no such element, behaves
     * like `checkByteArray(int)` otherwise.
     *
@@ -335,7 +337,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Try to get a table at the specified index.
-    * 
+    *
     * Return the specified default value if there is no such element, behaves
     * like `checkTable(int)` otherwise.
     *
@@ -350,7 +352,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Tests whether the argument at the specified index is a boolean value.
-    * 
+    *
     * This will return false if there is ''no'' argument at the specified
     * index, i.e. if there are too few arguments.
     *
@@ -365,7 +367,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Tests whether the argument at the specified index is an integer value.
-    * 
+    *
     * This will return false if there is ''no'' argument at the specified
     * index, i.e. if there are too few arguments.
     *
@@ -374,12 +376,13 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     */
   def isInteger(index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case value: java.lang.Double =>
+      // TODO: The below is correct behaviour, but may break existing OC1 code
+      /* case value: java.lang.Double =>
         java.lang.Double.isFinite(value) && value >= java.lang.Integer.MIN_VALUE && value <= java.lang.Integer.MAX_VALUE
       case value: java.lang.Float =>
         java.lang.Float.isFinite(value) && value >= java.lang.Integer.MIN_VALUE && value <= java.lang.Integer.MAX_VALUE
       case value: java.lang.Long =>
-        value >= java.lang.Integer.MIN_VALUE && value <= java.lang.Integer.MAX_VALUE
+        value >= java.lang.Integer.MIN_VALUE && value <= java.lang.Integer.MAX_VALUE */
       case value: java.lang.Number => true
       case _ => false
     })
@@ -395,17 +398,18 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
     */
   def isLong (index: Int): Boolean =
     index >= 0 && index < count && (args(index) match {
-      case value: java.lang.Double =>
+      // TODO: The below is correct behaviour, but may break existing OC1 code
+      /* case value: java.lang.Double =>
         java.lang.Double.isFinite(value) && value >= java.lang.Long.MIN_VALUE && value <= java.lang.Long.MAX_VALUE
       case value: java.lang.Float =>
-        java.lang.Float.isFinite(value) && value >= java.lang.Long.MIN_VALUE && value <= java.lang.Long.MAX_VALUE
+        java.lang.Float.isFinite(value) && value >= java.lang.Long.MIN_VALUE && value <= java.lang.Long.MAX_VALUE */
       case value: java.lang.Number => true
       case _ => false
     })
 
   /**
     * Tests whether the argument at the specified index is a double value.
-    * 
+    *
     * This will return false if there is ''no'' argument at the specified
     * index, i.e. if there are too few arguments.
     *
@@ -420,7 +424,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Tests whether the argument at the specified index is a string value.
-    * 
+    *
     * This will return false if there is ''no'' argument at the specified
     * index, i.e. if there are too few arguments.
     *
@@ -436,7 +440,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Tests whether the argument at the specified index is a byte array.
-    * 
+    *
     * This will return false if there is ''no'' argument at the specified
     * index, i.e. if there are too few arguments.
     *
@@ -452,7 +456,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Tests whether the argument at the specified index is a table.
-    * 
+    *
     * This will return false if there is ''no'' argument at the specified
     * index, i.e. if there are too few arguments.
     *
@@ -469,7 +473,7 @@ class Arguments(val args: Seq[AnyRef]) extends Iterable[AnyRef] {
 
   /**
     * Tests whether the argument at the specified index is an item stack.
-    * 
+    *
     * This will return false if there is ''no'' argument at the specified
     * index, i.e. if there are too few arguments.
     *
