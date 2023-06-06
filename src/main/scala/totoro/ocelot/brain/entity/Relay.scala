@@ -219,12 +219,26 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
       case (tag, index) => componentNodes(index).load(tag)
     }
 
-    if (nbt.hasKey(CpuTierTag)) _cpuTier = Some(Tier(nbt.getInteger(CpuTierTag)))
-    if (nbt.hasKey(MemoryTierTag)) _memoryTier = Some(Tier(nbt.getInteger(MemoryTierTag)))
-    if (nbt.hasKey(HDDTierTag)) _hddTier = Some(Tier(nbt.getInteger(HDDTierTag)))
-    if (nbt.hasKey(WirelessTierTag)) _wirelessTier = Some(Tier(nbt.getInteger(WirelessTierTag)))
-    if (nbt.hasKey(TunnelTag)) _tunnel = nbt.getString(TunnelTag)
-    if (nbt.hasKey(IsLinkedEnabledTag)) isLinkedEnabled = nbt.getBoolean(IsLinkedEnabledTag)
+    def readTier(key: String): Option[Tier] =
+      if (nbt.hasKey(key)) {
+        val tierId = nbt.getInteger(key)
+
+        // previously Tier.None
+        if (tierId == -1) None else Some(Tier(tierId))
+      } else None
+
+    _cpuTier = readTier(CpuTierTag)
+    _memoryTier = readTier(MemoryTierTag)
+    _hddTier = readTier(HDDTierTag)
+    _wirelessTier = readTier(WirelessTierTag)
+
+    if (nbt.hasKey(TunnelTag)) {
+      _tunnel = nbt.getString(TunnelTag)
+    }
+
+    if (nbt.hasKey(IsLinkedEnabledTag)) {
+      isLinkedEnabled = nbt.getBoolean(IsLinkedEnabledTag)
+    }
 
     updateLimits()
   }
