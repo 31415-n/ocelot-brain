@@ -2,13 +2,13 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
-import totoro.ocelot.brain.entity.traits.{Entity, MultiTiered}
+import totoro.ocelot.brain.entity.traits.{Entity, TieredPersistable}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.user.User
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 
-class Screen(tier: Int) extends TextBuffer(tier) with Entity with MultiTiered {
-
+class Screen(tier: Tier) extends TextBuffer(tier) with Entity with TieredPersistable {
   var invertTouchMode = false
 
   def walk(player: Option[User], x: Double, y: Double): Unit = {

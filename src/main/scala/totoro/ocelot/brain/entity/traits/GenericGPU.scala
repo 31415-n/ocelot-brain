@@ -5,9 +5,10 @@ import totoro.ocelot.brain.entity.machine._
 import totoro.ocelot.brain.entity.{GpuTextBuffer, TextBuffer}
 import totoro.ocelot.brain.nbt.{NBTTagCompound, NBTTagList}
 import totoro.ocelot.brain.network.{Message, Network, Node, Visibility}
-import totoro.ocelot.brain.util.{ColorDepth, ExtendedUnicodeHelper, GenericTextBuffer, PackedColor}
+import totoro.ocelot.brain.util.{ColorDepth, ExtendedUnicodeHelper, GenericTextBuffer, PackedColor, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 
+import scala.math.Ordering.Implicits.infixOrderingOps
 import scala.util.matching.Regex
 
 // IMPORTANT: usually methods with side effects should *not* be direct
@@ -22,14 +23,14 @@ import scala.util.matching.Regex
 // saved, but before the computer was saved, leading to mismatching states in
 // the save file - a Bad Thing (TM).
 
-trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
+trait GenericGPU extends Environment with TieredPersistable with VideoRamDevice {
   override val node: Node = Network.newNode(this, Visibility.Neighbors).
     withComponent("gpu").
     create()
 
-  protected def maxResolution: (Int, Int) = Settings.screenResolutionsByTier(tier)
+  protected def maxResolution: (Int, Int) = Settings.screenResolutionsByTier(tier.id)
 
-  protected def maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(tier)
+  protected def maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(tier.id)
 
   private var screenAddress: Option[String] = None
 
@@ -62,8 +63,8 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
   // These are dirty page bitblt budget costs
   // a single bitblt can send a screen of data, which is n*set calls where set is writing an entire line
   // So for each tier, we multiple the set cost with the number of lines the screen may have
-  final val bitbltCost: Double = Settings.get.bitbltCost * scala.math.pow(2, tier)
-  final val totalVRAM: Double = (maxResolution._1 * maxResolution._2) * Settings.get.vramSizes(0 max tier min 2)
+  final val bitbltCost: Double = Settings.get.bitbltCost * scala.math.pow(2, tier.id)
+  final val totalVRAM: Double = (maxResolution._1 * maxResolution._2) * Settings.get.vramSizes((Tier.One max tier min Tier.Three).id)
 
   var budgetExhausted: Boolean = false // for especially expensive calls, bitblt
 
@@ -140,10 +141,10 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
     if (width <= 0 || height <= 0) {
       result((), "invalid page dimensions: must be greater than zero")
     }
-    else if (size > (totalVRAM - calculateUsedMemory)) {
+    else if (size > (totalVRAM - calculateUsedMemory())) {
       result((), "not enough video memory")
     } else {
-      val format: PackedColor.ColorFormat = PackedColor.Depth.format(Settings.screenDepthsByTier(tier))
+      val format: PackedColor.ColorFormat = PackedColor.Depth.format(Settings.screenDepthsByTier(tier.id))
       val buffer = new GenericTextBuffer(width, height, format)
       val page = GpuTextBuffer.wrap(node.address, nextAvailableBufferIndex, buffer)
       addBuffer(page)
@@ -183,7 +184,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
 
   @Callback(direct = true, doc = """function(): number -- returns the total free memory not allocated to buffers. This does not include the screen.""")
   def freeMemory(context: Context, args: Arguments): Array[AnyRef] = {
-    result(totalVRAM - calculateUsedMemory)
+    result(totalVRAM - calculateUsedMemory())
   }
 
   @Callback(direct = true, doc = """function(index: number): number, number -- returns the buffer size at index. Returns the screen resolution for index 0. returns nil for invalid indexes""")
@@ -221,7 +222,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
         val fromRow = args.optInteger(7, 1)
 
         var budgetCost: Double = determineBitbltBudgetCost(dst, src)
-        val tierCredit: Double = (tier + 1) * .5
+        val tierCredit: Double = tier.num * .5
         val overBudget: Double = budgetCost - tierCredit
 
         if (overBudget > 0) {
@@ -296,7 +297,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
   def setBackground(context: Context, args: Arguments): Array[AnyRef] = {
     val color = args.checkInteger(0)
     if (bufferIndex == RESERVED_SCREEN_INDEX) {
-      context.consumeCallBudget(setBackgroundCosts(tier))
+      context.consumeCallBudget(setBackgroundCosts(tier.id))
     }
     screen(s => {
       val oldValue = s.getBackgroundColor
@@ -320,7 +321,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
   def setForeground(context: Context, args: Arguments): Array[AnyRef] = {
     val color = args.checkInteger(0)
     if (bufferIndex == RESERVED_SCREEN_INDEX) {
-      context.consumeCallBudget(setForegroundCosts(tier))
+      context.consumeCallBudget(setForegroundCosts(tier.id))
     }
     screen(s => {
       val oldValue = s.getForegroundColor
@@ -349,7 +350,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
     val index = args.checkInteger(0)
     val color = args.checkInteger(1)
     if (bufferIndex == RESERVED_SCREEN_INDEX) {
-      context.consumeCallBudget(setPaletteColorCosts(tier))
+      context.consumeCallBudget(setPaletteColorCosts(tier.id))
       context.pause(0.1)
     }
     screen(s => try {
@@ -475,7 +476,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
     val vertical = args.optBoolean(3, default = false)
 
     screen(s => {
-      if (resolveInvokeCosts(bufferIndex, context, setCosts(tier))) {
+      if (resolveInvokeCosts(bufferIndex, context, setCosts(tier.id))) {
         s.set(x, y, value, vertical)
         result(true)
       }
@@ -492,7 +493,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
     val tx = args.checkInteger(4)
     val ty = args.checkInteger(5)
     screen(s => {
-      if (resolveInvokeCosts(bufferIndex, context, copyCosts(tier))) {
+      if (resolveInvokeCosts(bufferIndex, context, copyCosts(tier.id))) {
         s.copy(x, y, w, h, tx, ty)
         result(true)
       }
@@ -509,7 +510,7 @@ trait GenericGPU extends Environment with MultiTiered with VideoRamDevice {
     val value = args.checkString(4)
     if (ExtendedUnicodeHelper.length(value) == 1) screen(s => {
       val c = value.codePointAt(0)
-      if (resolveInvokeCosts(bufferIndex, context, fillCosts(tier))) {
+      if (resolveInvokeCosts(bufferIndex, context, fillCosts(tier.id))) {
         s.fill(x, y, w, h, c)
         result(true)
       }

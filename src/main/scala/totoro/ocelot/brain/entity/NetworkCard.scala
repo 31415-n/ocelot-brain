@@ -2,16 +2,17 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, WakeMessageAware}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered, WakeMessageAware}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
 
-class NetworkCard extends Entity with Environment with WakeMessageAware with DeviceInfo {
+class NetworkCard extends Entity with Environment with WakeMessageAware with DeviceInfo with Tiered {
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("modem", Visibility.Neighbors).
     create()
@@ -19,7 +20,7 @@ class NetworkCard extends Entity with Environment with WakeMessageAware with Dev
   protected val openPorts = mutable.Set.empty[Int]
 
   // wired network card is the 1st in the max ports list (before both wireless cards)
-  protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.One)
+  protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(tier.id)
 
   // ----------------------------------------------------------------------- //
 
@@ -35,6 +36,8 @@ class NetworkCard extends Entity with Environment with WakeMessageAware with Dev
   )
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
+
+  override def tier: Tier = Tier.One
 
   // ----------------------------------------------------------------------- //
 

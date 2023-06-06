@@ -1,9 +1,12 @@
 package totoro.ocelot.brain.nbt.persistence
 
 import totoro.ocelot.brain.Ocelot
-import totoro.ocelot.brain.entity.traits.MultiTiered
+import totoro.ocelot.brain.entity.Memory
+import totoro.ocelot.brain.entity.traits.TieredPersistable
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.util.Persistable
+import totoro.ocelot.brain.util.ExtendedTier.ExtendedTier
+import totoro.ocelot.brain.util.{ExtendedTier, Persistable, Tier}
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 
 import scala.collection.mutable
@@ -85,8 +88,17 @@ object NBTPersistence {
   class TieredConstructor extends InstanceConstructor {
     override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
       val clazz = Class.forName(className)
-      val constructor = clazz.getConstructor(classOf[Int])
-      val tier: Int = nbt.getCompoundTag(DataTag).getInteger(MultiTiered.TierTag)
+      val constructor = clazz.getConstructor(classOf[Tier])
+      val tier: Tier = Tier(nbt.getCompoundTag(DataTag).getByte(TieredPersistable.TierTag))
+      constructor.newInstance(tier).asInstanceOf[Persistable]
+    }
+  }
+
+  class MemoryConstructor extends InstanceConstructor {
+    override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
+      val clazz = Class.forName(className)
+      val constructor = clazz.getConstructor(classOf[ExtendedTier])
+      val tier: ExtendedTier = ExtendedTier(nbt.getCompoundTag(DataTag).getByte(Memory.TierTag))
       constructor.newInstance(tier).asInstanceOf[Persistable]
     }
   }
@@ -95,7 +107,7 @@ object NBTPersistence {
     override def construct(nbt: NBTTagCompound, className: String, workspace: Workspace): Persistable = {
       val clazz = Class.forName(className)
       val constructor = clazz.getConstructor(classOf[Int], classOf[Workspace])
-      val tier: Int = nbt.getCompoundTag(DataTag).getInteger(MultiTiered.TierTag)
+      val tier: Int = nbt.getCompoundTag(DataTag).getInteger(TieredPersistable.TierTag)
       constructor.newInstance(tier, workspace).asInstanceOf[Persistable]
     }
   }

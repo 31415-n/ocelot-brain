@@ -7,7 +7,7 @@ import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
-import totoro.ocelot.brain.nbt.persistence.NBTPersistence.TieredConstructor
+import totoro.ocelot.brain.nbt.persistence.NBTPersistence.{MemoryConstructor, TieredConstructor}
 import totoro.ocelot.brain.util.{FontUtils, ThreadPoolFactory}
 
 import java.io.File
@@ -56,10 +56,11 @@ object Ocelot {
     NBTPersistence.registerConstructor(classOf[Case].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[CPU].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[APU].getName, tieredConstructor)
-    NBTPersistence.registerConstructor(classOf[Memory].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[GraphicsCard].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[HDDManaged].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[Screen].getName, tieredConstructor)
+
+    NBTPersistence.registerConstructor(classOf[Memory].getName, new MemoryConstructor())
 
     FontUtils.init()
 

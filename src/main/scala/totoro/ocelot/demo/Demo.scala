@@ -7,7 +7,7 @@ import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.loot.Loot
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.nbt.persistence.PersistableString
-import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.{ExtendedTier, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 
 import java.nio.file.Files
@@ -37,7 +37,7 @@ object Demo extends App {
     * Now we create a new entity - computer case.
     * Straight off we add it to the workspace.
     */
-  var computer = workspace.add(new Case(Tier.Four))
+  var computer = workspace.add(new Case(Tier.Creative))
 
   /**
     * Computer components do not need to be added to the workspace explicitly,
@@ -49,7 +49,7 @@ object Demo extends App {
   val gpu = new GraphicsCard(Tier.Three)
   computer.inventory(1) = gpu
 
-  val memory = new Memory(Tier.Six)
+  val memory = new Memory(ExtendedTier.ThreeHalf)
   computer.inventory(2) = memory
 
   val redstone = new Redstone.Tier1()

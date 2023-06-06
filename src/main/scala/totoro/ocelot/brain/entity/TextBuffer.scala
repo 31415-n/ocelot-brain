@@ -2,11 +2,12 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, TextBufferProxy, MultiTiered, VideoRamRasterizer}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Environment, TextBufferProxy, TieredPersistable, VideoRamRasterizer}
 import totoro.ocelot.brain.event._
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.user.User
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.util.{ColorDepth, GenericTextBuffer, PackedColor, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
@@ -17,14 +18,20 @@ import scala.collection.mutable
   * This trait implements functionality for displaying and manipulating
   * text, like screens and robots.
   */
-class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBufferProxy with VideoRamRasterizer with DeviceInfo with MultiTiered {
+class TextBuffer(var bufferTier: Tier = Tier.One)
+  extends Environment
+    with TextBufferProxy
+    with VideoRamRasterizer
+    with DeviceInfo
+    with TieredPersistable {
+
   override val node: Component =  Network.newNode(this, Visibility.Network).
     withComponent("screen").
     create()
 
-  private var maxResolution: (Int, Int) = Settings.screenResolutionsByTier(bufferTier)
+  private var maxResolution: (Int, Int) = Settings.screenResolutionsByTier(bufferTier.id)
 
-  private var maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(bufferTier)
+  private var maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(bufferTier.id)
 
   private var aspectRatio: (Double, Double) = (1.0, 1.0)
 
@@ -48,11 +55,11 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
 
-  override def tier: Int = bufferTier
-  override def tier_=(value: Int): Unit = {
+  override def tier: Tier = bufferTier
+  override def tier_=(value: Tier): Unit = {
     bufferTier = value
-    maxResolution = Settings.screenResolutionsByTier(bufferTier)
-    maxDepth = Settings.screenDepthsByTier(bufferTier)
+    maxResolution = Settings.screenResolutionsByTier(bufferTier.id)
+    maxDepth = Settings.screenDepthsByTier(bufferTier.id)
     _data = new GenericTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
   }
 
@@ -93,7 +100,7 @@ class TextBuffer(var bufferTier: Int = Tier.One) extends Environment with TextBu
   def setPrecise(computer: Context, args: Arguments): Array[AnyRef] = {
     // Available for T3 screens only... easiest way to check for us is to
     // base it off of the maximum color depth.
-    if (maxDepth == Settings.screenDepthsByTier(Tier.Three)) {
+    if (maxDepth == Settings.screenDepthsByTier(Tier.Three.id)) {
       val oldValue = precisionMode
       precisionMode = args.checkBoolean(0)
       result(oldValue)

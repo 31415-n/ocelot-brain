@@ -3,12 +3,14 @@ package totoro.ocelot.brain.entity.sound_card
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.result
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, MultiTiered}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered, TieredPersistable}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
+import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 
-class SoundCard extends Entity with Environment with DeviceInfo {
+class SoundCard extends Entity with Environment with DeviceInfo with Tiered {
   override val node: Component = Network.newNode(this, Visibility.Neighbors).
     withComponent("sound").
     create()
@@ -20,9 +22,11 @@ class SoundCard extends Entity with Environment with DeviceInfo {
     DeviceAttribute.Product -> "MinoSound 244-X",
   )
 
-  val board = new SoundBoard
-
   override def getDeviceInfo: Map[String, String] = deviceInfo
+
+  override def tier: Tier = Tier.Two
+
+  val board = new SoundBoard
 
   override def update(): Unit = {
     super.update()

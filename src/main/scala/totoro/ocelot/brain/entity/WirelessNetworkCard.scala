@@ -5,6 +5,7 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
+import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
@@ -15,9 +16,12 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
     withComponent("modem", Visibility.Neighbors).
     create()
 
-  protected def maxWirelessRange: Double
-
   protected def shouldSendWiredTraffic: Boolean
+
+  protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(tier.id)
+
+  // the wired network card precedes wireless cards in max port list
+  override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(tier.id + 1)
 
   var strength: Double = maxWirelessRange
 
@@ -93,11 +97,6 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
 
 object WirelessNetworkCard {
   class Tier1 extends WirelessNetworkCard {
-    override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.One)
-
-    // wired network card is before wireless cards in max port list
-    override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.One + 1)
-
     override protected def shouldSendWiredTraffic = false
 
     // ----------------------------------------------------------------------- //
@@ -115,6 +114,8 @@ object WirelessNetworkCard {
 
     override def getDeviceInfo: Map[String, String] = deviceInfo
 
+    override def tier: Tier = Tier.One
+
     override protected def isPacketAccepted(packet: Packet, distance: Double): Boolean = {
       if (distance <= maxWirelessRange && (distance > 0 || shouldSendWiredTraffic)) {
         super.isPacketAccepted(packet, distance)
@@ -125,10 +126,7 @@ object WirelessNetworkCard {
   }
 
   class Tier2 extends Tier1 {
-    override protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(Tier.Two)
-
-    // wired network card is before wireless cards in max port list
-    override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(Tier.Two + 1)
+    override def tier: Tier = Tier.Two
 
     override protected def shouldSendWiredTraffic = true
 
