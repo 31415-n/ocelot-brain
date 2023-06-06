@@ -21,13 +21,6 @@ object Tier extends Enumeration {
   val Three: Tier = TierVal("3", "Tier 3")
   val Creative: Tier = TierVal("Creative")
 
-  def fromNum(num: Int): Tier = num match {
-    case 1 => One
-    case 2 => Two
-    case 3 => Three
-    case 4 => Creative
-  }
-
   protected class TierVal(name: String, val label: String) extends super.Val(name) {
     /**
       * The tier number, starting from 1.
