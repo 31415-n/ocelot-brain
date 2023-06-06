@@ -6,7 +6,7 @@ object DyeColor {
   val Magenta: DyeColor = DyeColor(2, "dyeMagenta", 0xC354CD)
   val LightBlue: DyeColor = DyeColor(3, "dyeLightBlue", 0xAAAAFF)
   val Yellow: DyeColor = DyeColor(4, "dyeYellow", 0xFFFF66)
-  val LIME: DyeColor = DyeColor(5, "dyeLime", 0x66FF66)
+  val Lime: DyeColor = DyeColor(5, "dyeLime", 0x66FF66)
   val Pink: DyeColor = DyeColor(6, "dyePink", 0xD88198)
   val Gray: DyeColor = DyeColor(7, "dyeGray", 0x666666)
   val Silver: DyeColor = DyeColor(8, "dyeLightGray", 0xABABAB)
@@ -19,7 +19,7 @@ object DyeColor {
   val Black: DyeColor = DyeColor(15, "dyeBlack", 0x444444)
 
   val All: List[DyeColor] = List(
-    White, Orange, Magenta, LightBlue, Yellow, LIME, Pink, Gray, Silver, Cyan, Purple, Blue, Brown, Green, Red, Black)
+    White, Orange, Magenta, LightBlue, Yellow, Lime, Pink, Gray, Silver, Cyan, Purple, Blue, Brown, Green, Red, Black)
 
   def byName(name: String): Option[DyeColor] = All.find(color => color.name == name)
   def byCode(code: Int): DyeColor = All(code)

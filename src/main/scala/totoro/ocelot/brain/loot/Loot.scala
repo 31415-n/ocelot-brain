@@ -30,7 +30,7 @@ object Loot {
     MineOSEFIEEPROM = new EEPROMFactory("MineOS EFI", "mineosEFI.lua")
 
     // Floppies
-    NetworkFloppy = new FloppyFactory("Network (Network Stack)", DyeColor.LIME, "network")
+    NetworkFloppy = new FloppyFactory("Network (Network Stack)", DyeColor.Lime, "network")
     Plan9kFloppy = new FloppyFactory("Plan9k (Operating System)", DyeColor.Red, "plan9k")
     IrcFloppy = new FloppyFactory("OpenIRC (IRC Client)", DyeColor.LightBlue, "irc")
     OpenLoaderFloppy = new FloppyFactory("OpenLoader (Boot Loader)", DyeColor.Magenta, "openloader")
