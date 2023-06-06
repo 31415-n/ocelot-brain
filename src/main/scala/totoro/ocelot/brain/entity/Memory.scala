@@ -28,8 +28,7 @@ class Memory(var memoryTier: ExtendedTier)
     DeviceAttribute.Class -> DeviceClass.Memory,
     DeviceAttribute.Description -> "Memory bank",
     DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
-    // TODO: is this zero-based? do I care?
-    DeviceAttribute.Product -> s"MRAM 1x$tier",
+    DeviceAttribute.Product -> s"MRAM 1x${memoryTier.id}",
     DeviceAttribute.Clock -> (Settings.get.callBudgets(tier.id) * 1000).toInt.toString
   )
 

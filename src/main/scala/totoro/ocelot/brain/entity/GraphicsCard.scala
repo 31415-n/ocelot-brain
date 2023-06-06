@@ -10,7 +10,7 @@ class GraphicsCard(override var tier: Tier) extends Entity with GenericGPU with 
     DeviceAttribute.Class -> DeviceClass.Display,
     DeviceAttribute.Description -> "Graphics controller",
     DeviceAttribute.Vendor -> Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product -> s"GirlForce ${tier.num * 1000} X",
+    DeviceAttribute.Product -> s"GirlForce${tier.num * 1000} X",
     DeviceAttribute.Capacity -> capacityInfo,
     DeviceAttribute.Width -> widthInfo,
     DeviceAttribute.Clock -> clockInfo
