@@ -10,9 +10,10 @@ import totoro.ocelot.brain.network.{Component, Network, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
-import java.io.{IOException, InputStream}
+import java.io.IOException
 import java.net.{MalformedURLException, URL}
 import java.nio.file.{Files, Path, Paths}
+import scala.util.Using
 
 class EEPROM extends Entity with Environment with DeviceInfo {
   override val node: Component = Network.newNode(this, Visibility.Neighbors).
@@ -21,14 +22,12 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
 
   var volatileData = Array.empty[Byte]
-
   var readonly = false
-
   var label = "EEPROM"
 
   // ----------------------------------------------------------------------- //
 
-  var _codeBytes: Option[Array[Byte]] = None
+  private var _codeBytes: Option[Array[Byte]] = None
 
   def codeBytes: Option[Array[Byte]] = _codeBytes
 
@@ -40,7 +39,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  var _codePath: Option[Path] = None
+  private var _codePath: Option[Path] = None
 
   def codePath: Option[Path] = _codePath
 
@@ -65,35 +64,23 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   // ----------------------------------------------------------------------- //
 
   private def getBytes: Array[Byte] = {
-    // Raw bytes
     if (codeBytes.isDefined) {
+      // Raw bytes
       codeBytes.get
-    }
-    // URL
-    else if (codeURL.isDefined) {
-      var result: Array[Byte] = null
-      var input: InputStream = null
-
-      try {
-        input = codeURL.get.openStream()
-        result = IOUtils.toByteArray(input)
+    } else if (codeURL.isDefined) {
+      // URL
+      Using.resource(codeURL.get.openStream()) { input =>
+        try {
+          IOUtils.toByteArray(input)
+        } catch {
+          case _: IOException => Array.empty
+        }
       }
-      catch {
-        case _: IOException => result = Array.empty[Byte]
-      }
-      finally {
-        if (input != null)
-          input.close()
-      }
-
-      result
-    }
-    // Local file
-    else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
+    } else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
+      // Local file
       Files.readAllBytes(codePath.get)
-    }
-    else {
-      Array.empty[Byte]
+    } else {
+      Array.empty
     }
   }
 
@@ -121,18 +108,19 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
   def set(context: Context, args: Arguments): Array[AnyRef] = {
-    if (readonly)
+    if (readonly) {
       return result((), "storage is readonly")
+    }
 
     val newData = args.optByteArray(0, Array.empty[Byte])
 
     if (codeBytes.isDefined) {
-      if (newData.length > Settings.get.eepromSize)
+      if (newData.length > Settings.get.eepromSize) {
         throw new IllegalArgumentException("not enough space")
+      }
 
       _codeBytes = Some(newData)
-    }
-    else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
+    } else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
       Files.write(codePath.get, newData)
     }
 
@@ -197,26 +185,25 @@ class EEPROM extends Entity with Environment with DeviceInfo {
     super.load(nbt, workspace)
 
     // Raw
-    _codeBytes = if (nbt.hasKey(CodeBytesTag)) Some(nbt.getByteArray(CodeBytesTag)) else None
+    _codeBytes = Option.when(nbt.hasKey(CodeBytesTag))(nbt.getByteArray(CodeBytesTag))
 
     // Url
     if (nbt.hasKey(CodeURLTag)) {
       try {
         _codeURL = Some(new URL(nbt.getString(CodeURLTag)))
-      }
-      catch {
+      } catch {
         case _: MalformedURLException => _codeURL = None
       }
-    }
-    else {
+    } else {
       _codeURL = None
     }
 
     // File
-    _codePath = if (nbt.hasKey(CodePathTag)) Some(Paths.get(nbt.getString(CodePathTag))) else None
+    _codePath = Option.when(nbt.hasKey(CodePathTag))(Paths.get(nbt.getString(CodePathTag)))
 
-    if (nbt.hasKey(LabelTag))
+    if (nbt.hasKey(LabelTag)) {
       label = nbt.getString(LabelTag)
+    }
 
     readonly = nbt.getBoolean(ReadonlyTag)
     volatileData = nbt.getByteArray(UserdataTag)
@@ -228,24 +215,21 @@ class EEPROM extends Entity with Environment with DeviceInfo {
     // Raw bytes
     if (codeBytes.isDefined) {
       nbt.setByteArray(CodeBytesTag, codeBytes.get)
-    }
-    else {
+    } else {
       nbt.removeTag(CodeBytesTag)
     }
 
     // Url
     if (codeURL.isDefined) {
       nbt.setString(CodeURLTag, codeURL.get.toString)
-    }
-    else {
+    } else {
       nbt.removeTag(CodeURLTag)
     }
 
     // File
     if (codePath.isDefined) {
       nbt.setString(CodePathTag, codePath.get.toString)
-    }
-    else {
+    } else {
       nbt.removeTag(CodePathTag)
     }
 

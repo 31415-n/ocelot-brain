@@ -21,6 +21,7 @@ object Loot {
   var OpenOsFloppy: FloppyFactory = _
   var OPPMFloppy: FloppyFactory = _
   var DataFloppy: FloppyFactory = _
+  var HpmFloppy: FloppyFactory = _
 
   def init(): Unit = {
     // EEPROM
@@ -37,6 +38,7 @@ object Loot {
     OpenOsFloppy = new FloppyFactory("OpenOS (Operating System)", DyeColor.Green, "openos")
     OPPMFloppy = new FloppyFactory("OPPM (Package Manager)", DyeColor.Cyan, "oppm")
     DataFloppy = new FloppyFactory("Data Card Software", DyeColor.Pink, "data")
+    HpmFloppy = new FloppyFactory("hpm (Package manager)", DyeColor.Red, "hpm")
   }
 
   // ----------------------------------------------------------------------- //
