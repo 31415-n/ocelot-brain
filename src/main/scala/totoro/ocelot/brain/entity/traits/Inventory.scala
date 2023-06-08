@@ -130,7 +130,7 @@ trait Inventory extends WorkspaceAware with Persistable {
     def inventory: InventoryProxy = Inventory.this.inventory
 
     override def equals(other: Any): Boolean = other match {
-      case that: Slot =>
+      case that: Inventory#Slot =>
         inventory.owner == that.inventory.owner &&
           index == that.index
 
