@@ -64,7 +64,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
       fileSystemTrait = FileSystemAPI.asReadOnly(fileSystemTrait)
 
     FileSystemAPI.asManagedEnvironment(
-      address.get, fileSystemTrait, new ReadWriteLabel(address.get), speed, activityType.orNull)
+      address.get, fileSystemTrait, new ReadWriteLabel(), speed, activityType.orNull)
   }
 
   // ----------------------------------------------------------------------- //

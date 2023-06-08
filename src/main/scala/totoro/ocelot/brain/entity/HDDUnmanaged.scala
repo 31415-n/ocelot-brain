@@ -7,12 +7,27 @@ import totoro.ocelot.brain.event.FileSystemActivityType.{ActivityType, HDD}
 import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.{Constants, Settings}
 
-class HDDUnmanaged(override var tier: Tier, name: String)
-  extends Entity with DiskUnmanaged with TieredPersistable with DeviceInfo {
+class HDDUnmanaged private(override var tier: Tier, name: Option[String])
+  extends Entity
+    with DiskUnmanaged
+    with TieredPersistable
+    with DeviceInfo {
+
+  // ugly shenanigans to allow creating an unnamed unmanaged hdd
+  def this(tier: Tier) = {
+    this(tier, None)
+  }
+
+  def this(tier: Tier, name: String) = {
+    this(tier, Some(name))
+  }
 
   val label: Label = new ReadWriteLabel(name)
+
   def capacity: Int = Settings.get.hddSizes(tier.id) * 1024
+
   def platterCount: Int = Settings.get.hddPlatterCounts(tier.id)
+
   def speed: Int = tier.num + 1
 
   override val activityType: Option[ActivityType] = Some(HDD)

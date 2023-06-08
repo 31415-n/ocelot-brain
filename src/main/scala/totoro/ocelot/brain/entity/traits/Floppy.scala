@@ -7,18 +7,18 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.DyeColor
 import totoro.ocelot.brain.workspace.Workspace
 
-abstract class Floppy(private var name: String, var color: DyeColor) extends Entity with Disk {
-  val label: Label = new ReadWriteLabel(name)
+abstract class Floppy(private var _name: Option[String], var color: DyeColor) extends Entity with Disk {
+  val label: Label = new ReadWriteLabel(_name)
   val capacity: Int = Settings.get.floppySize * 1024
   val speed: Int = 1
 
   override val activityType: Option[ActivityType] = Some(Floppy)
 
-  def getName: String = name
+  def name: Option[String] = _name
 
-  def setName(value: String): Unit = {
-    this.name = value
-    label.setLabel(value)
+  def name_=(value: Option[String]): Unit = {
+    this._name = value
+    label.setLabel(value.orNull)
   }
 
   private val NameTag = "name"
@@ -26,13 +26,18 @@ abstract class Floppy(private var name: String, var color: DyeColor) extends Ent
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
-    nbt.setString(NameTag, name)
+
+    for (name <- _name) {
+      nbt.setString(NameTag, name)
+    }
+
     nbt.setInteger(ColorTag, color.code)
   }
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
-    setName(nbt.getString(NameTag))
+
+    name = Option.when(nbt.hasKey(NameTag))(nbt.getString(NameTag))
     color = DyeColor.byCode(nbt.getInteger(ColorTag))
   }
 }

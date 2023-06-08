@@ -63,7 +63,7 @@ class EEPROM extends Entity with Environment with DeviceInfo {
 
   // ----------------------------------------------------------------------- //
 
-  private def getBytes: Array[Byte] = {
+  def getBytes: Array[Byte] = {
     if (codeBytes.isDefined) {
       // Raw bytes
       codeBytes.get

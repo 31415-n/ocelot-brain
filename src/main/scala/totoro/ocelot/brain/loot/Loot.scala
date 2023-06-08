@@ -48,9 +48,9 @@ object Loot {
   }
 
   class LootFloppy(name: String, color: DyeColor, var path: String)
-    extends FloppyManaged(name, color) {
+    extends FloppyManaged(Option(name), color) {
 
-    def this() = this("noname", DyeColor.Gray, null)
+    def this() = this(null, DyeColor.Gray, null)
 
     override protected def generateEnvironment(): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
