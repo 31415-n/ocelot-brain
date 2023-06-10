@@ -65,10 +65,10 @@ object Loot {
     def create(): T
   }
 
-  class LootFloppy(name: String, color: DyeColor, var path: String)
+  class LootFloppy(name: String, label: String, color: DyeColor, var path: String)
     extends FloppyManaged(Option(name), color) {
 
-    def this() = this(null, DyeColor.Gray, null)
+    def this() = this(null, null, DyeColor.Gray, null)
 
     override protected def generateEnvironment(): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
@@ -93,7 +93,9 @@ object Loot {
   }
 
   class FloppyFactory(val name: String, val color: DyeColor, path: String) extends LootFactory[LootFloppy] {
-    override def create() = new LootFloppy(name, color, path)
+    val label: String = path
+
+    override def create() = new LootFloppy(name, label, color, path)
   }
 
   class EEPROMFactory(val label: String, file: String, readonly: Boolean = false) extends LootFactory[EEPROM] {

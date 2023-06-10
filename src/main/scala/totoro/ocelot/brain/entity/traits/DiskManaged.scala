@@ -6,7 +6,7 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.workspace.Workspace
 
-import java.nio.file.{Files, InvalidPathException, Path, Paths}
+import java.nio.file.{Files, Path, Paths}
 import java.util.UUID
 import scala.util.Try
 

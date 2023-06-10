@@ -8,7 +8,7 @@ import totoro.ocelot.brain.util.DyeColor
 import totoro.ocelot.brain.workspace.Workspace
 
 abstract class Floppy(private var _name: Option[String], var color: DyeColor) extends Entity with Disk {
-  val label: Label = new ReadWriteLabel(_name)
+  lazy val label: Label = new ReadWriteLabel(_name)
   val capacity: Int = Settings.get.floppySize * 1024
   val speed: Int = 1
 
@@ -18,7 +18,14 @@ abstract class Floppy(private var _name: Option[String], var color: DyeColor) ex
 
   def name_=(value: Option[String]): Unit = {
     this._name = value
-    label.setLabel(value.orNull)
+
+    try {
+      label.setLabel(value.orNull)
+    } catch {
+      case _: IllegalArgumentException =>
+        // this ain't no python but it works
+        // (rationale: we want to update the label unless we can't because it's read-only)
+    }
   }
 
   private val NameTag = "name"
@@ -37,7 +44,7 @@ abstract class Floppy(private var _name: Option[String], var color: DyeColor) ex
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
-    name = Option.when(nbt.hasKey(NameTag))(nbt.getString(NameTag))
+    _name = Option.when(nbt.hasKey(NameTag))(nbt.getString(NameTag))
     color = DyeColor.byCode(nbt.getInteger(ColorTag))
   }
 }
