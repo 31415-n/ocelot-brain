@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, RedstoneSignaller, Tiered}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.util.Tier.Tier
@@ -12,12 +12,11 @@ import totoro.ocelot.brain.{Constants, Settings}
 
 import java.util
 import scala.collection.IndexedSeqView
-import scala.collection.mutable.ArrayBuffer
 
 object Redstone {
-  case class RedstoneInputChanged(side: Direction.Value, oldValue: Int, newValue: Int, color: Int = -1)
+  case class RedstoneChangedEventArgs(side: Direction.Value, oldValue: Int, newValue: Int, color: Int = -1)
 
-  class Tier1 extends Entity with Environment with DeviceInfo with Tiered {
+  class Tier1 extends RedstoneSignaller with DeviceInfo with Tiered {
     override val node: Node = Network.newNode(this, Visibility.Neighbors).
       withComponent("redstone", Visibility.Neighbors).
       create()
@@ -55,7 +54,7 @@ object Redstone {
 
       if (oldValue != value) {
         _redstoneInput(side.id) = value
-        onRedstoneInputChanged(RedstoneInputChanged(side, oldValue, value))
+        onRedstoneChanged(RedstoneChangedEventArgs(side, oldValue, value))
 
         true
       } else false
@@ -118,17 +117,6 @@ object Redstone {
     def getComparatorInput(context: Context, args: Arguments): Array[AnyRef] = {
       checkSide(args, 0)
       result(0)
-    }
-
-    protected def onRedstoneInputChanged(args: Redstone.RedstoneInputChanged): Unit = {
-      val signalArgs =
-        ArrayBuffer[Object]("redstone_changed", Int.box(args.side.id), Int.box(args.oldValue), Int.box(args.newValue))
-
-      if (args.color >= 0) {
-        signalArgs += Int.box(args.color)
-      }
-
-      node.sendToReachable("computer.signal", signalArgs.toSeq: _*)
     }
 
     protected def getOptionalSide(args: Arguments): Option[Int] = {
@@ -222,7 +210,7 @@ object Redstone {
       val oldValue = _bundledRedstoneInput(side.id)(color)
       if (oldValue != value) {
         _bundledRedstoneInput(side.id)(color) = value
-        onRedstoneInputChanged(RedstoneInputChanged(side, oldValue, value, color))
+        onRedstoneChanged(RedstoneChangedEventArgs(side, oldValue, value, color))
 
         true
       } else false
