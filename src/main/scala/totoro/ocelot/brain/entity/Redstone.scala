@@ -2,16 +2,21 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, RedstoneSignaller, Tiered}
+import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.util.{Direction, Tier}
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 import java.util
+import scala.collection.IndexedSeqView
 
 object Redstone {
-  class Tier1 extends Entity with Environment with DeviceInfo with Tiered {
+  case class RedstoneChangedEventArgs(side: Direction.Value, oldValue: Int, newValue: Int, color: Int = -1)
+
+  class Tier1 extends RedstoneSignaller with DeviceInfo with Tiered {
     override val node: Node = Network.newNode(this, Visibility.Neighbors).
       withComponent("redstone", Visibility.Neighbors).
       create()
@@ -31,22 +36,57 @@ object Redstone {
 
     // ----------------------------------------------------------------------- //
 
-    val redstoneOutput: Array[Int] = Array.fill(6)(0)
-    val redstoneInput: Array[Int] = Array.fill(6)(-1)
+    private val _redstoneOutput: Array[Int] = Array.fill(6)(0)
+    private val _redstoneInput: Array[Int] = Array.fill(6)(0)
+
+    def redstoneOutput: IndexedSeqView[Int] = _redstoneOutput.view
+    def redstoneInput: IndexedSeqView[Int] = _redstoneInput.view
+
+    def setRedstoneOutput(side: Direction.Value, value: Int): Boolean = {
+      if (_redstoneOutput(side.id) != value) {
+        _redstoneOutput(side.id) = value
+        true
+      } else false
+    }
+
+    def setRedstoneInput(side: Direction.Value, value: Int): Boolean = {
+      val oldValue = _redstoneInput(side.id)
+
+      if (oldValue != value) {
+        _redstoneInput(side.id) = value
+        onRedstoneChanged(RedstoneChangedEventArgs(side, oldValue, value))
+
+        true
+      } else false
+    }
+
+    override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+      super.load(nbt, workspace)
+
+      nbt.getIntArray(Tier1.RedstoneOutputTag).copyToArray(_redstoneOutput)
+      nbt.getIntArray(Tier1.RedstoneInputTag).copyToArray(_redstoneInput)
+    }
+
+    override def save(nbt: NBTTagCompound): Unit = {
+      super.save(nbt)
+
+      nbt.setIntArray(Tier1.RedstoneOutputTag, _redstoneOutput)
+      nbt.setIntArray(Tier1.RedstoneInputTag, _redstoneInput)
+    }
 
     @Callback(direct = true, doc = """function([side:number]):number or table -- Get the redstone input (all sides, or optionally on the specified side)""")
     def getInput(context: Context, args: Arguments): Array[AnyRef] = {
       getOptionalSide(args) match {
-        case Some(side: Int) => result(redstoneInput(side))
-        case _ => result(valuesToMap(redstoneInput))
+        case Some(side: Int) => result(_redstoneInput(side))
+        case _ => result(valuesToMap(_redstoneInput))
       }
     }
 
     @Callback(direct = true, doc = """function([side:number]):number or table -- Get the redstone output (all sides, or optionally on the specified side)""")
     def getOutput(context: Context, args: Arguments): Array[AnyRef] = {
       getOptionalSide(args) match {
-        case Some(side: Int) => result(redstoneOutput(side))
-        case _ => result(valuesToMap(redstoneOutput))
+        case Some(side: Int) => result(_redstoneOutput(side))
+        case _ => result(valuesToMap(_redstoneOutput))
       }
     }
 
@@ -55,15 +95,15 @@ object Redstone {
       var ret: AnyRef = null
       getAssignment(args) match {
         case (side: Direction.Value, value: Int) =>
-          ret = java.lang.Integer.valueOf(redstoneOutput(side.id))
-          redstoneOutput(side.id) = value
+          ret = java.lang.Integer.valueOf(_redstoneOutput(side.id))
+          _redstoneOutput(side.id) = value
         case (value: util.Map[_, _], _) =>
-          ret = valuesToMap(redstoneOutput)
+          ret = valuesToMap(_redstoneOutput)
           Direction.values.foreach(side => {
             val sideIndex = side.id
             // due to a bug in our jnlua layer, I cannot loop the map
             valueToInt(getObjectFuzzy(value, sideIndex)) match {
-              case Some(num: Int) => redstoneOutput(sideIndex) = num
+              case Some(num: Int) => _redstoneOutput(sideIndex) = num
               case _ =>
             }
           })
@@ -126,6 +166,11 @@ object Redstone {
       Direction.values.map(_.id).map { case side if side < ar.length => side -> ar(side) }.toMap
   }
 
+  object Tier1 {
+    private val RedstoneInputTag = "redstoneInput"
+    private val RedstoneOutputTag = "redstoneOutput"
+  }
+
   class Tier2 extends Tier1 {
     override val node: Node = Network.newNode(this, Visibility.Neighbors).
       withComponent("redstone", Visibility.Neighbors).
@@ -148,8 +193,50 @@ object Redstone {
 
     private val COLOR_RANGE = 0 until 16
 
-    val bundledRedstoneOutput: Array[Array[Int]] = Array.ofDim[Int](6, 16)
-    val bundledRedstoneInput: Array[Array[Int]] = Array.ofDim[Int](6, 16)
+    private val _bundledRedstoneOutput: Array[Array[Int]] = Array.ofDim[Int](6, 16)
+    private val _bundledRedstoneInput: Array[Array[Int]] = Array.ofDim[Int](6, 16)
+
+    def bundledRedstoneOutput: IndexedSeqView[IndexedSeqView[Int]] = _bundledRedstoneOutput.map(_.view).view
+    def bundledRedstoneInput: IndexedSeqView[IndexedSeqView[Int]] = _bundledRedstoneInput.map(_.view).view
+
+    def setBundledOutput(side: Direction.Value, color: Int, value: Int): Boolean = {
+      if (_bundledRedstoneOutput(side.id)(color) != value) {
+        _bundledRedstoneOutput(side.id)(color) = value
+        true
+      } else false
+    }
+
+    def setBundledInput(side: Direction.Value, color: Int, value: Int): Boolean = {
+      val oldValue = _bundledRedstoneInput(side.id)(color)
+      if (oldValue != value) {
+        _bundledRedstoneInput(side.id)(color) = value
+        onRedstoneChanged(RedstoneChangedEventArgs(side, oldValue, value, color))
+
+        true
+      } else false
+    }
+
+    override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+      super.load(nbt, workspace)
+
+      val nbtOutput = nbt.getIntArray(Tier2.BundledOutputTag)
+      val nbtInput = nbt.getIntArray(Tier2.BundledInputTag)
+
+      for ((values, i) <- nbtOutput.iterator.grouped(16).zipWithIndex; (value, j) <- values.zipWithIndex) {
+        _bundledRedstoneOutput(i)(j) = value
+      }
+
+      for ((values, i) <- nbtInput.iterator.grouped(16).zipWithIndex; (value, j) <- values.zipWithIndex) {
+        _bundledRedstoneInput(i)(j) = value
+      }
+    }
+
+    override def save(nbt: NBTTagCompound): Unit = {
+      super.save(nbt)
+
+      nbt.setIntArray(Tier2.BundledOutputTag, _bundledRedstoneOutput.flatten)
+      nbt.setIntArray(Tier2.BundledInputTag, _bundledRedstoneInput.flatten)
+    }
 
     private def getBundleKey(args: Arguments): (Option[Int], Option[Int]) = {
       args.count() match {
@@ -192,11 +279,11 @@ object Redstone {
       val (side, color) = getBundleKey(args)
 
       if (color.isDefined) {
-        result(bundledRedstoneInput(side.get)(color.get))
+        result(_bundledRedstoneInput(side.get)(color.get))
       } else if (side.isDefined) {
-        result(colorsToMap(bundledRedstoneInput(side.get)))
+        result(colorsToMap(_bundledRedstoneInput(side.get)))
       } else {
-        result(sidesToMap(bundledRedstoneInput))
+        result(sidesToMap(_bundledRedstoneInput))
       }
     }
 
@@ -205,11 +292,11 @@ object Redstone {
       val (side, color) = getBundleKey(args)
 
       if (color.isDefined) {
-        result(bundledRedstoneOutput(side.get)(color.get))
+        result(_bundledRedstoneOutput(side.get)(color.get))
       } else if (side.isDefined) {
-        result(colorsToMap(bundledRedstoneOutput(side.get)))
+        result(colorsToMap(_bundledRedstoneOutput(side.get)))
       } else {
-        result(sidesToMap(bundledRedstoneOutput))
+        result(sidesToMap(_bundledRedstoneOutput))
       }
     }
 
@@ -217,15 +304,15 @@ object Redstone {
     def setBundledOutput(context: Context, args: Arguments): Array[AnyRef] = {
       var ret: Any = null
       getBundleAssignment(args) match {
-        case (side: Int, color: Int, value: Int) =>
-          ret = bundledRedstoneOutput(side)(color)
-          bundledRedstoneOutput(side)(color) = value
-        case (side: Int, value: Map[Int, Int]@unchecked, _) =>
-          ret = bundledRedstoneOutput(side)
-          value.foreach(color => bundledRedstoneOutput(side)(color._1) = color._2)
+        case (side: Direction.Value, color: Int, value: Int) =>
+          ret = _bundledRedstoneOutput(side.id)(color)
+          _bundledRedstoneOutput(side.id)(color) = value
+        case (side: Direction.Value, value: Map[Int, Int]@unchecked, _) =>
+          ret = _bundledRedstoneOutput(side.id)
+          value.foreach(color => _bundledRedstoneOutput(side.id)(color._1) = color._2)
         case (value: Map[Int, Map[Int, Int]]@unchecked, _, _) =>
-          ret = bundledRedstoneOutput
-          value.foreach(side => side._2.foreach(color => bundledRedstoneOutput(side._1)(color._1) = color._2))
+          ret = _bundledRedstoneOutput
+          value.foreach(side => side._2.foreach(color => _bundledRedstoneOutput(side._1)(color._1) = color._2))
       }
       if (Settings.get.redstoneDelay > 0)
         context.pause(Settings.get.redstoneDelay)
@@ -238,5 +325,10 @@ object Redstone {
         throw new IllegalArgumentException("invalid color")
       color
     }
+  }
+
+  object Tier2 {
+    private val BundledInputTag = "bundledInput"
+    private val BundledOutputTag = "bundledOutput"
   }
 }
