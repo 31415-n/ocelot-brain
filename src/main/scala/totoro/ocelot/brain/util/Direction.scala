@@ -8,4 +8,11 @@ object Direction extends Enumeration {
       South,        /* +Z */
       West,         /* -X */
       East = Value  /* +X */
+
+  val Bottom: Value = Down
+  val Top: Value = Up
+  val Back: Value = North
+  val Front: Value = South
+  val Right: Value = West
+  val Left: Value = East
 }
