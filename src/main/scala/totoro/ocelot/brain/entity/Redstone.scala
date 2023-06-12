@@ -3,9 +3,11 @@ package totoro.ocelot.brain.entity
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
+import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.util.{Direction, Tier}
+import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
 import java.util
@@ -32,7 +34,21 @@ object Redstone {
     // ----------------------------------------------------------------------- //
 
     val redstoneOutput: Array[Int] = Array.fill(6)(0)
-    val redstoneInput: Array[Int] = Array.fill(6)(-1)
+    val redstoneInput: Array[Int] = Array.fill(6)(0)
+
+    override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+      super.load(nbt, workspace)
+
+      nbt.getIntArray(Tier1.RedstoneOutputTag).copyToArray(redstoneOutput)
+      nbt.getIntArray(Tier1.RedstoneInputTag).copyToArray(redstoneInput)
+    }
+
+    override def save(nbt: NBTTagCompound): Unit = {
+      super.save(nbt)
+
+      nbt.setIntArray(Tier1.RedstoneOutputTag, redstoneOutput)
+      nbt.setIntArray(Tier1.RedstoneInputTag, redstoneInput)
+    }
 
     @Callback(direct = true, doc = """function([side:number]):number or table -- Get the redstone input (all sides, or optionally on the specified side)""")
     def getInput(context: Context, args: Arguments): Array[AnyRef] = {
@@ -126,6 +142,11 @@ object Redstone {
       Direction.values.map(_.id).map { case side if side < ar.length => side -> ar(side) }.toMap
   }
 
+  object Tier1 {
+    private val RedstoneInputTag = "redstoneInput"
+    private val RedstoneOutputTag = "redstoneOutput"
+  }
+
   class Tier2 extends Tier1 {
     override val node: Node = Network.newNode(this, Visibility.Neighbors).
       withComponent("redstone", Visibility.Neighbors).
@@ -148,8 +169,30 @@ object Redstone {
 
     private val COLOR_RANGE = 0 until 16
 
-    val bundledRedstoneOutput: Array[Array[Int]] = Array.ofDim[Int](6, 16)
-    val bundledRedstoneInput: Array[Array[Int]] = Array.ofDim[Int](6, 16)
+    var bundledRedstoneOutput: Array[Array[Int]] = Array.ofDim[Int](6, 16)
+    var bundledRedstoneInput: Array[Array[Int]] = Array.ofDim[Int](6, 16)
+
+    override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+      super.load(nbt, workspace)
+
+      val nbtOutput = nbt.getIntArray(Tier2.BundledOutputTag)
+      val nbtInput = nbt.getIntArray(Tier2.BundledInputTag)
+
+      for ((values, i) <- nbtOutput.iterator.grouped(16).zipWithIndex; (value, j) <- values.zipWithIndex) {
+        bundledRedstoneOutput(i)(j) = value
+      }
+
+      for ((values, i) <- nbtInput.iterator.grouped(16).zipWithIndex; (value, j) <- values.zipWithIndex) {
+        bundledRedstoneInput(i)(j) = value
+      }
+    }
+
+    override def save(nbt: NBTTagCompound): Unit = {
+      super.save(nbt)
+
+      nbt.setIntArray(Tier2.BundledOutputTag, bundledRedstoneOutput.flatten)
+      nbt.setIntArray(Tier2.BundledInputTag, bundledRedstoneInput.flatten)
+    }
 
     private def getBundleKey(args: Arguments): (Option[Int], Option[Int]) = {
       args.count() match {
@@ -217,12 +260,12 @@ object Redstone {
     def setBundledOutput(context: Context, args: Arguments): Array[AnyRef] = {
       var ret: Any = null
       getBundleAssignment(args) match {
-        case (side: Int, color: Int, value: Int) =>
-          ret = bundledRedstoneOutput(side)(color)
-          bundledRedstoneOutput(side)(color) = value
-        case (side: Int, value: Map[Int, Int]@unchecked, _) =>
-          ret = bundledRedstoneOutput(side)
-          value.foreach(color => bundledRedstoneOutput(side)(color._1) = color._2)
+        case (side: Direction.Value, color: Int, value: Int) =>
+          ret = bundledRedstoneOutput(side.id)(color)
+          bundledRedstoneOutput(side.id)(color) = value
+        case (side: Direction.Value, value: Map[Int, Int]@unchecked, _) =>
+          ret = bundledRedstoneOutput(side.id)
+          value.foreach(color => bundledRedstoneOutput(side.id)(color._1) = color._2)
         case (value: Map[Int, Map[Int, Int]]@unchecked, _, _) =>
           ret = bundledRedstoneOutput
           value.foreach(side => side._2.foreach(color => bundledRedstoneOutput(side._1)(color._1) = color._2))
@@ -238,5 +281,10 @@ object Redstone {
         throw new IllegalArgumentException("invalid color")
       color
     }
+  }
+
+  object Tier2 {
+    private val BundledInputTag = "bundledInput"
+    private val BundledOutputTag = "bundledOutput"
   }
 }
