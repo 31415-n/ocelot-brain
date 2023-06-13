@@ -199,7 +199,7 @@ object ExtendedNBT {
       nbt
     }
 
-    def setNewTagList(name: String, values: Iterable[NBTBase]): NBTTagCompound = {
+    def setNewTagList(name: String, values: IterableOnce[NBTBase]): NBTTagCompound = {
       val t = new NBTTagList()
       t.append(values)
       nbt.setTag(name, t)

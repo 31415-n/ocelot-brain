@@ -9,36 +9,54 @@ import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 object Loot {
+  var Eeproms: IndexedSeq[EEPROMFactory] = _
+  var Floppies: IndexedSeq[FloppyFactory] = _
+
   var LuaBiosEEPROM: EEPROMFactory = _
   var AdvLoaderEEPROM: EEPROMFactory = _
   var CyanBIOSEEPROM: EEPROMFactory = _
   var MineOSEFIEEPROM: EEPROMFactory = _
 
-  var NetworkFloppy: FloppyFactory = _
-  var Plan9kFloppy: FloppyFactory = _
-  var IrcFloppy: FloppyFactory = _
-  var OpenLoaderFloppy: FloppyFactory = _
   var OpenOsFloppy: FloppyFactory = _
+  var Plan9kFloppy: FloppyFactory = _
   var OPPMFloppy: FloppyFactory = _
+  var OpenLoaderFloppy: FloppyFactory = _
+  var NetworkFloppy: FloppyFactory = _
+  var IrcFloppy: FloppyFactory = _
   var DataFloppy: FloppyFactory = _
   var HpmFloppy: FloppyFactory = _
 
   def init(): Unit = {
     // EEPROM
-    LuaBiosEEPROM = new EEPROMFactory("Lua BIOS", "bios.lua")
-    AdvLoaderEEPROM = new EEPROMFactory("advancedLoader", "advLoader.lua")
-    CyanBIOSEEPROM = new EEPROMFactory("Cyan BIOS", "cyan.lua")
+    val eeproms = IndexedSeq.newBuilder[EEPROMFactory]
+    def registerEeprom(eeprom: EEPROMFactory): EEPROMFactory = {
+      eeproms += eeprom
+      eeprom
+    }
+
+    LuaBiosEEPROM = registerEeprom(new EEPROMFactory("Lua BIOS", "bios.lua"))
+    AdvLoaderEEPROM = registerEeprom(new EEPROMFactory("advancedLoader", "advLoader.lua"))
+    CyanBIOSEEPROM = registerEeprom(new EEPROMFactory("Cyan BIOS", "cyan.lua"))
     MineOSEFIEEPROM = new EEPROMFactory("MineOS EFI", "mineosEFI.lua")
 
     // Floppies
-    NetworkFloppy = new FloppyFactory("Network (Network Stack)", DyeColor.Lime, "network")
-    Plan9kFloppy = new FloppyFactory("Plan9k (Operating System)", DyeColor.Red, "plan9k")
-    IrcFloppy = new FloppyFactory("OpenIRC (IRC Client)", DyeColor.LightBlue, "irc")
-    OpenLoaderFloppy = new FloppyFactory("OpenLoader (Boot Loader)", DyeColor.Magenta, "openloader")
-    OpenOsFloppy = new FloppyFactory("OpenOS (Operating System)", DyeColor.Green, "openos")
-    OPPMFloppy = new FloppyFactory("OPPM (Package Manager)", DyeColor.Cyan, "oppm")
-    DataFloppy = new FloppyFactory("Data Card Software", DyeColor.Pink, "data")
-    HpmFloppy = new FloppyFactory("hpm (Package manager)", DyeColor.Red, "hpm")
+    val floppies = IndexedSeq.newBuilder[FloppyFactory]
+    def registerFloppy(floppy: FloppyFactory): FloppyFactory = {
+      floppies += floppy
+      floppy
+    }
+
+    NetworkFloppy = registerFloppy(new FloppyFactory("Network (Network Stack)", DyeColor.Lime, "network"))
+    Plan9kFloppy = registerFloppy(new FloppyFactory("Plan9k (Operating System)", DyeColor.Red, "plan9k"))
+    IrcFloppy = registerFloppy(new FloppyFactory("OpenIRC (IRC Client)", DyeColor.LightBlue, "irc"))
+    OpenLoaderFloppy = registerFloppy(new FloppyFactory("OpenLoader (Boot Loader)", DyeColor.Magenta, "openloader"))
+    OpenOsFloppy = registerFloppy(new FloppyFactory("OpenOS (Operating System)", DyeColor.Green, "openos"))
+    OPPMFloppy = registerFloppy(new FloppyFactory("OPPM (Package Manager)", DyeColor.Cyan, "oppm"))
+    DataFloppy = registerFloppy(new FloppyFactory("Data Card Software", DyeColor.Pink, "data"))
+    HpmFloppy = registerFloppy(new FloppyFactory("hpm (Package manager)", DyeColor.Red, "hpm"))
+
+    Eeproms = eeproms.result()
+    Floppies = floppies.result()
   }
 
   // ----------------------------------------------------------------------- //
@@ -47,10 +65,10 @@ object Loot {
     def create(): T
   }
 
-  class LootFloppy(name: String, color: DyeColor, var path: String)
-    extends FloppyManaged(name, color) {
+  class LootFloppy(name: String, label: String, color: DyeColor, var path: String)
+    extends FloppyManaged(Option(name), color) {
 
-    def this() = this("noname", DyeColor.Gray, null)
+    def this() = this(null, null, DyeColor.Gray, null)
 
     override protected def generateEnvironment(): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
@@ -75,7 +93,9 @@ object Loot {
   }
 
   class FloppyFactory(val name: String, val color: DyeColor, path: String) extends LootFactory[LootFloppy] {
-    override def create() = new LootFloppy(name, color, path)
+    val label: String = path
+
+    override def create() = new LootFloppy(name, label, color, path)
   }
 
   class EEPROMFactory(val label: String, file: String, readonly: Boolean = false) extends LootFactory[EEPROM] {

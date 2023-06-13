@@ -18,6 +18,11 @@ trait Label extends Persistable {
   def getLabel: String
 
   /**
+    * Like [[getLabel]] but returns [[None]] if `null`.
+    */
+  def labelOption: Option[String] = Option(getLabel)
+
+  /**
     * Set the new value of this label.
     *
     * May be set to `null` to clear the label.

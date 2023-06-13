@@ -6,7 +6,7 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.workspace.Workspace
 
-import java.nio.file.{Files, InvalidPathException, Path, Paths}
+import java.nio.file.{Files, Path, Paths}
 import java.util.UUID
 import scala.util.Try
 
@@ -64,7 +64,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
       fileSystemTrait = FileSystemAPI.asReadOnly(fileSystemTrait)
 
     FileSystemAPI.asManagedEnvironment(
-      address.get, fileSystemTrait, new ReadWriteLabel(address.get), speed, activityType.orNull)
+      address.get, fileSystemTrait, new ReadWriteLabel(), speed, activityType.orNull)
   }
 
   // ----------------------------------------------------------------------- //
