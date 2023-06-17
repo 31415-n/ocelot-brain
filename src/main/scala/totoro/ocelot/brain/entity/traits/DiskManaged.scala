@@ -6,9 +6,8 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.workspace.Workspace
 
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, InvalidPathException, Path, Paths}
 import java.util.UUID
-import scala.util.Try
 
 /**
   * Basic trait for all managed-disk-like entities.
@@ -18,7 +17,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
 
   protected var address: Option[String] = None
 
-  protected var _fileSystem: FileSystem = _
+  private var _fileSystem: FileSystem = _
   def fileSystem: FileSystem = {
     if (_fileSystem == null)
       _fileSystem = generateEnvironment()
@@ -47,24 +46,22 @@ trait DiskManaged extends Disk with WorkspaceAware {
   }
 
   protected def generateEnvironment(): FileSystem = {
-    if (address.isEmpty)
-      address = Option(UUID.randomUUID().toString)
+    address = address.orElse(Some(UUID.randomUUID().toString))
 
     // Restoring default path if component was just inserted to slot (without NBT data loading)
     // or if user has changed/deleted/renamed previously set path
-    val realPath = if (customRealPath.isEmpty || !Files.exists(customRealPath.get) || !Files.isDirectory(customRealPath.get)) defaultRealPath else customRealPath.get
+    val realPath = customRealPath.filter(Files.exists(_)).filter(Files.isDirectory(_)).getOrElse(defaultRealPath)
 
     var fileSystemTrait: FileSystemTrait = FileSystemAPI.fromDirectory(
       realPath.toFile,
       capacity max 0,
-      Settings.get.bufferChanges
+      Settings.get.bufferChanges,
     )
 
     if (isLocked)
       fileSystemTrait = FileSystemAPI.asReadOnly(fileSystemTrait)
 
-    FileSystemAPI.asManagedEnvironment(
-      address.get, fileSystemTrait, new ReadWriteLabel(), speed, activityType.orNull)
+    FileSystemAPI.asManagedEnvironment(address.get, fileSystemTrait, new ReadWriteLabel(), speed, activityType.orNull)
   }
 
   // ----------------------------------------------------------------------- //
@@ -87,7 +84,7 @@ trait DiskManaged extends Disk with WorkspaceAware {
 
     // do no touch the file system without need
     if (isLocked(oldLockInfo) != isLocked)
-        saveToNbtAndLoad()
+      saveToNbtAndLoad()
   }
 
   // ----------------------------------------------------------------------- //
@@ -124,7 +121,12 @@ trait DiskManaged extends Disk with WorkspaceAware {
 
       address = Option(nodeNbt.getString(Node.AddressTag))
 
-      Try { customRealPath = if (nbt.hasKey(RealPathTag)) Some(Paths.get(nbt.getString(RealPathTag))) else None }.recover(_ => customRealPath = None)
+      customRealPath =
+        try {
+          Option.when(nbt.hasKey(RealPathTag))(Paths.get(nbt.getString(RealPathTag)))
+        } catch {
+          case _: InvalidPathException => None
+        }
 
       _fileSystem.load(fsNbt, workspace)
     }

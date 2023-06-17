@@ -46,7 +46,7 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
 
   protected final val sectorSize = 512
 
-  protected def data = new Array[Byte](capacity)
+  protected lazy val data = new Array[Byte](capacity)
 
   protected def sectorCount: Int = capacity / sectorSize
 
@@ -160,6 +160,8 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = this.synchronized {
     super.load(nbt, workspace)
+
+    this.workspace = workspace
 
     if (node.address != null) try {
       val path = savePath
