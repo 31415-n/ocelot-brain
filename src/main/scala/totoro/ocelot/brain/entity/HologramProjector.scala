@@ -39,7 +39,7 @@ class HologramProjector(override var tier: Tier) extends Entity with Environment
   val volume = new Array[Int](width * width * 2)
 
   // true if the volume has changed and the mesh needs to be rebuilt
-  var isDirty = false
+  var isDirty = true
 
   var scale = 1.0f
 
@@ -236,6 +236,7 @@ class HologramProjector(override var tier: Tier) extends Entity with Environment
     val value = args.checkInteger(1)
     val oldValue = colors(index - 1)
     colors(index - 1) = value
+    isDirty = true
     result(oldValue)
   }
 
@@ -349,5 +350,6 @@ class HologramProjector(override var tier: Tier) extends Entity with Environment
     rotationSpeedX = nbt.getFloat(RotationSpeedXTag)
     rotationSpeedY = nbt.getFloat(RotationSpeedYTag)
     rotationSpeedZ = nbt.getFloat(RotationSpeedZTag)
+    isDirty = true
   }
 }
