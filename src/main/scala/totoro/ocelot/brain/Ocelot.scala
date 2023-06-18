@@ -60,6 +60,7 @@ object Ocelot {
     NBTPersistence.registerConstructor(classOf[HDDManaged].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[HDDUnmanaged].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[Screen].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[HologramProjector].getName, tieredConstructor)
 
     NBTPersistence.registerConstructor(classOf[Memory].getName, new MemoryConstructor())
 

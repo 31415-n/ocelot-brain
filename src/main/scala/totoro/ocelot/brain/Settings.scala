@@ -14,6 +14,7 @@ class Settings(val config: Config) {
   // ----------------------------------------------------------------------- //
   // client
   val monochromeColor: Integer = Integer.decode(config.getString("client.monochromeColor"))
+  val hologramFlickerFrequency: Double = config.getDouble("client.hologramFlickerFrequency") max 0
 
   // ----------------------------------------------------------------------- //
   // computer
