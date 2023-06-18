@@ -28,6 +28,8 @@ class Workspace(var path: Path) {
   private var ingameTime: Int = 0
   private var ingameTimePaused: Boolean = false
 
+  private var lastTickNanoTime: Long = System.nanoTime()
+
   /**
     * @return workspace time in ticks
     */
@@ -35,7 +37,10 @@ class Workspace(var path: Path) {
 
   def setIngameTime(ticks: Int): Unit = {
     ingameTime = ticks
+    lastTickNanoTime = System.nanoTime()
   }
+
+  def getLastTickNanoTime: Long = lastTickNanoTime
 
   /**
     * Usually the internal workspace time gets updates by one tick
@@ -106,8 +111,10 @@ class Workspace(var path: Path) {
         entity.update()
     })
 
-    if (!ingameTimePaused)
+    if (!ingameTimePaused) {
       ingameTime += 1
+      lastTickNanoTime = System.nanoTime()
+    }
 
     // Running deferred tasks if any in workspace thread after
     // processing all its' entities
@@ -170,6 +177,7 @@ class Workspace(var path: Path) {
     // save global state
     nbt.setInteger(TimeTag, ingameTime)
     nbt.setBoolean(TimePausedTag, ingameTimePaused)
+    lastTickNanoTime = System.nanoTime()
 
     // save entities
     val nbtEntities: ListBuffer[NBTBase] = entities.map(entity => {
