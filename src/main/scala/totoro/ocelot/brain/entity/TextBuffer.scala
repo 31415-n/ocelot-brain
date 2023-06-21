@@ -33,13 +33,14 @@ class TextBuffer(var bufferTier: Tier = Tier.One)
 
   private var maxDepth: ColorDepth.Value = Settings.screenDepthsByTier(bufferTier.id)
 
-  private var aspectRatio: (Double, Double) = (1.0, 1.0)
+  var aspectRatio: (Double, Double) = (1, 1)
 
   protected var precisionMode: Boolean = false
 
   private var isDisplaying: Boolean = true
 
   var _data = new GenericTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
+
   override def data: GenericTextBuffer = _data
 
   var viewport: (Int, Int) = _data.size
@@ -283,11 +284,16 @@ class TextBuffer(var bufferTier: Tier = Tier.One)
 
   private final val DataTag = "data"
   private final val IsOnTag = "isOn"
+  private final val PreciseTag = "precise"
+
   private final val MaxWidthTag = "maxWidth"
   private final val MaxHeightTag = "maxHeight"
-  private final val PreciseTag = "precise"
+
   private final val ViewportWidthTag = "viewportWidth"
   private final val ViewportHeightTag = "viewportHeight"
+
+  private final val AspectRatioWidthTag = "aspectRatioWidth"
+  private final val AspectRatioHeightTag = "aspectRatioHeight"
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
@@ -313,6 +319,12 @@ class TextBuffer(var bufferTier: Tier = Tier.One)
     } else {
       viewport = _data.size
     }
+
+    aspectRatio =
+      if (nbt.hasKey(AspectRatioWidthTag) && nbt.hasKey(AspectRatioHeightTag))
+        (nbt.getDouble(AspectRatioWidthTag), nbt.getDouble(AspectRatioHeightTag))
+      else
+        (1, 1)
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
@@ -339,10 +351,15 @@ class TextBuffer(var bufferTier: Tier = Tier.One)
     nbt.setTag(DataTag, dataNbt)
 
     nbt.setBoolean(IsOnTag, isDisplaying)
+    nbt.setBoolean(PreciseTag, precisionMode)
+
     nbt.setInteger(MaxWidthTag, maxResolution._1)
     nbt.setInteger(MaxHeightTag, maxResolution._2)
-    nbt.setBoolean(PreciseTag, precisionMode)
+
     nbt.setInteger(ViewportWidthTag, viewport._1)
     nbt.setInteger(ViewportHeightTag, viewport._2)
+
+    nbt.setDouble(AspectRatioWidthTag, aspectRatio._1)
+    nbt.setDouble(AspectRatioHeightTag, aspectRatio._2)
   }
 }
