@@ -5,8 +5,8 @@ import totoro.ocelot.brain.entity.Memory
 import totoro.ocelot.brain.entity.traits.TieredPersistable
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.ExtendedTier.ExtendedTier
-import totoro.ocelot.brain.util.{ExtendedTier, Persistable, Tier}
 import totoro.ocelot.brain.util.Tier.Tier
+import totoro.ocelot.brain.util.{ExtendedTier, Persistable, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 
 import scala.collection.mutable

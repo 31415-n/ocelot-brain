@@ -150,7 +150,7 @@ object Demo extends App {
   /**
     * The computer can be turned on or off. By defaults it is turned off.
     */
-  computer.turnOn()
+  computer.machine.start()
 
 
   /**
@@ -215,7 +215,7 @@ object Demo extends App {
 
   println("... Turning the computer off ...")
 
-  computer.turnOff()
+  computer.machine.stop()
 
   /**
     * Necessary to successfully complete multi-threaded saving operation, and finalize other Ocelot tasks.

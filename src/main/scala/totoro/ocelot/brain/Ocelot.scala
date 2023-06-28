@@ -61,8 +61,9 @@ object Ocelot {
     NBTPersistence.registerConstructor(classOf[HDDUnmanaged].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[Screen].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[HologramProjector].getName, tieredConstructor)
-
     NBTPersistence.registerConstructor(classOf[Memory].getName, new MemoryConstructor())
+    NBTPersistence.registerConstructor(classOf[Server].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[ComponentBus].getName, tieredConstructor)
 
     FontUtils.init()
 

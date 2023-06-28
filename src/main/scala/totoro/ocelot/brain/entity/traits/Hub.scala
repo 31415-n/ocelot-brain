@@ -115,16 +115,19 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
+
     nbt.getTagList(PlugsTag, NBT.TAG_COMPOUND).toArray[NBTTagCompound].
       zipWithIndex.foreach {
       case (tag, index) => plugs(Direction(index)).node.load(tag)
     }
+
     nbt.getTagList(QueueTag, NBT.TAG_COMPOUND).foreach(
       (tag: NBTTagCompound) => {
         val side = tag.getDirection(SideTag)
         val packet = Network.newPacket(tag)
         queue += side -> packet
       })
+
     if (nbt.hasKey(RelayCooldownTag)) {
       relayCooldown = nbt.getInteger(RelayCooldownTag)
     }
@@ -132,6 +135,7 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
+
     nbt.setNewTagList(PlugsTag, (0 until Direction.values.size).map(index => {
       val plugNbt = new NBTTagCompound()
       val plug = plugs(Direction(index))
@@ -139,6 +143,7 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
         plug.node.save(plugNbt)
       plugNbt
     }))
+
     nbt.setNewTagList(QueueTag, queue.map {
       case (sourceSide, packet) =>
         val tag = new NBTTagCompound()
@@ -146,6 +151,7 @@ trait Hub extends Environment with SidedEnvironment with WorkspaceAware {
         packet.save(tag)
         tag
     })
+
     if (relayCooldown > 0) {
       nbt.setInteger(RelayCooldownTag, relayCooldown)
     }

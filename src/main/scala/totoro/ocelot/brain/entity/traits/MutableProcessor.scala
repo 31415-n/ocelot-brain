@@ -11,6 +11,8 @@ import totoro.ocelot.brain.entity.machine.Architecture
   * `computer.setArchitecture`).
   */
 trait MutableProcessor extends Processor {
+  protected var _architecture: Class[_ <: Architecture] = _
+
   /**
     * Get a list of all architectures supported by this processor.
     */

@@ -1,10 +1,7 @@
 package totoro.ocelot.brain.entity.traits
 
-import totoro.ocelot.brain.Ocelot
 import totoro.ocelot.brain.entity.machine.Architecture
-import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.util.Persistable
-import totoro.ocelot.brain.workspace.Workspace
 
 /**
   * Use this interface to implement item drivers extending the number of
@@ -23,8 +20,6 @@ trait Processor extends CallBudget with Persistable {
     */
   def supportedComponents: Int
 
-  protected var _architecture: Class[_ <: Architecture] = _
-
   /**
     * The architecture of this CPU.
     *
@@ -35,27 +30,5 @@ trait Processor extends CallBudget with Persistable {
     *
     * @return the type of this CPU's architecture.
     */
-  def architecture: Class[_ <: Architecture] = _architecture
-
-  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
-    super.load(nbt, workspace)
-    if (nbt.hasKey(Processor.ArchTag)) {
-      val archClass = nbt.getString(Processor.ArchTag)
-      if (archClass.nonEmpty) try
-        _architecture = Class.forName(archClass).asSubclass(classOf[Architecture])
-      catch {
-        case t: Throwable =>
-          Ocelot.log.warn("Failed getting class for CPU architecture. Resetting CPU to use the default.", t)
-      }
-    }
-  }
-
-  override def save(nbt: NBTTagCompound): Unit = {
-    super.save(nbt)
-    nbt.setString(Processor.ArchTag, architecture.getName)
-  }
-}
-
-object Processor {
-  val ArchTag = "archClass"
+  def architecture: Class[_ <: Architecture]
 }

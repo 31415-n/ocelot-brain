@@ -7,10 +7,7 @@ import totoro.ocelot.brain.network.Node
 import totoro.ocelot.brain.workspace.Workspace
 
 trait Computer extends Environment with MachineHost with ComponentInventory {
-
-  private lazy val _machine = MachineAPI.create(this)
-
-  override def machine: Machine = _machine
+  lazy val machine: Machine = MachineAPI.create(this)
 
   override def node: Node = machine.node
 
@@ -79,13 +76,14 @@ trait Computer extends Environment with MachineHost with ComponentInventory {
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
+
     machine.load(nbt.getCompoundTag(ComputerTag), workspace)
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
-    if (machine != null) {
+
+    if (machine != null)
       nbt.setNewCompoundTag(ComputerTag, machine.save)
-    }
   }
 }

@@ -48,6 +48,7 @@ object EventBus {
 
   def sendDiskActivity(node: Node, activityType: ActivityType): Unit = {
     val diskActivitySoundDelay = Settings.get.diskActivitySoundDelay
+
     if (diskActivitySoundDelay >= 0) {
       fileSystemAccessTimeouts.get(node) match {
         case Some(timeout) if timeout > System.currentTimeMillis() => // Cooldown.

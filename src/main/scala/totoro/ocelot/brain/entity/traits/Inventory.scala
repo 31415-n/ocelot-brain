@@ -17,7 +17,7 @@ import scala.collection.mutable
 trait Inventory extends WorkspaceAware with Persistable {
   // invariant: (i, e) ∈ slots iff (e, i) ∈ entitySlotIndices
   // in other words, entitySlotIndices is the inverse of slots
-  private val slots: mutable.HashMap[Int, Entity] = mutable.HashMap.empty
+  private val slots: mutable.SortedMap[Int, Entity] = mutable.SortedMap.empty
   private val entitySlotIndices: mutable.HashMap[Entity, Int] = mutable.HashMap.empty
 
   /**
@@ -146,9 +146,17 @@ trait Inventory extends WorkspaceAware with Persistable {
   final class InventoryProxy extends Iterable[Slot] {
     val owner: Inventory = Inventory.this
 
-    override def iterator: Iterator[Slot] = slots.keysIterator.map(slot)
+    // Non-sorted by slot index
+//    override def iterator: Iterator[Slot] = slots.keysIterator.map(slot)
+//    def entities: Iterable[Entity] = entitySlotIndices.view.keys
 
-    def entities: Iterable[Entity] = entitySlotIndices.view.keys
+    override def iterator: Iterator[Slot] = slots
+      .keysIterator
+      .map(slot)
+
+    def entities: Iterable[Entity] = slots
+      .view
+      .values
 
     def apply(index: Int): Slot = slot(index)
 

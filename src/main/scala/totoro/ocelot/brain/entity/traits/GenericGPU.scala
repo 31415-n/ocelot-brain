@@ -5,7 +5,7 @@ import totoro.ocelot.brain.entity.machine._
 import totoro.ocelot.brain.entity.{GpuTextBuffer, TextBuffer}
 import totoro.ocelot.brain.nbt.{NBTTagCompound, NBTTagList}
 import totoro.ocelot.brain.network.{Message, Network, Node, Visibility}
-import totoro.ocelot.brain.util.{ColorDepth, ExtendedUnicodeHelper, GenericTextBuffer, PackedColor, Tier}
+import totoro.ocelot.brain.util._
 import totoro.ocelot.brain.workspace.Workspace
 
 import scala.math.Ordering.Implicits.infixOrderingOps

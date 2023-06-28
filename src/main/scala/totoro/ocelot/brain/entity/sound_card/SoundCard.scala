@@ -3,7 +3,7 @@ package totoro.ocelot.brain.entity.sound_card
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.result
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered, TieredPersistable}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
