@@ -180,7 +180,7 @@ abstract class LuaStateFactory {
 
     var tmpLibFile: File = null
     if (!Strings.isNullOrEmpty(Settings.get.forceNativeLibPathFirst)) {
-      val libraryTest = new File(Settings.get.forceNativeLibPathFirst, libraryName);
+      val libraryTest = new File(Settings.get.forceNativeLibPathFirst, libraryName)
       if (libraryTest.canRead) {
         tmpLibFile = libraryTest
         currentLib = libraryTest.getAbsolutePath

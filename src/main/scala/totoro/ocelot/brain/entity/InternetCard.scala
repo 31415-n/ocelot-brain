@@ -4,8 +4,8 @@ import totoro.ocelot.brain.entity.machine.{AbstractValue, Arguments, Callback, C
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered}
 import totoro.ocelot.brain.network._
-import totoro.ocelot.brain.util.{ThreadPoolFactory, Tier}
 import totoro.ocelot.brain.util.Tier.Tier
+import totoro.ocelot.brain.util.{ThreadPoolFactory, Tier}
 import totoro.ocelot.brain.{Constants, Ocelot, Settings}
 
 import java.io._

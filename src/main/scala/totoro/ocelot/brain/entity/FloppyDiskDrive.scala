@@ -16,6 +16,8 @@ class FloppyDiskDrive extends Entity with Environment with ComponentInventory wi
     case _ => None
   }
 
+  def eject(): Boolean = inventory.clear()
+
   // ----------------------------------------------------------------------- //
 
   private final lazy val deviceInfo = Map(
@@ -36,7 +38,7 @@ class FloppyDiskDrive extends Entity with Environment with ComponentInventory wi
 
   @Callback(doc = """function([velocity:number]):boolean -- Eject the currently present medium from the drive.""")
   def eject(context: Context, args: Arguments): Array[AnyRef] = {
-    result(inventory.clear())
+    result(eject())
   }
 
   @Callback(doc = """function(): string -- Return the internal floppy disk address""")

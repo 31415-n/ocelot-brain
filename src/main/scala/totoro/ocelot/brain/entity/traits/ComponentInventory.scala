@@ -8,7 +8,7 @@ import totoro.ocelot.brain.workspace.Workspace
   * Takes care of properly connecting, updating and disconnecting
   * the components in the inventory
   */
-trait ComponentInventory extends Inventory with Environment with Entity {
+trait ComponentInventory extends Entity with Environment with Inventory {
   private var isLoading = false
 
   override def initialize(): Unit = {
@@ -32,16 +32,16 @@ trait ComponentInventory extends Inventory with Environment with Entity {
     entity match {
       // when loading, we don't want to connect components right away
       case environment: Environment =>
-        if (!isLoading) {
-          node.connect(environment.node)
-        }
+        if (!isLoading)
+          connectItemNode(environment.node)
     }
   }
 
   override def onEntityRemoved(slot: Slot, entity: Entity): Unit = {
     entity match {
       case environment: Environment =>
-        environment.node.remove()
+        if (environment.node != null)
+          environment.node.remove()
     }
 
     super.onEntityRemoved(slot, entity)
@@ -67,15 +67,23 @@ trait ComponentInventory extends Inventory with Environment with Entity {
     isLoading = false
   }
 
-  private def connectComponents(): Unit = {
+  protected def connectComponents(): Unit = {
     inventory.entities.foreach {
-      case environment: Environment => node.connect(environment.node)
+      case environment: Environment =>
+        connectItemNode(environment.node)
     }
   }
 
-  private def disconnectComponents(): Unit = {
+  protected def disconnectComponents(): Unit = {
     inventory.entities.foreach {
-      case environment: Environment => environment.node.remove()
+      case environment: Environment =>
+        if (environment.node != null)
+          environment.node.remove()
     }
+  }
+
+  protected def connectItemNode(node: Node): Unit = {
+    if (this.node != null && node != null)
+      this.node.connect(node)
   }
 }

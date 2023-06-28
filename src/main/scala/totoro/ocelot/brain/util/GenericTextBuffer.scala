@@ -304,7 +304,7 @@ class GenericTextBuffer(var width: Int, var height: Int, initialFormat: PackedCo
     nbt.setInteger("background", _background.value)
     nbt.setBoolean("backgroundIsPalette", _background.isPalette)
 
-    NbtDataStream.setShortArray(nbt, "colors", color.flatten.map(_.toShort))
+    NbtDataStream.setShortArray(nbt, "colors", color.flatten)
   }
 
   def lineToString(y: Int): String = {

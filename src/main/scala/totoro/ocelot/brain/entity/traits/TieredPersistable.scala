@@ -1,8 +1,8 @@
 package totoro.ocelot.brain.entity.traits
 
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.util.{Persistable, Tier}
 import totoro.ocelot.brain.util.Tier.Tier
+import totoro.ocelot.brain.util.{Persistable, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 
 /**

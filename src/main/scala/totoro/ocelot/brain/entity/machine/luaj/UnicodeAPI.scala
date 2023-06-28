@@ -1,6 +1,5 @@
 package totoro.ocelot.brain.entity.machine.luaj
 
-import java.util.function.IntUnaryOperator
 import li.cil.repack.org.luaj.vm2.{LuaValue, Varargs}
 import totoro.ocelot.brain.entity.machine.ScalaClosure._
 import totoro.ocelot.brain.util.{ExtendedUnicodeHelper, FontUtils}
@@ -53,9 +52,7 @@ class UnicodeAPI(owner: LuaJLuaArchitecture) extends LuaJAPI(owner) {
 
     unicode.set("wlen", (args: Varargs) => {
       val value = args.checkjstring(1)
-      LuaValue.valueOf(value.codePoints.map(new IntUnaryOperator {
-        override def applyAsInt(ch: Int): Int = math.max(1, FontUtils.wcwidth(ch))
-      }).sum)
+      LuaValue.valueOf(value.codePoints.map((ch: Int) => math.max(1, FontUtils.wcwidth(ch))).sum)
     })
 
     unicode.set("wtrunc", (args: Varargs) => {

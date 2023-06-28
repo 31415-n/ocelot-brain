@@ -18,6 +18,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
   def this(node: Node) = {
     this()
     addNew(node)
+    node.onConnect(node)
   }
 
   data.values.foreach(node => {
@@ -131,7 +132,7 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
   def remove(node: Node): Boolean = {
     data.remove(node.address) match {
       case Some(entry) =>
-        new Network(node)
+        node.network = null
         val subGraphs = entry.remove()
         val targets = Iterable(node) ++ (entry.data.reachability match {
           case Visibility.None => Iterable.empty[Node]
@@ -140,6 +141,9 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
         })
         handleSplit(subGraphs)
         targets.foreach(_.onDisconnect(node))
+
+        // FIXME: in OpenComputers, node.network is assigned to null here instead!
+        new Network(node)
         true
       case _ => false
     }
@@ -370,6 +374,21 @@ object Network {
   }
 
   /**
+   * Creates a new network with the specified node as its initial node.
+   * <br>
+   * This can be used to create networks that are not bound to any tile
+   * entity. For example, this is used to create the internal networks of
+   * robots.
+   *
+   * @param node the node to create the network for.
+   * @throws IllegalArgumentException if the node already is in a network.
+   */
+  def joinNewNetwork(node: Node): Unit = {
+    if (node.network == null)
+      new Network(node)
+  }
+
+  /**
     * Removes a wireless endpoint from the wireless network.
     *
     * This must be called when an endpoint becomes invalid, otherwise it will
@@ -436,7 +455,7 @@ object Network {
     * @param reachability the reachability of the node.
     * @return a new node builder.
     */
-  def newNode(host: Environment, reachability: Visibility, address: String = null) = new NodeBuilder(host, reachability, address)
+  def newNode(host: Environment, reachability: Visibility, address: String = null): NodeBuilder = new NodeBuilder(host, reachability, address)
 
   /**
     * Creates a new network packet as it would be sent or received by a

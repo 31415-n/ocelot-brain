@@ -1,6 +1,5 @@
 package totoro.ocelot.brain.entity.machine.luac
 
-import java.util.function.IntUnaryOperator
 import totoro.ocelot.brain.entity.machine.ExtendedLuaState.extendLuaState
 import totoro.ocelot.brain.util.{ExtendedUnicodeHelper, FontUtils}
 
@@ -76,9 +75,7 @@ class UnicodeAPI(owner: NativeLuaArchitecture) extends NativeLuaAPI(owner) {
 
     lua.pushScalaFunction(lua => {
       val value = lua.checkString(1)
-      lua.pushInteger(value.codePoints().map(new IntUnaryOperator {
-        override def applyAsInt(ch: Int): Int = math.max(1, FontUtils.wcwidth(ch))
-      }).sum)
+      lua.pushInteger(value.codePoints().map((ch: Int) => math.max(1, FontUtils.wcwidth(ch))).sum)
       1
     })
     lua.setField(-2, "wlen")
