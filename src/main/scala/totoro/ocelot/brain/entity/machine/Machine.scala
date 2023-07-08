@@ -389,6 +389,10 @@ class Machine(val host: MachineHost) extends Environment with Context with Runna
     success
   }
 
+  override def getRemainingCallBudget: Double = callBudget
+
+  override def getMaxCallBudget: Double = maxCallBudget
+
   // ----------------------------------------------------------------------- //
 
   @Callback(doc = """function():boolean -- Starts the computer. Returns true if the state changed.""")

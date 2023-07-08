@@ -180,4 +180,10 @@ trait Context {
     * @return `true` if the signal was queued; `false` otherwise.
     */
   def signal(name: String, args: Any*): Boolean
+
+  // Ocelot extensions /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  def getRemainingCallBudget: Double
+
+  def getMaxCallBudget: Double
 }
