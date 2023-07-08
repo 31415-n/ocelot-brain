@@ -52,8 +52,8 @@ class LinkedCard
   @Callback(doc = """function(data...) -- Sends the specified data to the card this one is linked to.""")
   def send(context: Context, args: Arguments): Array[AnyRef] = {
     val endpoints = QuantumNetwork.getEndpoints(tunnel).filter(_ != this)
-    // Cast to iterable to use Scala's toArray instead of the Arguments' one (which converts byte arrays to Strings).
-    val packet = Network.newPacket(node.address, null, 0, args.toArray)
+    // Arguments.toArray converts byte arrays to Strings. The use of iterator() avoids that.
+    val packet = Network.newPacket(node.address, null, 0, args.iterator().toArray)
     for (endpoint <- endpoints) {
       endpoint.receivePacket(packet)
     }
