@@ -2,7 +2,7 @@ package totoro.ocelot.brain
 
 import com.google.common.net.InetAddresses
 import com.typesafe.config._
-import totoro.ocelot.brain.util.ColorDepth
+import totoro.ocelot.brain.util.{ColorDepth, InternetFilteringRule}
 
 import java.io._
 import java.net.{Inet4Address, InetAddress}
@@ -93,10 +93,13 @@ class Settings(val config: Config) {
   val httpEnabled: Boolean = config.getBoolean("internet.enableHttp")
   val httpHeadersEnabled: Boolean = config.getBoolean("internet.enableHttpHeaders")
   val tcpEnabled: Boolean = config.getBoolean("internet.enableTcp")
-  val httpHostBlacklist: Array[Settings.AddressValidator] =
-    Array(config.getStringList("internet.blacklist").asScala.toArray.map(new Settings.AddressValidator(_)): _*)
-  val httpHostWhitelist: Array[Settings.AddressValidator] =
-    Array(config.getStringList("internet.whitelist").asScala.toArray.map(new Settings.AddressValidator(_)): _*)
+  val internetFilteringRules: Array[InternetFilteringRule] = config.getStringList("internet.filteringRules")
+    .asScala
+    .filter(p => !p.equals("removeme"))
+    .map(new InternetFilteringRule(_))
+    .toArray
+  val internetFilteringRulesObserved: Boolean = !config.getStringList("internet.filteringRules")
+    .contains("removeme")
   val httpTimeout: Int = (config.getInt("internet.requestTimeout") max 0) * 1000
   val maxConnections: Int = config.getInt("internet.maxTcpConnections") max 0
   val internetThreads: Int = config.getInt("internet.threads") max 1
@@ -198,6 +201,12 @@ class Settings(val config: Config) {
   val soundCardMaxDelay: Int = if (config.hasPath("soundCard.maxDelay")) config.getInt("soundCard.maxDelay") else 5000
   val soundCardQueueSize: Int = if (config.hasPath("soundCard.queueSize")) config.getInt("soundCard.queueSize") else 1024
   val soundCardChannelCount: Int = if (config.hasPath("soundCard.channelCount")) config.getInt("soundCard.channelCount") else 8
+
+  def internetFilteringRulesInvalid: Boolean = internetFilteringRules.exists(p => p.invalid())
+
+  def internetAccessConfigured: Boolean = httpEnabled || tcpEnabled
+
+  def internetAccessAllowed: Boolean = internetAccessConfigured && !internetFilteringRulesInvalid
 }
 
 object Settings {

@@ -2,7 +2,12 @@ package totoro.ocelot.brain
 
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
-import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture, NativeLua54Architecture}
+import totoro.ocelot.brain.entity.machine.luac.{
+  LuaStateFactory,
+  NativeLua52Architecture,
+  NativeLua53Architecture,
+  NativeLua54Architecture,
+}
 import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
 import totoro.ocelot.brain.loot.Loot
@@ -68,6 +73,24 @@ object Ocelot {
     FontUtils.init()
 
     ThreadPoolFactory.safePools.foreach(_.newThreadPool())
+
+    if (Settings.get.internetAccessConfigured) {
+      if (Settings.get.internetFilteringRulesInvalid) {
+        Ocelot.log.warn("####################################################")
+        Ocelot.log.warn("#                                                  #")
+        Ocelot.log.warn("#  Could not parse Internet Card filtering rules!  #")
+        Ocelot.log.warn("#  Review the server log and adjust the filtering  #")
+        Ocelot.log.warn("#  list to ensure it is appropriately configured.  #")
+        Ocelot.log.warn("#          (brain.conf => filteringRules)          #")
+        Ocelot.log.warn("# Internet access has been automatically disabled. #")
+        Ocelot.log.warn("#                                                  #")
+        Ocelot.log.warn("####################################################")
+      } else {
+        Ocelot.log.info(
+          f"Successfully applied ${Settings.get.internetFilteringRules.length} Internet Card filtering rules."
+        )
+      }
+    }
   }
 
   private def postInit(): Unit = {
