@@ -39,7 +39,7 @@ class Rack
       case _ => None
     }
 
-    val oldSide = nodeMapping(slot)(connectableIndex)
+    val oldSide = nodeMapping(slot)(connectableIndex + 1)
     if (oldSide == newSide)
       return
 
@@ -47,7 +47,7 @@ class Rack
     val mountable = getMountable(slot)
 
     if (mountable != null && oldSide.isDefined) {
-      if (connectableIndex == 0) {
+      if (connectableIndex == -1) {
         val node = mountable.node
         val plug = sidedNode(oldSide.get)
 
@@ -55,16 +55,16 @@ class Rack
           node.disconnect(plug)
         }
       }
-      else {
+      else if (connectableIndex >= 0) {
         snifferNodes(slot)(connectableIndex - 1).remove()
       }
     }
 
-    nodeMapping(slot)(connectableIndex) = newSide
+    nodeMapping(slot)(connectableIndex + 1) = newSide
 
     // Establish connection / add sniffer node.
     if (mountable != null && newSide.isDefined) {
-      if (connectableIndex == 0) {
+      if (connectableIndex == -1) {
         val node = mountable.node
         val plug = sidedNode(newSide.get)
 
@@ -72,7 +72,7 @@ class Rack
           node.connect(plug)
         }
       }
-      else if (connectableIndex < mountable.getConnectableCount) {
+      else if (connectableIndex >= 0 && connectableIndex < mountable.getConnectableCount) {
         val connectable = mountable.getConnectableAt(connectableIndex)
         if (connectable != null && connectable.node != null) {
           if (connectable.node.network == null) {
@@ -99,7 +99,7 @@ class Rack
         case _ => // Not connected to this side.
       }
       for (connectableIndex <- 0 until 3) {
-        mapping(connectableIndex) match {
+        mapping(connectableIndex + 1) match {
           case Some(side) if side == plugSide =>
             val mountable = getMountable(slot)
             if (mountable != null && connectableIndex < mountable.getConnectableCount) {
