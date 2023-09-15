@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
-import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Tiered, WakeMessageAware}
+import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, RackBusConnectable, Tiered, WakeMessageAware}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
@@ -12,10 +12,16 @@ import totoro.ocelot.brain.{Constants, Settings}
 
 import scala.collection.mutable
 
-class NetworkCard extends Entity with Environment with WakeMessageAware with DeviceInfo with Tiered {
-  override val node: Component = Network.newNode(this, Visibility.Network).
-    withComponent("modem", Visibility.Neighbors).
-    create()
+class NetworkCard
+  extends Entity
+    with Environment
+    with RackBusConnectable
+    with WakeMessageAware
+    with DeviceInfo
+    with Tiered {
+
+  override val node: Component =
+    Network.newNode(this, Visibility.Network).withComponent("modem", Visibility.Neighbors).create()
 
   protected val openPorts = mutable.Set.empty[Int]
 
@@ -32,7 +38,7 @@ class NetworkCard extends Entity with Environment with WakeMessageAware with Dev
     DeviceAttribute.Version -> "4.0",
     DeviceAttribute.Capacity -> Settings.get.maxNetworkPacketSize.toString,
     DeviceAttribute.Size -> maxOpenPorts.toString,
-    DeviceAttribute.Width -> Settings.get.maxNetworkPacketParts.toString
+    DeviceAttribute.Width -> Settings.get.maxNetworkPacketParts.toString,
   )
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
@@ -57,8 +63,7 @@ class NetworkCard extends Entity with Environment with WakeMessageAware with Dev
       val closed = openPorts.nonEmpty
       openPorts.clear()
       result(closed)
-    }
-    else {
+    } else {
       val port = checkPort(args.checkInteger(0))
       result(openPorts.remove(port))
     }
@@ -125,7 +130,7 @@ class NetworkCard extends Entity with Environment with WakeMessageAware with Dev
     false
   }
 
-  def receivePacket(packet: Packet): Unit = receivePacket(packet, 0)
+  override def receivePacket(packet: Packet): Unit = receivePacket(packet, 0)
 
   // ----------------------------------------------------------------------- //
 

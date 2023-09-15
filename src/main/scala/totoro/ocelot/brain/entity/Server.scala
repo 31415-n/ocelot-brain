@@ -61,24 +61,17 @@ class Server(override var tier: Tier)
   // ----------------------------------------------------------------------- //
   // RackMountable
 
-  override def getConnectableCount: Int = inventory.count(slot => {
-    slot.get match {
-      case Some(_: RackBusConnectable) => true
-      case _ => false
-    }
-  })
+  override def getConnectableCount: Int = inventory.entities.count(_.isInstanceOf[RackBusConnectable])
 
   override def getConnectableAt(index: Int): RackBusConnectable = {
-    inventory.iterator.zipWithIndex.foreach { case (slot, i) =>
-      slot.get match {
-        case Some(busConnectable: RackBusConnectable) =>
-          if (i == index)
-            busConnectable
-        case _ =>
-      }
+    val connectables: Iterator[RackBusConnectable] = inventory.entities.iterator.collect {
+      case busConnectable: RackBusConnectable => busConnectable
     }
 
-    throw new Exception("unable to obtain connectable")
+    connectables
+      .drop(index)
+      .nextOption()
+      .getOrElse(throw new IndexOutOfBoundsException(s"cannot find connectable $index"))
   }
 
   // ----------------------------------------------------------------------- //

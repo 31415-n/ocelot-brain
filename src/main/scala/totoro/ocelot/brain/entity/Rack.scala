@@ -108,7 +108,7 @@ class Rack
                 if (connectable.node.network == null) {
                   Network.joinNewNetwork(connectable.node)
                 }
-                connectable.node.connect(snifferNodes(slot)(connectableIndex - 1))
+                connectable.node.connect(snifferNodes(slot)(connectableIndex))
               }
             }
           case _ => // Not connected to this side.
