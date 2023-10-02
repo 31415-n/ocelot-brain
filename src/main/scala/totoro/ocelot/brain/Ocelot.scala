@@ -25,6 +25,8 @@ object Ocelot {
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
 
+  var configPath: Option[String] = None
+
   /**
     * This `preInit`, `init`, `postInit` thing is a legacy from Minecraft/Forge life cycle.
     * It can be replaced with simple `initialization` procedure in the future.
@@ -32,7 +34,7 @@ object Ocelot {
 
   private def preInit(): Unit = {
     log.info("Loading configuration...")
-    Settings.load(new File("brain.conf"))
+    Settings.load(new File(configPath.getOrElse("brain.conf")))
   }
 
   private def init(): Unit = {

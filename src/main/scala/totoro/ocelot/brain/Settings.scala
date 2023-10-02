@@ -255,7 +255,7 @@ object Settings {
     }
   }
 
-  val cidrPattern: Regex = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})""".r
+  private val cidrPattern: Regex = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})""".r
 
   //noinspection UnstableApiUsage
   class AddressValidator(val value: String) {
