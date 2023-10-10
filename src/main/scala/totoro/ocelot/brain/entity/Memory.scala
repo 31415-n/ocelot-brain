@@ -5,9 +5,9 @@ import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClas
 import totoro.ocelot.brain.entity.traits.{CallBudget, DeviceInfo, Entity, Environment, Tiered, TieredPersistable}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
-import totoro.ocelot.brain.util.ExtendedTier
 import totoro.ocelot.brain.util.ExtendedTier.ExtendedTier
 import totoro.ocelot.brain.util.Tier.Tier
+import totoro.ocelot.brain.util.{ExtendedTier, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 import totoro.ocelot.brain.{Constants, Settings}
 
@@ -34,12 +34,9 @@ class Memory(var memoryTier: ExtendedTier)
 
   override def getDeviceInfo: Map[String, String] = deviceInfo
 
-  override def amount: Double = {
-    val sizes = Settings.get.ramSizes
-    sizes(memoryTier.id)
-  }
+  override def amount: Double = Settings.get.ramSizes(memoryTier.id)
 
-  override def callBudget: Double = Settings.get.callBudgets(tier.id)
+  override def callBudget: Double = Settings.get.callBudgets(tier.id max Tier.One.id min Tier.Three.id)
 
   // Cannot use the implementation from TieredPersistable because we need the extended tier
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {

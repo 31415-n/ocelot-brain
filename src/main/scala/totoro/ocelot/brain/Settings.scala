@@ -211,7 +211,7 @@ class Settings(val config: Config) {
 
 object Settings {
   val resourceDomain = "opencomputers"
-  val scriptPath: String = "/assets/" + resourceDomain + "/lua/"
+  val scriptPath: String = s"/assets/$resourceDomain/lua/"
   val screenResolutionsByTier: Array[(Int, Int)] = Array((50, 16), (80, 25), (160, 50))
   val screenDepthsByTier: Array[ColorDepth.Value] = Array(ColorDepth.OneBit, ColorDepth.FourBit, ColorDepth.EightBit)
   val deviceComplexityByTier: Array[Int] = Array(12, 24, 32, 9001)
