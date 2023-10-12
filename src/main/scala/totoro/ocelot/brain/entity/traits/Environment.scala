@@ -179,6 +179,19 @@ trait Environment extends Persistable with LifeCycle {
 
   // ----------------------------------------------------------------------- //
 
+  override def initialize(): Unit = {
+    super.initialize()
+
+    // NOTE: OpenComputers schedules newly created tile entities for joining/creating a new network.
+    // This code is subtly different:
+    // - our environments (as far as I know) are not limited to what would be tile entities in OC
+    // - there's no deferred execution
+    // The only place in Ocelot where this method is called is Workspace (whenever an entity is added to it).
+    // Since workspaces only hold "tile entities", the first point shouldn't cause any problems.
+    // And the other one? No idea.
+    Network.joinOrCreateNetwork(this)
+  }
+
   override def dispose(): Unit = {
     if (node != null) node.remove()
     super.dispose()

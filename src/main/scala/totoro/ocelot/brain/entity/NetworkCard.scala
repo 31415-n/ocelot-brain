@@ -3,6 +3,7 @@ package totoro.ocelot.brain.entity
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, RackBusConnectable, Tiered, WakeMessageAware}
+import totoro.ocelot.brain.event.EventBus
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Tier
@@ -87,6 +88,7 @@ class NetworkCard
     val port = checkPort(args.checkInteger(1))
     val packet = Network.newPacket(node.address, address, port, args.drop(2).toArray)
     doSend(packet)
+    networkActivity()
     result(true)
   }
 
@@ -95,6 +97,7 @@ class NetworkCard
     val port = checkPort(args.checkInteger(0))
     val packet = Network.newPacket(node.address, null, port, args.drop(1).toArray)
     doBroadcast(packet)
+    networkActivity()
     result(true)
   }
 
@@ -124,6 +127,7 @@ class NetworkCard
   override protected def isPacketAccepted(packet: Packet, distance: Double): Boolean = {
     if (super.isPacketAccepted(packet, distance)) {
       if (openPorts.contains(packet.port)) {
+        networkActivity()
         return true
       }
     }
@@ -157,4 +161,8 @@ class NetworkCard
   protected def checkPort(port: Int): Int =
     if (port < 1 || port > 0xFFFF) throw new IllegalArgumentException("invalid port number")
     else port
+
+  private def networkActivity(): Unit = {
+    EventBus.sendNetworkActivity(node)
+  }
 }

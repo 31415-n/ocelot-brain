@@ -362,7 +362,9 @@ class FileSystem(val fileSystem: FileSystemTrait, var label: Label, val speed: I
     activityType match {
       case Some(activityType) =>
         EventBus.sendDiskActivity(node, activityType)
-        if (container != null) container.lastDiskAccess = System.currentTimeMillis()
+
+        if (container != null)
+          container.resetLastDiskAccess()
       case _ =>
     }
   }

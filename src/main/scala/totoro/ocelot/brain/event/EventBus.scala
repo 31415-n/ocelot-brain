@@ -59,6 +59,10 @@ object EventBus {
     }
   }
 
+  def sendNetworkActivity(node: Node): Unit = {
+    send(NetworkActivityEvent(node.address))
+  }
+
   final case class Subscription private[EventBus](private val listener: PartialFunction[Event, Unit]) {
     // does not immediately remove the subscription to avoid messing up iterators during dispatch
     def cancel(): Unit =

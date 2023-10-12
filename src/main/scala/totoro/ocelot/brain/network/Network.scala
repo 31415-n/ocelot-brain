@@ -1,8 +1,10 @@
 package totoro.ocelot.brain.network
 
-import totoro.ocelot.brain.entity.traits.Environment
+import totoro.ocelot.brain.entity.traits.{Entity, Environment, SidedEnvironment}
 import totoro.ocelot.brain.nbt._
 import totoro.ocelot.brain.network.Visibility.Visibility
+import totoro.ocelot.brain.util.Direction
+import totoro.ocelot.brain.util.Direction.Direction
 import totoro.ocelot.brain.{Ocelot, Settings}
 
 import scala.collection.mutable
@@ -356,6 +358,26 @@ class Network private(private val data: mutable.Map[String, Network.Vertex]) {
 
 
 object Network {
+  // the AnyRef is gross -- in OC this is TileEntity, but Ocelot does not have a handy trait like that...
+  def joinOrCreateNetwork(entity: AnyRef): Unit = {
+    for (side <- Direction.values) {
+      getNetworkNode(entity, side) match {
+        case Some(node) if node.network == null => joinNewNetwork(node)
+        case _ =>
+      }
+    }
+  }
+
+  private def getNetworkNode(entity: AnyRef, side: Direction): Option[Node] = {
+    if (entity != null) {
+      entity match {
+        case env: SidedEnvironment => Option(env.sidedNode(side))
+        case env: Environment => Option(env.node)
+        case _ => None
+      }
+    } else None
+  }
+
   /**
     * Makes a wireless endpoint join the wireless network defined by the mod.
     *

@@ -233,7 +233,9 @@ trait DiskUnmanaged extends Disk with WorkspaceAware {
     activityType match {
       case Some(activityType) =>
         EventBus.sendDiskActivity(node, activityType)
-        if (container != null) container.lastDiskAccess = System.currentTimeMillis()
+
+        if (container != null)
+          container.resetLastDiskAccess()
       case _ =>
     }
   }
