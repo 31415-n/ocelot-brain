@@ -64,22 +64,31 @@ class EEPROM extends Entity with Environment with DeviceInfo {
   // ----------------------------------------------------------------------- //
 
   def getBytes: Array[Byte] = {
+    // Raw bytes
     if (codeBytes.isDefined) {
-      // Raw bytes
       codeBytes.get
-    } else if (codeURL.isDefined) {
-      // URL
+    }
+    // URL
+    else if (codeURL.isDefined) {
       Using.resource(codeURL.get.openStream()) { input =>
         try {
           IOUtils.toByteArray(input)
-        } catch {
+        }
+        catch {
           case _: IOException => Array.empty
         }
       }
-    } else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
-      // Local file
-      Files.readAllBytes(codePath.get)
-    } else {
+    }
+    // Local file
+    else if (codePath.isDefined && !Files.isDirectory(codePath.get)) {
+      try {
+        Files.readAllBytes(codePath.get)
+      }
+      catch {
+        case _: IOException => Array.empty
+      }
+    }
+    else {
       Array.empty
     }
   }
