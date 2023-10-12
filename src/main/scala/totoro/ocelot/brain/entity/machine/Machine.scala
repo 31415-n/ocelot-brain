@@ -18,7 +18,14 @@ import java.util.concurrent.atomic.AtomicReference
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
-class Machine(val host: MachineHost) extends Environment with Context with Runnable with DeviceInfo with DiskActivityAware {
+class Machine(val host: MachineHost)
+  extends
+    Environment
+    with Context
+    with Runnable
+    with DeviceInfo
+    with DiskActivityAware
+{
   override val node: Component = Network.newNode(this, Visibility.Network).
     withComponent("computer", Visibility.Neighbors).
     create()

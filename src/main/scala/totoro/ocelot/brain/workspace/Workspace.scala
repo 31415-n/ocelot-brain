@@ -84,6 +84,7 @@ class Workspace(var path: Path) {
 
   def add[T <: Entity](entity: T): T = {
     entities += entity
+    entity.initialize()
     entity match {
       case wa: WorkspaceAware => wa.workspace = this
       case _ =>
@@ -94,6 +95,10 @@ class Workspace(var path: Path) {
   def getEntitiesIter: Iterator[Entity] = entities.iterator
 
   def remove[T <: Entity](entity: T): T = {
+    // We: 1. dispose 2. remove from the list 3. unset the workspace.
+    // What order should these three things really be in?
+    // ...Let's hope nothing requires a specific order.
+    entity.dispose()
     entities -= entity
     entity match {
       case wa: WorkspaceAware => if (wa.workspace == this) wa.workspace = null
@@ -106,10 +111,9 @@ class Workspace(var path: Path) {
     * Update all entities of this workspace
     */
   def update(): Unit = {
-    entities.foreach(entity => {
-      if (entity.needUpdate)
-        entity.update()
-    })
+    for (entity <- entities if entity.needUpdate) {
+      entity.update()
+    }
 
     if (!ingameTimePaused) {
       ingameTime += 1
@@ -195,6 +199,7 @@ class Workspace(var path: Path) {
     ingameTimePaused = nbt.getBoolean(TimePausedTag)
 
     // load entities
+    entities.foreach(_.dispose())
     entities.clear()
     nbt.getTagList(EntitiesTag, NBT.TAG_COMPOUND).foreach((nbt: NBTTagCompound) => {
       val entity = NBTPersistence.load(nbt, this).asInstanceOf[Entity]

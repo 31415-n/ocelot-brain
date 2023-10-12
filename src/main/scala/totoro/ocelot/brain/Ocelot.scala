@@ -2,12 +2,7 @@ package totoro.ocelot.brain
 
 import org.apache.logging.log4j.{LogManager, Logger}
 import totoro.ocelot.brain.entity._
-import totoro.ocelot.brain.entity.machine.luac.{
-  LuaStateFactory,
-  NativeLua52Architecture,
-  NativeLua53Architecture,
-  NativeLua54Architecture,
-}
+import totoro.ocelot.brain.entity.machine.luac.{LuaStateFactory, NativeLua52Architecture, NativeLua53Architecture, NativeLua54Architecture}
 import totoro.ocelot.brain.entity.machine.luaj.LuaJLuaArchitecture
 import totoro.ocelot.brain.entity.machine.{MachineAPI, Registry}
 import totoro.ocelot.brain.loot.Loot
@@ -60,16 +55,20 @@ object Ocelot {
 
     log.info("Registering entity constructors (for persistence purposes)...")
     val tieredConstructor = new TieredConstructor()
+
     NBTPersistence.registerConstructor(classOf[Case].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[Server].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[Microcontroller].getName, tieredConstructor)
+
+    NBTPersistence.registerConstructor(classOf[Screen].getName, tieredConstructor)
+    NBTPersistence.registerConstructor(classOf[HologramProjector].getName, tieredConstructor)
+
     NBTPersistence.registerConstructor(classOf[CPU].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[APU].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[GraphicsCard].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[HDDManaged].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[HDDUnmanaged].getName, tieredConstructor)
-    NBTPersistence.registerConstructor(classOf[Screen].getName, tieredConstructor)
-    NBTPersistence.registerConstructor(classOf[HologramProjector].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[Memory].getName, new MemoryConstructor())
-    NBTPersistence.registerConstructor(classOf[Server].getName, tieredConstructor)
     NBTPersistence.registerConstructor(classOf[ComponentBus].getName, tieredConstructor)
 
     FontUtils.init()

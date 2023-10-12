@@ -6,6 +6,7 @@ import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound, NBTTagIntArray}
 import totoro.ocelot.brain.network
 import totoro.ocelot.brain.network._
 import totoro.ocelot.brain.util.Direction
+import totoro.ocelot.brain.util.Direction.Direction
 import totoro.ocelot.brain.workspace.Workspace
 
 import scala.collection.mutable
@@ -17,7 +18,8 @@ class Rack
   with Hub
   with StateAware
 {
-  def getSizeInventory = 4
+  // Forge stuff
+  final val getSizeInventory: Int = 4
 
   var isRelayEnabled = false
   val lastData = new Array[NBTTagCompound](getSizeInventory)
@@ -33,30 +35,27 @@ class Rack
   val nodeMapping: Array[Array[Option[Direction.Value]]] = Array.fill(getSizeInventory)(Array.fill[Option[Direction.Value]](4)(None))
   val snifferNodes: Array[Array[network.Node]] = Array.fill(getSizeInventory)(Array.fill(3)(Network.newNode(this, Visibility.Neighbors).create()))
 
-  def connect(slot: Int, connectableIndex: Int, side: Option[Direction.Value]): Unit = {
+  def connect(slot: Int, connectableIndex: Int, side: Option[Direction]): Unit = {
     val newSide = side match {
       case Some(direction) if direction != Direction.South => Option(direction)
       case _ => None
     }
 
     val oldSide = nodeMapping(slot)(connectableIndex + 1)
-    if (oldSide == newSide)
-      return
+    if (oldSide == newSide) return
 
     // Cut connection / remove sniffer node.
     val mountable = getMountable(slot)
-
     if (mountable != null && oldSide.isDefined) {
       if (connectableIndex == -1) {
         val node = mountable.node
         val plug = sidedNode(oldSide.get)
-
         if (node != null && plug != null) {
           node.disconnect(plug)
         }
       }
       else if (connectableIndex >= 0) {
-        snifferNodes(slot)(connectableIndex - 1).remove()
+        snifferNodes(slot)(connectableIndex).remove()
       }
     }
 
@@ -67,7 +66,6 @@ class Rack
       if (connectableIndex == -1) {
         val node = mountable.node
         val plug = sidedNode(newSide.get)
-
         if (node != null && plug != null) {
           node.connect(plug)
         }
@@ -78,14 +76,13 @@ class Rack
           if (connectable.node.network == null) {
             Network.joinNewNetwork(connectable.node)
           }
-
-          connectable.node.connect(snifferNodes(slot)(connectableIndex - 1))
+          connectable.node.connect(snifferNodes(slot)(connectableIndex))
         }
       }
     }
   }
 
-  private def reconnect(plugSide: Direction.Value): Unit = {
+  private def reconnect(plugSide: Direction): Unit = {
     for (slot <- 0 until getSizeInventory) {
       val mapping = nodeMapping(slot)
       mapping(0) match {
@@ -117,42 +114,7 @@ class Rack
     }
   }
 
-  override def onEntityAdded(slot: Slot, entity: Entity): Unit = {
-    if (!isLoading) {
-      for (connectable <- 0 until 4) {
-        nodeMapping(slot.index)(connectable) = None
-      }
-      lastData(slot.index) = null
-      hasChanged(slot.index) = true
-    }
-
-    super.onEntityAdded(slot, entity)
-  }
-
-  override def onEntityRemoved(slot: Slot, entity: Entity): Unit = {
-    if (!isLoading) {
-      for (connectable <- 0 until 4) {
-        nodeMapping(slot.index)(connectable) = None
-      }
-      lastData(slot.index) = null
-    }
-
-    super.onEntityRemoved(slot, entity)
-  }
-
-  override protected def connectItemNode(node: Node): Unit = {
-    // By default create a new network for mountables. They have to
-    // be wired up manually (mapping is reset in onItemAdded).
-
-    // Implementation note: in ocelot-brain, node.remove() does not set network to null,
-    // but creates a new network and assigns the node to it instead.
-    // This is not at all how it works in OpenComputers, and it's a bit of a slippery slope in this respect.
-    // To safeguard against possible future changes, we're doing an explicit joinNewNetwork,
-    // even though currently (as in, at the time of writing this) it does nothing.
-    Network.joinNewNetwork(node)
-  }
-
-  protected def sendPacketToMountables(sourceSide: Option[Direction.Value], packet: Packet): Unit = {
+  protected def sendPacketToMountables(sourceSide: Option[Direction], packet: Packet): Unit = {
     // When a message arrives on a bus, also send it to all secondary nodes
     // connected to it. Only deliver it to that very node, if it's not the
     // sender, to avoid loops.
@@ -174,11 +136,26 @@ class Rack
     }
   }
 
-  // ----------------------------------------------------------------------- //
-  // Hub
+  // ---------------------------- traits.Rack ----------------------------
+
+  override def indexOfMountable(mountable: RackMountable): Int =
+    inventory.iterator.indexWhere(slot => slot.get.contains(mountable))
+
+  override def getMountable(slot: Int): RackMountable = inventory(slot).get match {
+    case Some(mountable: RackMountable) => mountable
+    case _ => null
+  }
+
+  override def getMountableData(slot: Int): NBTTagCompound = lastData(slot)
+
+  override def markChanged(slot: Int): Unit =
+    hasChanged.synchronized(hasChanged(slot) = true)
+
+  // ---------------------------- Hub ----------------------------
 
   override def tryEnqueuePacket(sourceSide: Option[Direction.Value], packet: Packet): Boolean = {
     sendPacketToMountables(sourceSide, packet)
+
     if (isRelayEnabled)
       super.tryEnqueuePacket(sourceSide, packet)
     else
@@ -197,15 +174,48 @@ class Rack
     reconnect(plug.side)
   }
 
-//  override val node: Component = Network.newNode(this, Visibility.Network).
-//    withComponent("rack").
-//    create()
+  // ---------------------------- ComponentInventory ----------------------------
 
-  // ----------------------------------------------------------------------- //
-  // Environment
+  override protected def connectItemNode(node: Node): Unit = {
+    // By default create a new network for mountables. They have to
+    // be wired up manually (mapping is reset in onItemAdded).
+
+    // Implementation note: in ocelot-brain, node.remove() does not set network to null,
+    // but creates a new network and assigns the node to it instead.
+    // This is not at all how it works in OpenComputers, and it's a bit of a slippery slope in this respect.
+    // To safeguard against possible future changes, we're doing an explicit joinNewNetwork,
+    // even though currently (as in, at the time of writing this) it does nothing.
+    Network.joinNewNetwork(node)
+  }
+
+  override def onEntityAdded(slot: Slot, entity: Entity): Unit = {
+    if (!isLoading) {
+      for (connectable <- 0 until 4)
+        nodeMapping(slot.index)(connectable) = None
+
+      lastData(slot.index) = null
+      hasChanged(slot.index) = true
+    }
+
+    super.onEntityAdded(slot, entity)
+  }
+
+  override def onEntityRemoved(slot: Slot, entity: Entity): Unit = {
+    if (!isLoading) {
+      for (connectable <- 0 until 4)
+        nodeMapping(slot.index)(connectable) = None
+
+      lastData(slot.index) = null
+    }
+
+    super.onEntityRemoved(slot, entity)
+  }
+
+  // ---------------------------- Environment ----------------------------
 
   override def dispose(): Unit = {
     super.dispose()
+
     disconnectComponents()
   }
 
@@ -240,7 +250,7 @@ class Rack
     }
   }
 
-  private def relayToConnectablesOnSide(message: Message, packet: Packet, sourceSide: Direction.Value): Unit = {
+  private def relayToConnectablesOnSide(message: Message, packet: Packet, sourceSide: Direction): Unit = {
     for (slot <- 0 until getSizeInventory) {
       val mountable = getMountable(slot)
       if (mountable != null) {
@@ -251,7 +261,7 @@ class Rack
               if (connectableIndex < mountable.getConnectableCount) {
                 val connectable = mountable.getConnectableAt(connectableIndex)
                 if (connectable != null && connectable.node != message.source) {
-                  snifferNodes(slot)(connectableIndex - 1).sendToNeighbors("network.message", packet)
+                  snifferNodes(slot)(connectableIndex).sendToNeighbors("network.message", packet)
                 }
               }
             case _ => // Not connected to a bus.
@@ -260,33 +270,8 @@ class Rack
       }
     }
   }
-//
-//  // ----------------------------------------------------------------------- //
-//  // SidedEnvironment
-//
-//  override def canConnect(side: Direction.Value): Boolean = side != facing
-//
-//  override def sidedNode(side: Direction.Value): network.Node = if (side != facing) super.sidedNode(side) else null
 
-  // ----------------------------------------------------------------------- //
-  // internal.Rack
-
-  override def indexOfMountable(mountable: RackMountable): Int =
-    inventory.iterator.indexWhere(slot => slot.get.contains(mountable))
-
-  override def getMountable(slot: Int): RackMountable = inventory(slot).get match {
-    case Some(mountable: RackMountable) => mountable
-    case _ => null
-  }
-
-  override def getMountableData(slot: Int): NBTTagCompound = lastData(slot)
-
-  override def markChanged(slot: Int): Unit = {
-    hasChanged.synchronized(hasChanged(slot) = true)
-  }
-
-  // ----------------------------------------------------------------------- //
-  // StateAware
+  // ---------------------------- StateAware ----------------------------
 
   override def getCurrentState: Set[StateAware.State.Value] = {
     val result = new mutable.HashSet[StateAware.State.Value]
@@ -300,7 +285,7 @@ class Rack
     result.toSet
   }
 
-  // ----------------------------------------------------------------------- //
+  // ---------------------------- Persistable ----------------------------
 
   private final val IsRelayEnabledTag = "isRelayEnabled"
   private final val NodeMappingTag = "nodeMapping"
@@ -314,12 +299,17 @@ class Rack
     super.load(nbt, workspace)
 
     isRelayEnabled = nbt.getBoolean(IsRelayEnabledTag)
-    nbt.getTagList(NodeMappingTag, NBT.TAG_INT_ARRAY).map((buses: NBTTagIntArray) =>
-      buses.getIntArray.map(id => if (id < 0 || id == Direction.South.id) None else Option(Direction(id)))).
-      copyToArray(nodeMapping)
 
-    val data = nbt.getTagList(LastDataTag, NBT.TAG_COMPOUND).
-      toArray[NBTTagCompound]
+    nbt.getTagList(NodeMappingTag, NBT.TAG_INT_ARRAY).map((buses: NBTTagIntArray) =>
+      buses
+        .getIntArray
+        .map(id => if (id < 0 || id == Direction.South.id) None else Option(Direction(id))))
+        .copyToArray(nodeMapping)
+
+    val data = nbt
+      .getTagList(LastDataTag, NBT.TAG_COMPOUND)
+      .toArray[NBTTagCompound]
+
     data.copyToArray(lastData)
 
     connectComponents()
@@ -331,12 +321,13 @@ class Rack
     super.save(nbt)
 
     nbt.setBoolean(IsRelayEnabledTag, isRelayEnabled)
-    nbt.setNewTagList(NodeMappingTag, nodeMapping.map(buses =>
-      toNbt(buses.map(side => side.fold(-1)(_.id)))))
+
+    nbt.setNewTagList(
+      NodeMappingTag,
+      nodeMapping.map(buses => toNbt(buses.map(side => side.fold(-1)(_.id))))
+    )
 
     val data = lastData.map(tag => if (tag == null) new NBTTagCompound() else tag)
     nbt.setNewTagList(LastDataTag, data)
   }
-
-  def isWorking(mountable: RackMountable): Boolean = mountable.getCurrentState.contains(StateAware.State.IsWorking)
 }
