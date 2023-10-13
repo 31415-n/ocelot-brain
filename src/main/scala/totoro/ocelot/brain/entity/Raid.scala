@@ -70,13 +70,11 @@ class Raid
         // changes (removing files and everything). The loading should not be necessary because
         // we don't have to create a new environment for a disk item — the disk is that
         // environment, it's already there — but I'd rather keep fs.save.
-        val nbt = new NBTTagCompound
-        fs.load(nbt, workspace)
 
+        //fs.load(nbt, workspace)
         fs.close()
         fs.list("/").foreach(fs.delete)
-
-        fs.save(nbt)
+        fs.save(new NBTTagCompound)
 
         fs.spaceTotal
       case _ => 0L
