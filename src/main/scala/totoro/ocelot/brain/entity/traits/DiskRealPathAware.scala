@@ -7,15 +7,37 @@ import totoro.ocelot.brain.workspace.Workspace
 import java.nio.file.{Files, InvalidPathException, Path, Paths}
 
 trait DiskRealPathAware extends Environment with Persistable with WorkspaceAware {
-  def getDefaultRealPath(fallbackAddress: String): Path = workspace.path.resolve(fallbackAddress)
+  /**
+   * Gets the default workspace path the disk should be bound, which is analogue of .minecraft/saves/save_name/opencomputers/disk_address
+   *
+   * @param address The address of filesystem
+   * @return Default workspace path the disk should be bound
+   */
+  def getDefaultRealPath(address: String): Path =
+    workspace.path.resolve(address)
 
+  /**
+   * Custom user-defined path to any "real" directory on "real" computer.
+   * It substitutes default workspace path and allows to work with files from
+   * "real" filesystem, like it's native one
+   *
+   * Getter/setter logic is required for overriding purposes in DiskManaged/RAID
+   */
   private var _customRealPath: Option[Path] = None
-  def customRealPath: Option[Path] = _customRealPath
-  def customRealPath_=(value: Option[Path]): Unit = {
-    _customRealPath = value
-  }
 
-  def getRealOrDefaultPath(fallbackAddress: String): Path =
+  def customRealPath: Option[Path] =
+    _customRealPath
+
+  def customRealPath_=(value: Option[Path]): Unit =
+    _customRealPath = value
+
+  /**
+   * Gets the actual path the disk should be bound, whether it is "custom" or "workspaced"
+   *
+   * @param fallbackAddress The address of filesystem if "customRealPath" wasn't set
+   * @return The actual path the disk should be bound
+   */
+  def getRealPath(fallbackAddress: String): Path =
     customRealPath.filter(Files.exists(_)).filter(Files.isDirectory(_)).getOrElse(getDefaultRealPath(fallbackAddress))
 
   // ----------------------------------------------------------------------- //

@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.entity
 
+import totoro.ocelot.brain.Constants
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{Computer, DeviceInfo, Hub, TieredPersistable}
@@ -10,7 +11,6 @@ import totoro.ocelot.brain.util.Direction
 import totoro.ocelot.brain.util.Direction.Direction
 import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.workspace.Workspace
-import totoro.ocelot.brain.{Constants, Settings}
 
 class Microcontroller(override var tier: Tier)
   extends Computer
@@ -113,9 +113,9 @@ class Microcontroller(override var tier: Tier)
 
   // ---------------------------- Persistable ----------------------------
 
-  private final val OutputsTag = Settings.namespace + "outputs"
-  private final val ComponentNodesTag = Settings.namespace + "componentNodes"
-  private final val SnooperTag = Settings.namespace + "snooper"
+  private final val OutputsTag = "outputs"
+  private final val ComponentNodesTag = "componentNodes"
+  private final val SnooperTag = "snooper"
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     nbt.getBooleanArray(OutputsTag)

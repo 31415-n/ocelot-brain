@@ -41,7 +41,7 @@ trait DiskManaged extends Disk with DiskRealPathAware with WorkspaceAware {
 
     // Restoring default path if component was just inserted to slot (without NBT data loading)
     // or if user has changed/deleted/renamed previously set path
-    val realPath = getRealOrDefaultPath(address.get)
+    val realPath = getRealPath(address.get)
 
     var fileSystemTrait: FileSystemTrait = FileSystemAPI.fromDirectory(
       realPath.toFile,

@@ -34,7 +34,7 @@ class Raid
           fs.node.remove()
       })
 
-      val realPath = getRealOrDefaultPath(raidAddress)
+      val realPath = getRealPath(raidAddress)
 
       val fs = FileSystemAPI.asManagedEnvironment(
         FileSystemAPI.fromDirectory(
@@ -66,11 +66,17 @@ class Raid
       case Some(disk: DiskManaged) =>
         val fs = disk.fileSystem.fileSystem
 
-        // IDK if NBT saving is required here or not
-        // fs.load(nbt)
+        // @Fingercomp about NBT saving: I think the idea here is to have buffered filesystems commit these
+        // changes (removing files and everything). The loading should not be necessary because
+        // we don't have to create a new environment for a disk item — the disk is that
+        // environment, it's already there — but I'd rather keep fs.save.
+        val nbt = new NBTTagCompound
+        fs.load(nbt, workspace)
+
         fs.close()
         fs.list("/").foreach(fs.delete)
-        // fs.save(nbt)
+
+        fs.save(nbt)
 
         fs.spaceTotal
       case _ => 0L
@@ -125,8 +131,8 @@ class Raid
 
     super.load(nbt, workspace)
 
-    if (nbt.hasKey(Settings.namespace + "fs")) {
-      val tag = nbt.getCompoundTag(Settings.namespace + "fs")
+    if (nbt.hasKey("fs")) {
+      val tag = nbt.getCompoundTag("fs")
       val address = tag.getCompoundTag("node").getString("address")
       tryCreateRaid(address)
       filesystem.foreach(fs => fs.load(tag, workspace))
@@ -142,7 +148,7 @@ class Raid
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
 
-    filesystem.foreach(fs => nbt.setNewCompoundTag(Settings.namespace + "fs", fs.save))
+    filesystem.foreach(fs => nbt.setNewCompoundTag("fs", fs.save))
 
     // Label
     label.save(nbt)
@@ -161,13 +167,13 @@ class Raid
     override def setLabel(value: String): Unit = label = Option(value).map(_.take(16)).orNull
 
     override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
-      if (nbt.hasKey(Settings.namespace + "label")) {
-        label = nbt.getString(Settings.namespace + "label")
+      if (nbt.hasKey("label")) {
+        label = nbt.getString("label")
       }
     }
 
     override def save(nbt: NBTTagCompound): Unit = {
-      nbt.setString(Settings.namespace + "label", label)
+      nbt.setString("label", label)
     }
   }
 }
