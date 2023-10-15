@@ -8,9 +8,7 @@ import scala.util.Using
 
 class TapeStorage(
   val uniqueId: String,
-  // FIXME: take `storageName` instead and don't ever save the File we're writing to.
-  //   this is how we can avoid problems if `workspace.path` changes after a `TapeStorage` is instantiated.
-  private val file: File,
+  file: => File,
   private var _size: Int,
   private var _position: Int,
 ) extends traits.TapeStorage {
@@ -18,18 +16,23 @@ class TapeStorage(
   private var data = Array.ofDim[Byte](size)
   private var modified = false
 
-  if (!file.exists()) {
-    try {
-      file.createNewFile()
-      writeFile()
-    } catch {
-      case e: Exception => Ocelot.log.error(s"Could not create tape storage $file", e)
-    }
-  } else {
-    try {
-      readFile()
-    } catch {
-      case e: Exception => Ocelot.log.error(s"Could not read tape storage $file", e)
+  {
+    // so we only evaluate `file` once in this block
+    val f = file
+
+    if (!f.exists()) {
+      try {
+        f.createNewFile()
+        writeFile(f)
+      } catch {
+        case e: Exception => Ocelot.log.error(s"Could not create tape storage $f", e)
+      }
+    } else {
+      try {
+        readFile(f)
+      } catch {
+        case e: Exception => Ocelot.log.error(s"Could not read tape storage $f", e)
+      }
     }
   }
 
@@ -112,7 +115,7 @@ class TapeStorage(
   }
 
   @throws[IOException]
-  private def readFile(): Unit = {
+  private def readFile(file: File = file): Unit = {
     Using.resource(new FileInputStream(file)) { fileStream =>
       Using.resource(new GZIPInputStream(fileStream)) { stream =>
         val version = stream.read()
@@ -137,7 +140,7 @@ class TapeStorage(
   }
 
   @throws[IOException]
-  private def writeFile(): Unit = {
+  private def writeFile(file: File = file): Unit = {
     Using.resource(new FileOutputStream(file)) { fileStream =>
       Using.resource(new GZIPOutputStream(fileStream)) { stream =>
         stream.write(1)

@@ -142,6 +142,8 @@ class TapeDrive extends Entity with Environment with DeviceInfo with Inventory {
   // persistence
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    this.workspace = workspace
+
     super.load(nbt, workspace)
 
     if (nbt.hasKey(StateTag)) {

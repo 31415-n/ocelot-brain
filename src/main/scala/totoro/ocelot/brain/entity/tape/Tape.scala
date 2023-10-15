@@ -26,7 +26,9 @@ class Tape(var kind: Tape.Kind, private var storageName: Option[String] = None)
 
   def lengthMinutes: Float = Tape.lengthMinutes(kind)
 
-  // be careful: this method will blow up if `workspace` is unset
+  def storageId: Option[String] = Option.when(workspace != null)(storage.uniqueId)
+
+  // NOTE: be careful: this method will blow up if `workspace` is unset
   override def storage: traits.TapeStorage = {
     val existingStorage = storageName
       .filter(workspace.tapeStorage.exists)
