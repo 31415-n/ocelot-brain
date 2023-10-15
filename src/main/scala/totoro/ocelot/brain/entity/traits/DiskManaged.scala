@@ -108,13 +108,12 @@ trait DiskManaged extends Disk with DiskRealPathAware with WorkspaceAware {
     super.load(nbt, workspace)
 
     if (nbt.hasKey(FileSystemTag)) {
-      val nodeNbt = nbt.getCompoundTag(Environment.NodeTag)
-      val fsNbt = nbt.getCompoundTag(FileSystemTag)
-
       // Obtaining address first
+      val nodeNbt = nbt.getCompoundTag(Environment.NodeTag)
       address = Option(nodeNbt.getString(Node.AddressTag))
 
       // Then we can safely generate environment & fill it with loaded data
+      val fsNbt = nbt.getCompoundTag(FileSystemTag)
       fileSystem.load(fsNbt, workspace)
     }
     else {
