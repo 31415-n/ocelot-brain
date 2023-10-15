@@ -1,0 +1,78 @@
+package totoro.ocelot.brain.entity.tape
+
+import totoro.ocelot.brain.Settings
+import totoro.ocelot.brain.entity.tape.Tape.{KindTag, StorageTag}
+import totoro.ocelot.brain.entity.traits.{Environment, WorkspaceAware}
+import totoro.ocelot.brain.nbt.NBTTagCompound
+import totoro.ocelot.brain.network.{Network, Node, Visibility}
+import totoro.ocelot.brain.workspace.Workspace
+
+import java.util.UUID
+import scala.annotation.unused
+
+class Tape(var kind: Tape.Kind, private var storageName: Option[String] = None)
+  extends traits.Tape
+    with WorkspaceAware
+    with Environment {
+
+  def this() = this(Tape.Kind.Iron, None)
+
+  // FIXME: tapes shouldn't have nodes. They only do because you can't put them into a SyncedInventory otherwise.
+  override val node: Node = Network.newNode(this, Visibility.None, UUID.randomUUID().toString).create()
+
+  var label = ""
+
+  def size: Int = Tape.size(kind)
+
+  def lengthMinutes: Float = Tape.lengthMinutes(kind)
+
+  // be careful: this method will blow up if `workspace` is unset
+  override def storage: traits.TapeStorage = {
+    val existingStorage = storageName
+      .filter(workspace.tapeStorage.exists)
+      .map(workspace.tapeStorage.get(_, size, 0))
+
+    existingStorage match {
+      case Some(storage) => storage
+
+      case None =>
+        val storage = workspace.tapeStorage.newStorage(size)
+        storageName = Some(storage.uniqueId)
+
+        storage
+    }
+  }
+
+  override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
+
+    kind = Tape.Kind(nbt.getInteger(KindTag))
+    storageName = Option.when(nbt.hasKey(StorageTag))(nbt.getString(StorageTag))
+  }
+
+  override def save(nbt: NBTTagCompound): Unit = {
+    super.save(nbt)
+
+    nbt.setInteger(KindTag, kind.id)
+
+    for (storageName <- storageName) {
+      nbt.setString(StorageTag, storageName)
+    }
+  }
+}
+
+object Tape {
+  private val KindTag = "size"
+  private val StorageTag = "storage"
+
+  type Kind = Kind.Value
+
+  object Kind extends Enumeration {
+    @unused("actually used but indirectly")
+    val Iron, Gold, Golder, Diamond, NetherStar, Copper, Steel, Greg, NetherStarrer, Ig = Value
+  }
+
+  def size(kind: Kind): Int = Settings.get.tapeSizes(kind.id)
+
+  def lengthMinutes(kind: Kind): Float = size(kind) / Settings.TapeMinuteSize
+}

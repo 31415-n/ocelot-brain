@@ -2,6 +2,7 @@ package totoro.ocelot.brain
 
 import com.google.common.net.InetAddresses
 import com.typesafe.config._
+import totoro.ocelot.brain.Settings.{DefaultTapeLengths, TapeMinuteSize, loadTapeSizes}
 import totoro.ocelot.brain.util.{ColorDepth, InternetFilteringRule}
 
 import java.io._
@@ -202,6 +203,12 @@ class Settings(val config: Config) {
   val soundCardQueueSize: Int = if (config.hasPath("soundCard.queueSize")) config.getInt("soundCard.queueSize") else 1024
   val soundCardChannelCount: Int = if (config.hasPath("soundCard.channelCount")) config.getInt("soundCard.channelCount") else 8
 
+  // tape drive
+  val tapeSizes: Array[Int] =
+    if (config.hasPath("tapedrive.tapeLengths"))
+      loadTapeSizes(config.getString("tapedrive.tapeLengths"))
+    else DefaultTapeLengths.map(_ * TapeMinuteSize)
+
   def internetFilteringRulesInvalid: Boolean = internetFilteringRules.exists(p => p.invalid())
 
   def internetAccessConfigured: Boolean = httpEnabled || tcpEnabled
@@ -282,5 +289,48 @@ object Settings {
     }
 
     def apply(inetAddress: InetAddress, host: String): Option[Boolean] = validator(inetAddress, host)
+  }
+
+  // tapes
+
+  val TapeSecondSize: Int = 1500 * 4
+  val TapeMinuteSize: Int = TapeSecondSize * 60
+
+  private val TapeCount: Int = 10
+  private val DefaultTapeLengths: Array[Int] = Array(4, 8, 16, 32, 64, 2, 6, 16, 128, 128)
+
+  private def loadTapeSizes(lengthsStr: String): Array[Int] = {
+    val sizes = Array.ofDim[Int](TapeCount)
+    val lengths = lengthsStr.split(",")
+
+    for (i <- sizes.indices) {
+      if (i < lengths.length) {
+        sizes(i) = try {
+          Integer.parseInt(lengths(i)) * TapeMinuteSize
+        } catch {
+          case e: NumberFormatException =>
+            Ocelot.log.error(
+              "Property 'tapedrive.tapeLengths' in brain.cfg contains entry " +
+                "this is not a number! Setting entry " +
+                s"${i + 1} [${lengths(i)}] to ${DefaultTapeLengths(i)}",
+              e
+            )
+
+            DefaultTapeLengths(i) * TapeMinuteSize
+        }
+
+        if (sizes(i) <= 0) {
+          sizes(i) = 4
+        }
+      } else {
+        Ocelot.log.warn(
+          "Property 'tapedrive.tapeLengths' contains too few entries, " +
+            s"setting entry ${i + 1} to ${DefaultTapeLengths(i)}"
+        )
+        sizes(i) = DefaultTapeLengths(i) * TapeMinuteSize
+      }
+    }
+
+    sizes
   }
 }
