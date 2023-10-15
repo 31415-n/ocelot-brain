@@ -20,7 +20,7 @@ trait DiskManaged extends Disk with DiskRealPathAware with WorkspaceAware {
   private var _fileSystem: FileSystem = _
   def fileSystem: FileSystem = {
     if (_fileSystem == null)
-      _fileSystem = generateEnvironment()
+      generateAndSetEnvironment()
 
     _fileSystem
   }
@@ -55,12 +55,14 @@ trait DiskManaged extends Disk with DiskRealPathAware with WorkspaceAware {
     FileSystemAPI.asManagedEnvironment(address.get, fileSystemTrait, new ReadWriteLabel(), speed, activityType.orNull)
   }
 
+  private def generateAndSetEnvironment(): Unit = _fileSystem = generateEnvironment()
+
   // -------------------------------- DiskRealPathAware --------------------------------
 
   override def customRealPath_=(value: Option[Path]): Unit = {
     super.customRealPath_=(value)
 
-    _fileSystem = generateEnvironment()
+    generateAndSetEnvironment()
   }
 
   // -------------------------------- Disk --------------------------------
@@ -73,7 +75,7 @@ trait DiskManaged extends Disk with DiskRealPathAware with WorkspaceAware {
     val nbt = new NBTTagCompound()
     fileSystem.save(nbt)
     // regenerate filesystem instance
-    _fileSystem = generateEnvironment()
+    generateAndSetEnvironment()
     // restore parameters
     _fileSystem.load(nbt, workspace)
   }
@@ -105,15 +107,19 @@ trait DiskManaged extends Disk with DiskRealPathAware with WorkspaceAware {
 
     super.load(nbt, workspace)
 
-    this.workspace = workspace
-
     if (nbt.hasKey(FileSystemTag)) {
       val nodeNbt = nbt.getCompoundTag(Environment.NodeTag)
       val fsNbt = nbt.getCompoundTag(FileSystemTag)
 
+      // Obtaining address first
       address = Option(nodeNbt.getString(Node.AddressTag))
 
-      _fileSystem.load(fsNbt, workspace)
+      // Then we can safely generate environment & fill it with loaded data
+      fileSystem.load(fsNbt, workspace)
+    }
+    else {
+      // Without NBT we just generating new environment with new address
+      generateAndSetEnvironment()
     }
 
     envLock = false

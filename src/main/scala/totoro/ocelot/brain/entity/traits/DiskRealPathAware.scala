@@ -61,7 +61,8 @@ trait DiskRealPathAware extends Environment with Persistable with WorkspaceAware
     // Workspace is null during loading by default
     this.workspace = workspace
 
-    customRealPath =
+    // Don't trigger setter in case if it was overriden
+    _customRealPath =
       try {
         Option.when(nbt.hasKey(RealPathTag))(Paths.get(nbt.getString(RealPathTag)))
       }
