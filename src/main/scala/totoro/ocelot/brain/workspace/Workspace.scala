@@ -1,5 +1,6 @@
 package totoro.ocelot.brain.workspace
 
+import totoro.ocelot.brain.entity.tape.StorageManager
 import totoro.ocelot.brain.entity.traits.{Entity, Environment, SidedEnvironment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence
@@ -19,9 +20,10 @@ import scala.util.Random
  *  Keeps a `path` to save files (for things that cannot be serialized to NBT, like hard drives).
   */
 class Workspace(var path: Path) {
-
   private val random = new Random(System.currentTimeMillis())
   def rand: Random = random
+
+  val tapeStorage = new StorageManager(this)
 
   // Internal emulator time in Minecraft ticks
   // ----------------------------------------------------------------------- //
