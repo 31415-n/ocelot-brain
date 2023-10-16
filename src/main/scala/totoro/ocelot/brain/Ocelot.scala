@@ -23,6 +23,9 @@ object Ocelot {
   var configPath: Option[Path] = None
   var librariesPath: Option[Path] = None
 
+  // Ocelot™ replacement for FMLCommonHandler.instance.getMinecraftServerInstance.getOnlinePlayerNames
+  var isPlayerOnlinePredicate: Option[String => Boolean] = None
+
   /**
     * This `preInit`, `init`, `postInit` thing is a legacy from Minecraft/Forge life cycle.
     * It can be replaced with simple `initialization` procedure in the future.
