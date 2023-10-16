@@ -10,7 +10,7 @@ import totoro.ocelot.brain.nbt.persistence.NBTPersistence
 import totoro.ocelot.brain.nbt.persistence.NBTPersistence.{MemoryConstructor, TieredConstructor}
 import totoro.ocelot.brain.util.{FontUtils, ThreadPoolFactory}
 
-import java.io.File
+import java.nio.file.{Path, Paths}
 
 object Ocelot {
   final val Name = "Ocelot"
@@ -20,7 +20,8 @@ object Ocelot {
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
 
-  var configPath: Option[String] = None
+  var configPath: Option[Path] = None
+  var librariesPath: Option[Path] = None
 
   /**
     * This `preInit`, `init`, `postInit` thing is a legacy from Minecraft/Forge life cycle.
@@ -29,10 +30,13 @@ object Ocelot {
 
   private def preInit(): Unit = {
     log.info("Loading configuration...")
-    Settings.load(new File(configPath.getOrElse("brain.conf")))
+    Settings.load(configPath.map(_.toFile))
   }
 
   private def init(): Unit = {
+    log.info("Loading Lua libraries...")
+    LuaStateFactory.init(librariesPath.getOrElse(Paths.get("./")))
+
     log.info("Registering available machine architectures...")
 
     if (LuaStateFactory.isAvailable) {
@@ -106,7 +110,7 @@ object Ocelot {
 
   def initialize(): Unit = {
     log.info("Brain initialization...")
-    log.info("Version: " + Ocelot.Version)
+    log.info(s"Version: ${Ocelot.Version}")
     preInit()
     init()
     postInit()

@@ -11,6 +11,7 @@ import totoro.ocelot.brain.{Ocelot, Settings}
 
 import java.io.{File, FileInputStream, FileOutputStream}
 import java.nio.channels.Channels
+import java.nio.file.{Files, Path, Paths}
 import java.util.regex.Pattern
 import scala.util.Random
 
@@ -34,6 +35,15 @@ object LuaStateFactory {
   def include54: Boolean = Lua54.isAvailable && Settings.get.enableLua54 && !Settings.get.forceLuaJ
 
   def default53: Boolean = include53 && Settings.get.defaultLua53
+
+  def init(librariesPath: Path): Unit = {
+    if (!Files.exists(librariesPath))
+      Files.createDirectory(librariesPath)
+
+    Lua52.init(librariesPath)
+    Lua53.init(librariesPath)
+    Lua54.init(librariesPath)
+  }
 
   object Lua52 extends LuaStateFactory {
     override def version: String = "52"
@@ -160,7 +170,7 @@ abstract class LuaStateFactory {
   // shared libraries somewhere so that we can load them, because we cannot
   // load them directly from a JAR. Lastly, we need to handle library overrides in
   // case the user wants to use custom libraries, or are not on a supported platform.
-  def init(): Unit = {
+  def init(librariesPath: Path): Unit = {
     if (libraryName == null) {
       return
     }
@@ -181,6 +191,7 @@ abstract class LuaStateFactory {
     var tmpLibFile: File = null
     if (!Strings.isNullOrEmpty(Settings.get.forceNativeLibPathFirst)) {
       val libraryTest = new File(Settings.get.forceNativeLibPathFirst, libraryName)
+
       if (libraryTest.canRead) {
         tmpLibFile = libraryTest
         currentLib = libraryTest.getAbsolutePath
@@ -198,18 +209,26 @@ abstract class LuaStateFactory {
       }
 
       val tmpLibName = s"Ocelot-${Ocelot.Version}-$version-$libraryName"
-      val tmpBasePath = if (Settings.get.nativeInTmpDir) {
-        val path = System.getProperty("java.io.tmpdir")
-        if (path == null) ""
-        else if (path.endsWith("/") || path.endsWith("\\")) path
-        else path + "/"
-      }
-      else "./"
-      tmpLibFile = new File(tmpBasePath + tmpLibName)
+
+      val tmpBasePath: Path =
+        if (Settings.get.nativeInTmpDir) {
+          val tmpDirName = System.getProperty("java.io.tmpdir")
+
+          Paths.get(
+            if (tmpDirName == null) ""
+            else tmpDirName
+          )
+        }
+        else {
+          librariesPath
+        }
+
+      tmpLibFile = tmpBasePath.resolve(tmpLibName).toFile
 
       // Clean up old library files when not in tmp dir.
       if (!Settings.get.nativeInTmpDir) {
-        val libDir = new File(tmpBasePath)
+        val libDir = tmpBasePath.toFile
+
         if (libDir.isDirectory) {
           for (file <- libDir.listFiles(new PatternFilenameFilter("^" + Pattern.quote("Ocelot-") + ".*" + Pattern.quote("-" + libraryName) + "$"))) {
             if (file.compareTo(tmpLibFile) != 0) {
@@ -228,6 +247,7 @@ abstract class LuaStateFactory {
           val inExisting = new FileInputStream(tmpLibFile)
           var inCurrentByte = 0
           var inExistingByte = 0
+
           do {
             inCurrentByte = inCurrent.read()
             inExistingByte = inExisting.read()
@@ -238,6 +258,7 @@ abstract class LuaStateFactory {
             }
           }
           while (inCurrentByte != -1 && inExistingByte != -1)
+
           inCurrent.close()
           inExisting.close()
         }
@@ -317,12 +338,10 @@ abstract class LuaStateFactory {
         }
         tmpLibFile.delete()
     }
-  }
 
-  init()
-
-  if (!haveNativeLibrary) {
-    Ocelot.log.warn("Unsupported platform, you won't be able to host games with persistent computers.")
+    if (!haveNativeLibrary) {
+      Ocelot.log.warn("Unsupported platform, you won't be able to host games with persistent computers.")
+    }
   }
 
   // ----------------------------------------------------------------------- //
