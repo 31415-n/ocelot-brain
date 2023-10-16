@@ -379,8 +379,12 @@ class Machine(val host: MachineHost)
 
     if (_users.contains(name))
       throw new Exception("user exists")
+
     if (name.length > Settings.get.maxUsernameLength)
       throw new Exception("username too long")
+
+    if (Ocelot.isPlayerOnlinePredicate.isDefined && !Ocelot.isPlayerOnlinePredicate.get(name))
+      throw new Exception("player must be online")
 
     _users.synchronized {
       _users += name
