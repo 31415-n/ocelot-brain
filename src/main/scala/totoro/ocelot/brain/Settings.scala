@@ -231,35 +231,43 @@ object Settings {
 
   def get: Settings = settings
 
-  def load(file: File): Unit = {
+  def load(file: Option[File]): Unit = {
     import java.lang.System.{lineSeparator => EOL}
+
     // typesafe config's internal method for loading the reference.conf file
     // seems to fail on some systems (as does their parseResource method), so
     // we'll have to load the default config manually. This was reported on the
     // Minecraft Forums, I could not reproduce the issue, but this version has
     // reportedly fixed the problem.
+    if (file.isDefined && file.get.exists) {
+      try {
+        val source = Source.fromFile(file.get)(Codec.UTF8)
+        val plain = source.getLines().mkString("", EOL, EOL)
+        val config = ConfigFactory.parseString(plain)
+        settings = new Settings(config.getConfig("opencomputers"))
+        source.close()
+
+        Ocelot.log.info(s"Loaded Ocelot Brain configuration from: ${file.get.getCanonicalPath}")
+
+        return
+      }
+      catch {
+        case e: Throwable =>
+          Ocelot.log.warn(s"(Failed to parse ${file.get.getCanonicalPath}!)", e)
+      }
+    }
+
+    Ocelot.log.info("Using default Ocelot Brain configuration.")
+
     val defaults = {
       val in = classOf[Settings].getResourceAsStream("/application.conf")
       val config = Source.fromInputStream(in)(Codec.UTF8).getLines().mkString("", EOL, EOL)
       in.close()
+
       ConfigFactory.parseString(config)
     }
-    try {
-      val source = Source.fromFile(file)(Codec.UTF8)
-      val plain = source.getLines().mkString("", EOL, EOL)
-      val config = ConfigFactory.parseString(plain)
-      settings = new Settings(config.getConfig("opencomputers"))
-      source.close()
-      Ocelot.log.info(s"Loaded Ocelot Brain configuration from: ${file.getCanonicalPath}")
-    }
-    catch {
-      case e: Throwable =>
-        Ocelot.log.info("Using default Ocelot Brain configuration.")
-        if (file.exists()) {
-          Ocelot.log.warn(s"(Failed to parse ${file.getCanonicalPath}!)", e)
-        }
-        settings = new Settings(defaults.getConfig("opencomputers"))
-    }
+
+    settings = new Settings(defaults.getConfig("opencomputers"))
   }
 
   private val cidrPattern: Regex = """(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/(\d{1,2})""".r
