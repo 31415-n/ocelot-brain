@@ -37,8 +37,7 @@ object LuaStateFactory {
   def default53: Boolean = include53 && Settings.get.defaultLua53
 
   def init(librariesPath: Path): Unit = {
-    if (!Files.exists(librariesPath))
-      Files.createDirectory(librariesPath)
+    Files.createDirectories(librariesPath)
 
     Lua52.init(librariesPath)
     Lua53.init(librariesPath)
