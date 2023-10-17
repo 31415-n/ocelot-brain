@@ -65,7 +65,7 @@ object Loot {
     def create(): T
   }
 
-  class LootFloppy(name: String, label: String, color: DyeColor, var path: String)
+  class LootFloppy(name: String, private var _label: String, color: DyeColor, var path: String)
     extends FloppyManaged(Option(name), color) {
 
     def this() = this(null, null, DyeColor.Gray, null)
@@ -73,23 +73,35 @@ object Loot {
     override protected def generateEnvironment(): FileSystem = {
       FileSystemAPI.asManagedEnvironment(
         FileSystemAPI.fromClass(Ocelot.getClass, Settings.resourceDomain, "loot/" + path),
-        label, activityType.orNull
+        _label, activityType.orNull
       )
     }
 
-    private val PathTag = "path"
-
     override def save(nbt: NBTTagCompound): Unit = {
       super.save(nbt)
-      nbt.setString(PathTag, path)
+
+      nbt.setString(LootFloppy.PathTag, path)
+      nbt.setString(LootFloppy.LabelTag, _label)
     }
 
     override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
-      // important: we need to load path first to be able to use it later
-      //            to initialize the filesystem
-      path = nbt.getString(PathTag)
+      // important: we need to load these things first to be able to use it later
+      //            to initialize the filesystem (see generateEnvironment)
+
+      // this tag didn't exist previously. a ludicrous omission, I agree.
+      if (nbt.hasKey(LootFloppy.LabelTag)) {
+        _label = nbt.getString(LootFloppy.LabelTag)
+      }
+
+      path = nbt.getString(LootFloppy.PathTag)
+
       super.load(nbt, workspace)
     }
+  }
+
+  object LootFloppy {
+    private val PathTag = "path"
+    private val LabelTag = "label"
   }
 
   class FloppyFactory(val name: String, val color: DyeColor, path: String) extends LootFactory[LootFloppy] {
