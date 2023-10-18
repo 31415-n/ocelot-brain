@@ -81,7 +81,10 @@ object Loot {
       super.save(nbt)
 
       nbt.setString(LootFloppy.PathTag, path)
-      nbt.setString(LootFloppy.LabelTag, _label)
+
+      if (_label != null) {
+        nbt.setString(LootFloppy.LabelTag, _label)
+      }
     }
 
     override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
