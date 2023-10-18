@@ -1,7 +1,7 @@
 package totoro.ocelot.brain.entity.tape
 
 import totoro.ocelot.brain.Settings
-import totoro.ocelot.brain.entity.tape.Tape.{KindTag, StorageTag}
+import totoro.ocelot.brain.entity.tape.Tape.{KindTag, LabelTag, StorageTag}
 import totoro.ocelot.brain.entity.traits.{Environment, WorkspaceAware}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
@@ -48,6 +48,7 @@ class Tape(var kind: Tape.Kind, private var storageName: Option[String] = None)
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
 
+    label = nbt.getString(LabelTag)
     kind = Tape.Kind(nbt.getInteger(KindTag))
     storageName = Option.when(nbt.hasKey(StorageTag))(nbt.getString(StorageTag))
   }
@@ -55,6 +56,7 @@ class Tape(var kind: Tape.Kind, private var storageName: Option[String] = None)
   override def save(nbt: NBTTagCompound): Unit = {
     super.save(nbt)
 
+    nbt.setString(LabelTag, label)
     nbt.setInteger(KindTag, kind.id)
 
     for (storageName <- storageName) {
@@ -64,6 +66,7 @@ class Tape(var kind: Tape.Kind, private var storageName: Option[String] = None)
 }
 
 object Tape {
+  private val LabelTag = "label"
   private val KindTag = "size"
   private val StorageTag = "storage"
 
