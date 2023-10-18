@@ -25,6 +25,7 @@ object Loot {
   var IrcFloppy: FloppyFactory = _
   var DataFloppy: FloppyFactory = _
   var HpmFloppy: FloppyFactory = _
+  var TapeFloppy: FloppyFactory = _
 
   def init(): Unit = {
     // EEPROM
@@ -54,6 +55,7 @@ object Loot {
     OPPMFloppy = registerFloppy(new FloppyFactory("OPPM (Package Manager)", DyeColor.Cyan, "oppm"))
     DataFloppy = registerFloppy(new FloppyFactory("Data Card Software", DyeColor.Pink, "data"))
     HpmFloppy = registerFloppy(new FloppyFactory("hpm (Package manager)", DyeColor.Red, "hpm"))
+    TapeFloppy = registerFloppy(new FloppyFactory("tape (Music player)", DyeColor.White, "tape"))
 
     Eeproms = eeproms.result()
     Floppies = floppies.result()

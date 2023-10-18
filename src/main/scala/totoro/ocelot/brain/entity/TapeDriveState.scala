@@ -1,11 +1,11 @@
 package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.entity.TapeDriveState.{FastForwardBytesPerTick, PlayUpdateIntervalNs, State}
+import totoro.ocelot.brain.entity.tape.AudioPacketDfpwm
 import totoro.ocelot.brain.entity.tape.traits.TapeStorage
+import totoro.ocelot.brain.event.{EventBus, TapeDriveStopEvent}
 
-import scala.collection.mutable.ArrayBuffer
-
-class TapeDriveState {
+class TapeDriveState(tapeDrive: TapeDrive) {
   var state: State = State.Stopped
   var packetSize: Int = 1500
   private var lastCodecTimeNs: Long = 0
@@ -34,6 +34,10 @@ class TapeDriveState {
   def switchState(requestedState: State): Unit = {
     val newState = if (storage.isEmpty) State.Stopped else requestedState
 
+    if (state == State.Playing) {
+      EventBus.send(TapeDriveStopEvent(tapeDrive.node.address))
+    }
+
     if (newState == State.Playing) {
       lastCodecTimeNs = System.nanoTime()
     }
@@ -41,19 +45,27 @@ class TapeDriveState {
     state = newState
   }
 
-  private def advancePosition(): Unit = {
-    for (storage <- storage) {
-      val amount = storage.read(Array.ofDim[Byte](packetSize), simulate = false)
+  private def advancePosition(): Option[AudioPacketDfpwm] = {
+    storage.flatMap { storage =>
+      val pktData = Array.ofDim[Byte](packetSize)
+      val amount = storage.read(pktData, simulate = false)
 
       if (amount < packetSize) {
         switchState(State.Stopped)
       }
+
+      Option.when(amount > 0) {
+        AudioPacketDfpwm(
+          volume,
+          frequency = packetSize * 8 * 4,
+          if (amount == packetSize) pktData else Array.copyOf(pktData, amount)
+        )
+      }
     }
   }
 
-  def update(): Unit = (state, storage) match {
-    case (State.Stopped, _) =>
-    case (_, None) =>
+  def update(): Option[AudioPacketDfpwm] = (state, storage) match {
+    case (State.Stopped, _) | (_, None) => None
 
     case (State.Playing, Some(storage)) =>
       if (storage.position >= storage.size || storage.position < 0) {
@@ -66,7 +78,7 @@ class TapeDriveState {
         lastCodecTimeNs += PlayUpdateIntervalNs
 
         advancePosition()
-      }
+      } else None
 
     case (State.Rewinding, Some(storage)) =>
       val sought = storage.seek(-FastForwardBytesPerTick)
@@ -75,12 +87,16 @@ class TapeDriveState {
         switchState(State.Stopped)
       }
 
+      None
+
     case (State.Forwarding, Some(storage)) =>
       val sought = storage.seek(FastForwardBytesPerTick)
 
       if (sought < FastForwardBytesPerTick) {
         switchState(State.Stopped)
       }
+
+      None
   }
 }
 
@@ -88,18 +104,12 @@ object TapeDriveState {
   private val PlayUpdateIntervalNs = 250 * 1_000_000
   private val FastForwardBytesPerTick = 2048
 
-  sealed abstract class State(val name: String, val id: Int = State.values.length) {
-    State.values += this
-  }
+  type State = State.Value
 
-  object State {
-    private val values = ArrayBuffer.empty[State]
-
-    final case object Stopped extends State("STOPPED")
-    final case object Playing extends State("PLAYING")
-    final case object Rewinding extends State("REWINDING")
-    final case object Forwarding extends State("FORWARDING")
-
-    def apply(id: Int): State = values(id)
+  object State extends Enumeration {
+    val Stopped: Value = Value("STOPPED")
+    val Playing: Value = Value("PLAYING")
+    val Rewinding: Value = Value("REWINDING")
+    val Forwarding: Value = Value("FORWARDING")
   }
 }

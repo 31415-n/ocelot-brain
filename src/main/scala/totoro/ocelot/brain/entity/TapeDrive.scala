@@ -7,7 +7,7 @@ import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
 import totoro.ocelot.brain.entity.tape.traits.Tape
 import totoro.ocelot.brain.entity.traits.DeviceInfo.{DeviceAttribute, DeviceClass}
 import totoro.ocelot.brain.entity.traits.{DeviceInfo, Entity, Environment, Inventory}
-import totoro.ocelot.brain.event.{EventBus, TapeEjectEvent, TapeInsertEvent}
+import totoro.ocelot.brain.event.{EventBus, TapeDriveAudioEvent, TapeEjectEvent, TapeInsertEvent}
 import totoro.ocelot.brain.nbt.NBTTagCompound
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
@@ -18,10 +18,13 @@ class TapeDrive extends Entity with Environment with DeviceInfo with Inventory {
     .withComponent("tape_drive", Visibility.Network)
     .create()
 
+  // used to avoid calling `loadStorage` twice while loading
+  private var loading = false
+
   // a bunch of getters
   def tape: Option[Tape] = inventory(0).get.map(_.asInstanceOf[Tape])
 
-  private val _state = new TapeDriveState()
+  private val _state = new TapeDriveState(this)
 
   def state: TapeDriveState = _state
 
@@ -85,7 +88,10 @@ class TapeDrive extends Entity with Environment with DeviceInfo with Inventory {
 
   override def update(): Unit = {
     super.update()
-    state.update()
+
+    for (pkt <- state.update()) {
+      EventBus.send(TapeDriveAudioEvent(node.address, pkt))
+    }
   }
 
   override def dispose(): Unit = {
@@ -105,7 +111,7 @@ class TapeDrive extends Entity with Environment with DeviceInfo with Inventory {
 
   private def saveStorage(): Unit = state.storage.foreach(_.save())
 
-  private def unloadStorage(): Unit = if (tape.isDefined) {
+  private def unloadStorage(): Unit = if (state.storage.isDefined) {
     state.switchState(State.Stopped)
 
     try {
@@ -122,10 +128,12 @@ class TapeDrive extends Entity with Environment with DeviceInfo with Inventory {
   override def onEntityAdded(slot: Slot, entity: Entity): Unit = {
     super.onEntityAdded(slot, entity)
 
-    loadStorage()
+    if (!loading) {
+      loadStorage()
 
-    if (tape.isDefined) {
-      EventBus.send(TapeInsertEvent(node.address))
+      if (tape.isDefined) {
+        EventBus.send(TapeInsertEvent(node.address))
+      }
     }
   }
 
@@ -142,23 +150,29 @@ class TapeDrive extends Entity with Environment with DeviceInfo with Inventory {
   // persistence
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
-    this.workspace = workspace
+    loading = true
 
-    super.load(nbt, workspace)
+    try {
+      this.workspace = workspace
 
-    if (nbt.hasKey(StateTag)) {
-      state.state = State(nbt.getByte(StateTag))
+      super.load(nbt, workspace)
+
+      if (nbt.hasKey(StateTag)) {
+        state.state = State(nbt.getByte(StateTag))
+      }
+
+      if (nbt.hasKey(PacketSizeTag)) {
+        state.packetSize = nbt.getShort(PacketSizeTag)
+      }
+
+      state.volume =
+        if (nbt.hasKey(SoundVolumeTag)) nbt.getByte(SoundVolumeTag)
+        else 127
+
+      loadStorage()
+    } finally {
+      loading = false
     }
-
-    if (nbt.hasKey(PacketSizeTag)) {
-      state.packetSize = nbt.getShort(PacketSizeTag)
-    }
-
-    state.volume =
-      if (nbt.hasKey(SoundVolumeTag)) nbt.getByte(SoundVolumeTag)
-      else 127
-
-    loadStorage()
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
@@ -284,7 +298,7 @@ class TapeDrive extends Entity with Environment with DeviceInfo with Inventory {
 
   @Callback(doc = "function():string; Returns the current state of the tape drive", direct = true)
   def getState(context: Context, args: Arguments): Array[AnyRef] = {
-    result(state.state.name)
+    result(state.state.toString)
   }
 }
 
