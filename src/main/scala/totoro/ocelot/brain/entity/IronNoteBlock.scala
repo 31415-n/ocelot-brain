@@ -6,8 +6,8 @@ import totoro.ocelot.brain.event.{EventBus, NoteBlockTriggerEvent}
 import totoro.ocelot.brain.network.{Network, Node, Visibility}
 
 class IronNoteBlock extends Entity with Environment {
-  override val node: Node = Network.newNode(this, Visibility.Neighbors).
-    withComponent("iron_noteblock", Visibility.Neighbors).
+  override val node: Node = Network.newNode(this, Visibility.Network).
+    withComponent("iron_noteblock").
     create()
 
   @Callback(direct = true, limit = 10, doc = "function([instrument:number or string,] note:number [, volume:number]); " +

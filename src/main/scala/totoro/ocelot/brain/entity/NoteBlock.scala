@@ -8,8 +8,8 @@ import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
 
 class NoteBlock extends Entity with Environment {
-  override val node: Node = Network.newNode(this, Visibility.Neighbors).
-    withComponent("note_block", Visibility.Neighbors).
+  override val node: Node = Network.newNode(this, Visibility.Network).
+    withComponent("note_block").
     create()
 
   var pitch = 1
