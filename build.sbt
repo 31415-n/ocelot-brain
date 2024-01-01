@@ -22,4 +22,11 @@ libraryDependencies ++= Seq(
 
 assemblyJarName := s"ocelot-brain-${version.value}.jar"
 
+assemblyMergeStrategy := {
+  case PathList("assets", "opencomputers", "lib", _*) => MergeStrategy.preferProject
+  case x =>
+    val oldStrategy = assemblyMergeStrategy.value
+    oldStrategy(x)
+}
+
 Global / fileInputExcludeFilter := NothingFilter.toNio
