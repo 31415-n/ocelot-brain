@@ -435,8 +435,8 @@ abstract class LuaStateFactory {
       }
     }
     catch {
-      case _: UnsatisfiedLinkError =>
-        Ocelot.log.error("Failed loading the native libraries.")
+      case t: UnsatisfiedLinkError =>
+        Ocelot.log.error("Failed loading the native libraries.", t)
       case t: Throwable =>
         Ocelot.log.warn("Failed creating Lua state.", t)
     }
