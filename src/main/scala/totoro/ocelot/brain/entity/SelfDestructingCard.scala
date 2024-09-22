@@ -62,6 +62,8 @@ class SelfDestructingCard extends Entity with Environment with DeviceInfo with T
     }
   }
 
+  def remainingTime: Int = time
+
   // --------------------------- NBT ---------------------------
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
