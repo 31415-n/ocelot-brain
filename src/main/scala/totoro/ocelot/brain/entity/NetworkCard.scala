@@ -24,10 +24,10 @@ class NetworkCard
   override val node: Component =
     Network.newNode(this, Visibility.Network).withComponent("modem", Visibility.Neighbors).create()
 
-  protected val openPorts = mutable.Set.empty[Int]
+  val openPorts = mutable.Set.empty[Int]
 
   // wired network card is the 1st in the max ports list (before both wireless cards)
-  protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(tier.id)
+  def maxOpenPorts: Int = Settings.get.maxOpenPorts(tier.id)
 
   // ----------------------------------------------------------------------- //
 

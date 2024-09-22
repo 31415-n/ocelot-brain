@@ -21,7 +21,7 @@ abstract class WirelessNetworkCard extends NetworkCard with WirelessEndpoint {
   protected def maxWirelessRange: Double = Settings.get.maxWirelessRange(tier.id)
 
   // the wired network card precedes wireless cards in max port list
-  override protected def maxOpenPorts: Int = Settings.get.maxOpenPorts(tier.id + 1)
+  override def maxOpenPorts: Int = Settings.get.maxOpenPorts(tier.id + 1)
 
   var strength: Double = maxWirelessRange
 
