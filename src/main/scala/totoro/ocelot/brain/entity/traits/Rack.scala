@@ -4,14 +4,14 @@ import totoro.ocelot.brain.nbt.NBTTagCompound
 
 /**
  * This interface is implemented by the rack tile entity.
- * <br>
- * It particularly allows {@link totoro.ocelot.brain.entity.traits.RackMountable}s installed in the rack to flag
+ *
+ * It particularly allows [[RackMountable]]s installed in the rack to flag
  * themselves as having changed, so their data gets resent to clients.
- * <br>
+ *
  * Server racks <em>do not</em> serve as environment for the computer nodes of
- * servers. That's what the {@link totoro.ocelot.brain.entity.traits.Server}s are for,
+ * servers. That's what the [[Server]]s are for,
  * which are mountables that can be placed in the rack.
- * <br>
+ *
  * Another purpose is to allow identifying tile entities as racks via the API,
  * i.e. without having to link against internal classes. This also means that
  * <em>you should not implement this</em>.
