@@ -15,7 +15,7 @@ import java.nio.file.{Path, Paths}
 object Ocelot {
   final val Name = "Ocelot"
   // do not forget to change the version in `build.sbt`
-  final val Version = "0.21.1"
+  final val Version = "0.22.0"
 
   def log: Logger = logger.getOrElse(LogManager.getLogger(Name))
   var logger: Option[Logger] = None
