@@ -9,7 +9,7 @@ import totoro.ocelot.brain.entity.machine.ExtendedLuaState._
 import totoro.ocelot.brain.entity.machine.Machine
 import totoro.ocelot.brain.{Ocelot, Settings}
 
-import java.io.{File, FileInputStream, FileOutputStream}
+import java.io.{BufferedInputStream, File, FileInputStream, FileOutputStream}
 import java.nio.channels.Channels
 import java.nio.file.{Files, Path, Paths}
 import java.util.regex.Pattern
@@ -242,8 +242,8 @@ abstract class LuaStateFactory {
       if (tmpLibFile.exists()) {
         var matching = true
         try {
-          val inCurrent = libraryUrl.openStream()
-          val inExisting = new FileInputStream(tmpLibFile)
+          val inCurrent = new BufferedInputStream(libraryUrl.openStream())
+          val inExisting = new BufferedInputStream(new FileInputStream(tmpLibFile))
           var inCurrentByte = 0
           var inExistingByte = 0
 
