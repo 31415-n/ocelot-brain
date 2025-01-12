@@ -22,7 +22,7 @@ import totoro.ocelot.brain.{Ocelot, Settings}
   *                    zero is received it will not be relayed by switches and access points. It
   *                    will however still be received by a network card.
   */
-class Packet(var source: String, var destination: String, var port: Int, var data: Array[AnyRef], var ttl: Int = 5) {
+class Packet(var source: String, var destination: String, var port: Int, var data: Array[AnyRef], var ttl: Int = Settings.get.initialNetworkPacketTTL) {
   /**
     * The size of the packet's payload.
     *

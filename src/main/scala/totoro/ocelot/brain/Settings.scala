@@ -135,6 +135,7 @@ class Settings(val config: Config) {
   // ----------------------------------------------------------------------- //
   // misc
   val inputUsername: Boolean = config.getBoolean("misc.inputUsername")
+  val initialNetworkPacketTTL = config.getInt("misc.initialNetworkPacketTTL") max 5
   val maxNetworkPacketSize: Int = config.getInt("misc.maxNetworkPacketSize") max 0
   // Need at least 4 for nanomachine protocol. Because I can!
   val maxNetworkPacketParts: Int = config.getInt("misc.maxNetworkPacketParts") max 4
