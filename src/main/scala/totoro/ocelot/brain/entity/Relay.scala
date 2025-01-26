@@ -2,7 +2,7 @@ package totoro.ocelot.brain.entity
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.machine.{Arguments, Callback, Context}
-import totoro.ocelot.brain.entity.traits.{Entity, Hub}
+import totoro.ocelot.brain.entity.traits.{ComponentInventory, Entity, Hub, Tiered}
 import totoro.ocelot.brain.event.{EventBus, RelayActivityEvent}
 import totoro.ocelot.brain.nbt.ExtendedNBT._
 import totoro.ocelot.brain.nbt.{NBT, NBTTagCompound}
@@ -11,21 +11,23 @@ import totoro.ocelot.brain.util.Tier.Tier
 import totoro.ocelot.brain.util.{Direction, Tier}
 import totoro.ocelot.brain.workspace.Workspace
 
-class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.QuantumNode {
-  protected var _cpuTier: Option[Tier] = None // from Tier.One to Tier.Three
-  protected var _memoryTier: Option[Tier] = None // from Tier.One to Tier.Six
-  protected var _hddTier: Option[Tier] = None // from Tier.One to Tier.Three
+class Relay extends Hub with ComponentInventory with Entity with WirelessEndpoint with QuantumNetwork.QuantumNode {
+  val cpuSlot: Slot = inventory.slot(0)
+  val memorySlot: Slot = inventory.slot(1)
+  val hddSlot: Slot = inventory.slot(2)
+  val networkCardSlot: Slot = inventory.slot(3)
 
-  protected var _wirelessTier: Option[Tier] = None // from Tier.One to Tier.Two
-  protected var isLinkedEnabled = false
+  private var wirelessTier: Option[Tier] = None // from Tier.One to Tier.Two
 
   protected var strength: Double = maxWirelessRange
 
-  protected var isRepeater = true
+  private var isRepeater = true
 
-  def isWirelessEnabled: Boolean = _wirelessTier.exists(_ >= Tier.One)
+  private def isWirelessEnabled: Boolean = wirelessTier.exists(_ >= Tier.One)
 
-  def maxWirelessRange: Double = _wirelessTier.map(_.id).map(Settings.get.maxWirelessRange).getOrElse(0)
+  def maxWirelessRange: Double = wirelessTier.map(_.id).map(Settings.get.maxWirelessRange).getOrElse(0)
+
+  private var isLinkedEnabled = false
 
   protected var _tunnel = "creative"
 
@@ -35,9 +37,9 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
     withComponent("relay").
     create())
 
-  var lastMessage = 0L
+  private var lastMessage = 0L
 
-  def onSwitchActivity(): Unit = {
+  private def onSwitchActivity(): Unit = {
     val now = System.currentTimeMillis()
     if (now - lastMessage >= (relayDelay - 1) * 50) {
       lastMessage = now
@@ -122,73 +124,48 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
 
   // ----------------------------------------------------------------------- //
 
-  def cpuTier: Option[Tier] = _cpuTier
-
-  def cpuTier_=(tier: Option[Tier]): Unit = {
-    _cpuTier = tier
-    updateLimits()
+  override def onEntityAdded(slot: Slot, entity: Entity): Unit = {
+    super.onEntityAdded(slot, entity)
+    updateLimits(slot, entity)
   }
 
-  def memoryTier: Option[Tier] = _memoryTier
+  private def updateLimits(slot: Slot, entity: Entity): Unit = {
+    slot match {
+      case `cpuSlot` =>
+        relayDelay = (relayBaseDelay - (entity.asInstanceOf[Tiered].tier.num * relayDelayPerUpgrade).toInt).max(1)
 
-  def memoryTier_=(tier: Option[Tier]): Unit = {
-    _memoryTier = tier
-    updateLimits()
+      case `memorySlot` =>
+        relayAmount = (relayBaseAmount + (entity match {
+          case mem: Memory => (mem.memoryTier.id + 1) * relayAmountPerUpgrade
+          case t: Tiered => t.tier.num * (relayAmountPerUpgrade * 2)
+        })).max(1)
+
+      case `hddSlot` =>
+        maxQueueSize = (queueBaseSize + entity.asInstanceOf[Tiered].tier.num * queueSizePerUpgrade).max(1)
+
+      case `networkCardSlot` => entity match {
+        case w: WirelessNetworkCard =>
+          wirelessTier = Some(w.tier)
+
+        case l: LinkedCard =>
+          _tunnel = l.tunnel
+          isLinkedEnabled = true
+          QuantumNetwork.add(this)
+      }
+    }
   }
 
-  def hddTier: Option[Tier] = _hddTier
+  override def onEntityRemoved(slot: Slot, entity: Entity): Unit = {
+    super.onEntityRemoved(slot, entity)
 
-  def hddTier_=(tier: Option[Tier]): Unit = {
-    _hddTier = tier
-    updateLimits()
-  }
-
-  def wirelessTier: Option[Tier] = _wirelessTier
-
-  def wirelessTier_=(tier: Option[Tier]): Unit = {
-    _wirelessTier = tier
-    isLinkedEnabled = tier.isEmpty
-    updateLimits()
-  }
-
-  def tunnel_=(tunnel: String): Unit = {
-    this.tunnel = Some(tunnel)
-  }
-
-  def tunnel_=(tunnel: Option[String]): Unit = {
-    tunnel match {
-      case Some(tunnel) =>
-        _tunnel = tunnel
-        isLinkedEnabled = true
-        _wirelessTier = None
-
-      case None =>
+    slot match {
+      case `cpuSlot` => relayDelay = relayBaseDelay
+      case `memorySlot` => relayAmount = relayBaseAmount
+      case `hddSlot` => maxQueueSize = queueBaseSize
+      case `networkCardSlot` =>
+        wirelessTier = None
         isLinkedEnabled = false
-    }
-
-    updateLimits()
-  }
-
-  private def updateLimits(): Unit = {
-    relayDelay = _cpuTier match {
-      case Some(cpuTier) => (relayBaseDelay - (cpuTier.num * relayDelayPerUpgrade).toInt).max(1)
-      case None => relayBaseDelay
-    }
-
-    relayAmount = _memoryTier match {
-      case Some(memoryTier) => (relayBaseAmount + memoryTier.num * relayAmountPerUpgrade).max(1)
-      case None => relayBaseAmount
-    }
-
-    maxQueueSize = _hddTier match {
-      case Some(hddTier) => (queueBaseSize + hddTier.num * queueSizePerUpgrade).max(1)
-      case None => queueBaseSize
-    }
-
-    if (isLinkedEnabled) {
-      QuantumNetwork.add(this)
-    } else {
-      QuantumNetwork.remove(this)
+        QuantumNetwork.remove(this)
     }
   }
 
@@ -198,15 +175,12 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
   private final val IsRepeaterTag = "isRepeater"
   private final val ComponentNodesTag = "componentNodes"
 
-  private final val CpuTierTag = "cpuTier"
-  private final val MemoryTierTag = "memoryTier"
-  private final val HDDTierTag = "hddTier"
-  private final val WirelessTierTag = "wirelessTier"
-  private final val TunnelTag = "tunnel"
-  private final val IsLinkedEnabledTag = "isLinkedEnabled"
-
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
     super.load(nbt, workspace)
+
+    for (slot <- inventory; entity <- slot.get) {
+      updateLimits(slot, entity)
+    }
 
     if (nbt.hasKey(StrengthTag)) {
       strength = nbt.getDouble(StrengthTag) max 0 min maxWirelessRange
@@ -218,29 +192,6 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
       zipWithIndex.foreach {
       case (tag, index) => componentNodes(index).load(tag)
     }
-
-    def readTier(key: String): Option[Tier] =
-      if (nbt.hasKey(key)) {
-        val tierId = nbt.getInteger(key)
-
-        // previously Tier.None
-        if (tierId == -1) None else Some(Tier(tierId))
-      } else None
-
-    _cpuTier = readTier(CpuTierTag)
-    _memoryTier = readTier(MemoryTierTag)
-    _hddTier = readTier(HDDTierTag)
-    _wirelessTier = readTier(WirelessTierTag)
-
-    if (nbt.hasKey(TunnelTag)) {
-      _tunnel = nbt.getString(TunnelTag)
-    }
-
-    if (nbt.hasKey(IsLinkedEnabledTag)) {
-      isLinkedEnabled = nbt.getBoolean(IsLinkedEnabledTag)
-    }
-
-    updateLimits()
   }
 
   override def save(nbt: NBTTagCompound): Unit = {
@@ -255,12 +206,5 @@ class Relay extends Hub with Entity with WirelessEndpoint with QuantumNetwork.Qu
         tag
       case _ => new NBTTagCompound()
     })
-
-    _cpuTier.foreach(cpuTier => nbt.setInteger(CpuTierTag, cpuTier.id))
-    _memoryTier.foreach(memoryTier => nbt.setInteger(MemoryTierTag, memoryTier.id))
-    _hddTier.foreach(hddTier => nbt.setInteger(HDDTierTag, hddTier.id))
-    _wirelessTier.foreach(wirelessTier => nbt.setInteger(WirelessTierTag, wirelessTier.id))
-    nbt.setString(TunnelTag, _tunnel)
-    nbt.setBoolean(IsLinkedEnabledTag, isLinkedEnabled)
   }
 }
