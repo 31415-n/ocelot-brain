@@ -34,6 +34,8 @@ trait ComponentInventory extends Entity with Environment with Inventory {
       case environment: Environment =>
         if (!isLoading)
           connectItemNode(environment.node)
+
+      case _ =>
     }
   }
 
@@ -42,6 +44,8 @@ trait ComponentInventory extends Entity with Environment with Inventory {
       case environment: Environment =>
         if (environment.node != null)
           environment.node.remove()
+
+      case _ =>
     }
 
     super.onEntityRemoved(slot, entity)
@@ -71,6 +75,8 @@ trait ComponentInventory extends Entity with Environment with Inventory {
     inventory.entities.foreach {
       case environment: Environment =>
         connectItemNode(environment.node)
+
+      case _ =>
     }
   }
 
@@ -79,6 +85,8 @@ trait ComponentInventory extends Entity with Environment with Inventory {
       case environment: Environment =>
         if (environment.node != null)
           environment.node.remove()
+
+      case _ =>
     }
   }
 
