@@ -2,23 +2,17 @@ package totoro.ocelot.brain.entity.tape
 
 import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.entity.tape.Tape.{KindTag, LabelTag, StorageTag}
-import totoro.ocelot.brain.entity.traits.{Environment, WorkspaceAware}
+import totoro.ocelot.brain.entity.traits.WorkspaceAware
 import totoro.ocelot.brain.nbt.NBTTagCompound
-import totoro.ocelot.brain.network.{Network, Node, Visibility}
 import totoro.ocelot.brain.workspace.Workspace
 
-import java.util.UUID
 import scala.annotation.unused
 
 class Tape(var kind: Tape.Kind, private var storageName: Option[String] = None)
   extends traits.Tape
-    with WorkspaceAware
-    with Environment {
+    with WorkspaceAware {
 
   def this() = this(Tape.Kind.Iron, None)
-
-  // FIXME: tapes shouldn't have nodes. They only do because you can't put them into a SyncedInventory otherwise.
-  override val node: Node = Network.newNode(this, Visibility.None, UUID.randomUUID().toString).create()
 
   var label = ""
 

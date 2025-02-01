@@ -200,6 +200,7 @@ trait Environment extends Persistable with LifeCycle {
   // ----------------------------------------------------------------------- //
 
   override def load(nbt: NBTTagCompound, workspace: Workspace): Unit = {
+    super.load(nbt, workspace)
     if (node != null)
       node.load(nbt.getCompoundTag(Environment.NodeTag))
   }
