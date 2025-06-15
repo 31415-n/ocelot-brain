@@ -1,8 +1,10 @@
 ## Ocelot Brain
 
-The core of Ocelot project.  
+> **Note**: This is a fork of the original [Ocelot Brain project](https://gitlab.com/cc-ru/ocelot/ocelot-brain) by the Ocelot Dev Team.
+
+The core of Ocelot project.
 This is a library that contains the internal code of OpenComputers mod
-separated from its Minecraft origin. 
+separated from its Minecraft origin.
 
 This means that you can use it to build your own OpenComputers emulator
 for any platform (Linux, Windows, macOS and BSD when using JNLua, any other
