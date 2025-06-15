@@ -26,7 +26,12 @@ function os.sleep(timeout)
   checkArg(1, timeout, "number", "nil")
   local deadline = computer.uptime() + (timeout or 0)
   repeat
-    event.pull(deadline - computer.uptime())
+    local remaining = deadline - computer.uptime()
+    if remaining > 0 then
+      event.pull(remaining)
+    else
+      event.pull(0)
+    end
   until computer.uptime() >= deadline
 end
 
