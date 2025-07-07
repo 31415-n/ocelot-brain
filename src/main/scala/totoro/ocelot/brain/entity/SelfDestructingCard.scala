@@ -21,7 +21,7 @@ class SelfDestructingCard extends Entity with Environment with DeviceInfo with T
 
   // --------------------------- Time countdown ---------------------------
 
-  private var time: Int = -1
+  var time: Int = -1
 
   @Callback(doc = "function([time:number]):number; Starts the countdown; Will be ticking down until the time is reached. 5 seconds by default. Returns the time set")
   def start(context: Context, args: Arguments): Array[AnyRef] = {
@@ -52,12 +52,9 @@ class SelfDestructingCard extends Entity with Environment with DeviceInfo with T
     if (time < 0)
       return
 
-    // No boom :(
-    if (time > 0) {
-      time -= 1
-    }
-    // Boom!
-    else {
+    time -= 1
+    
+    if (time == 0) {
       EventBus.send(SelfDestructingCardBoomEvent(node.address))
     }
   }
