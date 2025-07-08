@@ -22,6 +22,8 @@ class SelfDestructingCard extends Entity with Environment with DeviceInfo with T
   // --------------------------- Time countdown ---------------------------
 
   var time: Int = -1
+  var initialTime: Int = -1
+  var lastBeepTime: Int = -1
 
   @Callback(doc = "function([time:number]):number; Starts the countdown; Will be ticking down until the time is reached. 5 seconds by default. Returns the time set")
   def start(context: Context, args: Arguments): Array[AnyRef] = {
@@ -34,6 +36,8 @@ class SelfDestructingCard extends Entity with Environment with DeviceInfo with T
       throw new IllegalArgumentException("time may not be greater than 100000")
 
     time = Math.floor(fuse * 20).round.toInt
+    initialTime = time
+    lastBeepTime = -1
 
     result(fuse)
   }
