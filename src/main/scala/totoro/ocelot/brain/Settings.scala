@@ -215,6 +215,9 @@ class Settings(val config: Config) {
   def internetAccessConfigured: Boolean = httpEnabled || tcpEnabled
 
   def internetAccessAllowed: Boolean = internetAccessConfigured && !internetFilteringRulesInvalid
+
+  // >= 1.8.8
+  val httpUserAgent: String = config.getString("internet.httpUserAgent")
 }
 
 object Settings {
