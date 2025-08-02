@@ -24,9 +24,7 @@ assemblyJarName := s"ocelot-brain-${version.value}.jar"
 
 assemblyMergeStrategy := {
   case PathList("assets", "opencomputers", "lib", _*) => MergeStrategy.preferProject
-  case x =>
-    val oldStrategy = assemblyMergeStrategy.value
-    oldStrategy(x)
+  case _ => MergeStrategy.discard
 }
 
 Global / fileInputExcludeFilter := NothingFilter.toNio
