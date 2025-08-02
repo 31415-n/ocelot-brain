@@ -19,7 +19,7 @@ Desktop client implementation: [Ocelot Desktop](https://gitlab.com/cc-ru/ocelot/
 
 ### Corresponding OpenComputers version
 
-Current `master` branch of Ocelot Brain corresponds to OC 1.8.7 (January 5, 2025, 7fecb07).
+Current `master` branch of Ocelot Brain corresponds to OC 1.8.9a (June 29, 2025, 52da41b).
 
 ### Build instructions
 
