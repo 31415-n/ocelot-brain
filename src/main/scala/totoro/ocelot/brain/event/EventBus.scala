@@ -4,43 +4,45 @@ import totoro.ocelot.brain.Settings
 import totoro.ocelot.brain.event.FileSystemActivityType.ActivityType
 import totoro.ocelot.brain.network.Node
 
+import scala.collection.immutable.ArraySeq
 import scala.collection.mutable
 
-/**
-  * Main Ocelot event bus for a feedback from the components.
-  * Computer beeping, modem LED flashing, screen rendering - all of it goes here,
-  * and must be listened to.
+/** The main Ocelot event bus.
+  * Dispatches events like computer beeping, modem LED flashing, screen rendering, etc. to subscribed listeners.
+  *
+  * The event bus is thread-safe (or, at least, that is the intention — if it isn't, it's a bug).
   */
 object EventBus {
-  private val listeners = new mutable.ArrayBuffer[PartialFunction[Event, Unit]]
-  private val canceledSet = mutable.HashSet.empty[Subscription]
-  private var dispatchInProgress: Boolean = false
+  // JLS 17.7 guarantees atomicity of writes to fields containing reference types.
+  // @volatile ensures that writes are broadcast to other threads when they read the variable.
+  @volatile
+  private var listeners = ArraySeq.empty[Subscription]
 
-  /**
-    * Creates a subscription for an event.
+  /** Creates a subscription for an event.
     *
-    * If multiple instances of the same listener are registered, the callback will be invoked multiple times.
+    * The same listener may be registered multiple times.
+    * Each registration will create an independent subscription.
     *
     * @return a handle to manage the subscription
+    *
+    * @note The subscription takes effect on the next event dispatch.
+    *       If this method is called while a dispatch is in progress, the listener will not receive an event.
     */
   def subscribe(listener: PartialFunction[Event, Unit]): Subscription = {
-    listeners += listener
-    Subscription(listener)
+    val subscription = Subscription(listener)
+    listeners :+= subscription
+
+    subscription
   }
 
-  /**
-    * Dispatches an event to listeners subscribed to its runtime class.
+  /** Dispatches an event to listeners subscribed to its runtime class.
+    *
+    * This method is thread-safe, so it's fine to call it from a non-main thread.
+    *
+    * This method is also reentrant: you can send an event while handling another event.
     */
   def send(event: Event): Unit = {
-    dispatchInProgress = true
-    listeners
-      .iterator
-      .filter(listener => listener.isDefinedAt(event) && !canceledSet.contains(Subscription(listener)))
-      .foreach(listener => listener(event))
-    dispatchInProgress = false
-
-    canceledSet.foreach(_.remove())
-    canceledSet.clear()
+    listeners.foreach(_.handleIfDefined(event))
   }
 
   // Avoid spamming the network with disk activity notices.
@@ -63,14 +65,16 @@ object EventBus {
     send(NetworkActivityEvent(node.address))
   }
 
-  final case class Subscription private[EventBus](private val listener: PartialFunction[Event, Unit]) {
-    // does not immediately remove the subscription to avoid messing up iterators during dispatch
-    def cancel(): Unit =
-      if (dispatchInProgress) canceledSet += this
-      else remove()
+  final case class Subscription private[EventBus] (private val listener: PartialFunction[Event, Unit]) {
+    private[EventBus] def handleIfDefined(event: Event): Unit = listener.applyOrElse(event, (_: Event) => ())
 
-    private[EventBus] def remove(): Unit = {
-      listeners -= listener
+    /** Cancels the subscription.
+      *
+      * @note The cancellation takes effect on the next event dispatch.
+      *       If this method is called while a dispatch is in progress, the listener may still receive an event.
+      */
+    def cancel(): Unit = {
+      listeners = listeners.filterNot(_ eq this)
     }
   }
 }
