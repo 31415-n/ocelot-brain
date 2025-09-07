@@ -114,7 +114,7 @@ class Rack
     }
   }
 
-  protected def sendPacketToMountables(sourceSide: Option[Direction], packet: Packet): Unit = {
+  protected def sendPacketToMountables(sourceSide: Option[Direction.Value], packet: Packet): Unit = {
     // When a message arrives on a bus, also send it to all secondary nodes
     // connected to it. Only deliver it to that very node, if it's not the
     // sender, to avoid loops.

@@ -17,8 +17,8 @@ class Raid
     with Environment
     with Inventory
     with DiskRealPathAware
-    with DiskActivityAware
-{
+    with DiskActivityAware {
+
   // Forge stuff
   final val getSizeInventory = 3
 
@@ -33,6 +33,22 @@ class Raid
         if (fs.node != null)
           fs.node.remove()
       })
+
+      for (slot <- inventory.iterator; entity <- slot.get) {
+        // OpenComputers resets lockInfo and sets drives to managed mode. It does that by manipulating ItemStack's
+        // properties, used when an Environment is created for it. Brain operates directly on Environments, and there is
+        // no way to specify these properties. Instead, we'll emulate the behavior by replacing unmanaged drives with
+        // HDDManaged instances and unlocking managed drives.
+        entity match {
+          case disk: HDDUnmanaged =>
+            val replacement = new HDDManaged(disk.tier)
+            replacement.setCustomData(disk.getCustomData)
+            slot.set(Some(replacement))
+
+          case disk: HDDManaged =>
+            disk.setLocked("")
+        }
+      }
 
       val realPath = getRealPath(raidAddress)
 
